@@ -17,6 +17,7 @@
     "@langchain/core": "^1.1.32",
     "@langchain/openai": "^1.2.13",
     "@langchain/textsplitters": "^1.0.1",
+    "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/typography": "^0.5.19",
     "langchain": "^1.2.32",
     "mongoose": "^8.8.0",
@@ -27,6 +28,7 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "tailwindcss": "^4.2.1",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
@@ -35,8 +37,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitest/coverage-v8": "^4.1.0",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.15",
     "typescript": "^5.7.0",
     "vitest": "^4.1.0"
   }
