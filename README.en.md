@@ -216,10 +216,6 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 
 ---
 
-## 📜 License
-
-MIT
-
----
+Created by **John Mak** 🚀
 
 *Last updated: 2026-03-17*

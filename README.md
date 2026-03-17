@@ -220,10 +220,6 @@ revision-app/
 
 ---
 
-## 📜 License
-
-MIT
-
----
+Created by **John Mak** 🚀
 
 *更新日期：2026-03-17*
