@@ -1,0 +1,28 @@
+# Glossary
+
+| Term | Full Name | Definition |
+|------|-----------|------------|
+| **RAG** | Retrieval-Augmented Generation | A technique that retrieves relevant content from a knowledge base and injects it into an LLM prompt to generate answers |
+| **Embedding** | Embedding / Vector Embedding | Converting text into numerical vectors (e.g., dimensions detected at startup), enabling computation of semantic similarity between texts |
+| **Chunk** | Text Chunk | A text segment after document splitting. Each chunk is independently embedded and stored |
+| **Vector Search** | Vector Search | Uses cosine similarity to find chunks semantically closest to a query |
+| **Cosine Similarity** | Cosine Similarity | A metric measuring directional similarity between two vectors. 1 = identical, 0 = unrelated |
+| **Streaming** | Streaming Response | Token-by-token LLM response delivery, improving UX by not waiting for the complete answer |
+| **NDJSON** | Newline-Delimited JSON | A format with one JSON object per line, used for streaming data transfer |
+| **LLM** | Large Language Model | Large Language Model (e.g., NVIDIA Nemotron) |
+| **OpenRouter** | OpenRouter | A unified AI API gateway that allows accessing multiple LLM models with a single API key |
+| **Nemotron** | NVIDIA Nemotron | NVIDIA's LLM model series. This project uses `nemotron-3-nano-30b` |
+| **MCQ** | Multiple Choice Question | Multiple choice question |
+| **Knowledge Gap** | Knowledge Gap Analysis | Analysis based on quiz error statistics to identify weak topics for learners |
+| **Atlas** | MongoDB Atlas | MongoDB's cloud Database-as-a-Service with vector search capabilities |
+| **M0** | M0 Free Tier | MongoDB Atlas's free plan with 512MB storage |
+| **Warmup** | Embedding Warmup | A startup test request to pre-warm the embedding model and detect vector dimensions |
+| **Keyword Fallback** | Keyword Fallback Search | A backup mechanism using regex keyword search when vector search returns no results |
+| **Score Filter** | Vector Score Filter | Filters vector search results with cosine score below threshold (0.4) to avoid low-quality answers |
+| **Context Window** | Context Window | Maximum token limit an LLM can process in a single request. This project limits context characters accordingly |
+| **OCR** | Optical Character Recognition | Technology for converting images to text (`tesseract.js`) |
+| **Ingest** | Document Ingestion | Document ingestion pipeline: upload → extract → split → embed → store |
+
+---
+
+*Last updated: 2026-03-17*

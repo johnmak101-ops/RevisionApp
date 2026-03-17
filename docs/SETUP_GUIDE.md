@@ -58,7 +58,7 @@ OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 768,
+        "numDimensions": 2048,
         "similarity": "cosine"
       }
     ]

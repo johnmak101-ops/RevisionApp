@@ -1,3 +1,5 @@
+**🌐 Language / 語言：** [English](README.en.md) | **中文**
+
 # 📚 Bootcamp 複習 App
 
 > AI 驅動嘅 Bootcamp 教材複習平台 — 支援 PDF/Markdown 上傳、RAG 聊天、自動出題、知識缺口分析同大綱生成。  
@@ -86,7 +88,7 @@ cp .env.example .env.local
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 768,
+        "numDimensions": 2048,
         "similarity": "cosine"
       }
     ]

@@ -65,7 +65,7 @@ revision-app 的 `Chunk` collection 需要一個向量索引，才能使用 `$ve
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 768,
+      "numDimensions": 2048,
       "similarity": "cosine"
     }
   ]
@@ -92,7 +92,7 @@ db.chunks.createSearchIndex({
       {
         type: "vector",
         path: "embedding",
-        numDimensions: 768,
+        numDimensions: 2048,
         similarity: "cosine"
       }
     ]
@@ -128,7 +128,7 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/revision?r
 
 | 項目 | 值 | 說明 |
 |------|-----|------|
-| 向量維度 | 768 | 來自 Ollama `nomic-embed-text` |
+| 向量維度 | 2048 | 來自 `nvidia/llama-nemotron-embed-vl-1b-v2:free` |
 | 相似度 | cosine | 與 embedding 的 normalize 方式一致 |
 | 索引名稱 | chunk_vector_index | 需與 `src/lib/search.ts` 一致 |
 | Collection | chunks | Mongoose model `Chunk` 對應的 collection |
