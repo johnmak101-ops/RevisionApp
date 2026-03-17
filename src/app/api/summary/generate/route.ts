@@ -12,7 +12,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 
 /** OpenRouter LLM singleton — streaming 模式 */
 const llm = new ChatOpenAI({
-  model: process.env.OPENROUTER_MODEL ?? "openai/gpt-oss-120b:free",
+  model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-nano-30b-a3b:free",
   apiKey: process.env.OPENROUTER_API_KEY,
   configuration: { baseURL: "https://openrouter.ai/api/v1" },
   maxRetries: 2,

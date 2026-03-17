@@ -95,7 +95,10 @@ revision-app/
 ```
 PDF/MD Upload
     ↓
-pdf-parse / MD parsing → Per-page text
+pdf-parse (text extraction) → if no text found → pdf-to-img + tesseract.js (OCR)
+MD → direct parsing
+    ↓
+Per-page text
     ↓
 RecursiveCharacterTextSplitter (512 chars, 100 overlap)
     ↓

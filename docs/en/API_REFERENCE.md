@@ -14,20 +14,19 @@ Upload a PDF or Markdown file with automatic text extraction, chunking, embeddin
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `file` | File | PDF or Markdown file |
+| `file` | File | PDF or Markdown file (max 100MB) |
 
 **Response** (200):
 
 ```json
 {
+  "success": true,
   "documentId": "665f...",
-  "filename": "lecture01.pdf",
-  "chunkCount": 42,
-  "message": "Ingestion complete"
+  "chunkCount": 42
 }
 ```
 
-**Error** (400/500):
+**Error** (400/409/413/500):
 
 ```json
 {
@@ -113,6 +112,8 @@ Generate MCQ questions based on a specified document.
 }
 ```
 
+> `count` is clamped between 1–15, defaults to 5.
+
 **Response** (200):
 
 ```json
@@ -120,13 +121,16 @@ Generate MCQ questions based on a specified document.
   "quizId": "666a...",
   "questions": [
     {
+      "index": 0,
       "question": "Which of the following...",
-      "options": ["A", "B", "C", "D"],
-      "topic": "React Hooks"
+      "options": ["A", "B", "C", "D"]
     }
-  ]
+  ],
+  "totalQuestions": 5
 }
 ```
+
+> Note: `correctIndex`, `topic`, and `explanation` are hidden from the client response — they are stored server-side for grading.
 
 ---
 
@@ -147,14 +151,19 @@ Submit quiz answers.
 
 ```json
 {
+  "quizId": "666a...",
   "score": 4,
-  "total": 5,
+  "totalQuestions": 5,
+  "percentage": 80,
   "results": [
     {
+      "index": 0,
       "question": "Which of the following...",
-      "correct": true,
+      "options": ["A", "B", "C", "D"],
       "correctIndex": 0,
       "userAnswer": 0,
+      "isCorrect": true,
+      "topic": "React Hooks",
       "explanation": "..."
     }
   ]
@@ -165,28 +174,42 @@ Submit quiz answers.
 
 ## GET `/api/quiz/stats`
 
-Get quiz statistics.
-
-**Query Parameters**: `?documentId=665f...` (optional)
+Get quiz statistics (Knowledge Gap Analysis).
 
 **Response** (200):
 
 ```json
 {
-  "totalAttempts": 10,
-  "averageScore": 72.5,
-  "weakTopics": [
-    { "topic": "Closures", "errorRate": 0.6 },
-    { "topic": "Promises", "errorRate": 0.4 }
-  ]
+  "topics": [
+    {
+      "name": "Closures",
+      "totalQuestions": 10,
+      "correct": 4,
+      "accuracy": 40
+    },
+    {
+      "name": "Promises",
+      "totalQuestions": 8,
+      "correct": 6,
+      "accuracy": 75
+    }
+  ],
+  "overall": {
+    "totalAttempts": 5,
+    "totalQuestions": 18,
+    "totalCorrect": 10,
+    "accuracy": 56
+  }
 }
 ```
+
+> Topics are sorted by accuracy (ascending) — weakest topics appear first.
 
 ---
 
 ## POST `/api/summary/generate`
 
-Generate an AI summary outline for a specified document.
+Generate an AI summary outline for a specified document. Returns **streaming NDJSON** response.
 
 **Request Body**:
 
@@ -196,12 +219,21 @@ Generate an AI summary outline for a specified document.
 }
 ```
 
-**Response** (200):
+**Response** (200, streaming):
 
-```json
-{
-  "summary": "## Document Outline\n\n### Chapter 1 ..."
-}
+One JSON object per line:
+
+```
+{"token":"## Document"}
+{"token":" Outline"}
+{"token":"\n\n### Chapter 1 ..."}
+{"done":true}
+```
+
+On error:
+
+```
+{"error":"Summary failed"}
 ```
 
 ---
@@ -222,7 +254,9 @@ Common HTTP status codes:
 |-------------|-------------|
 | 400 | Missing or invalid parameters |
 | 404 | Resource not found |
-| 409 | Conflict (e.g., duplicate submission) |
+| 409 | Conflict (e.g., duplicate file upload or quiz submission) |
+| 413 | File too large (exceeds 100MB limit) |
+| 502 | AI generation format error (LLM returned invalid output) |
 | 500 | Internal server error |
 
 ---

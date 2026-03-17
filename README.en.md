@@ -34,6 +34,7 @@
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Extraction** | `pdf-parse` | Text extraction |
+| **PDF to Image** | `pdf-to-img` | PDF to image (OCR preprocessing) |
 | **OCR Fallback** | `tesseract.js` | Image-based PDF fallback |
 | **Markdown Rendering** | `react-markdown` + `remark-gfm` | GFM syntax support |
 

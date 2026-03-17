@@ -52,6 +52,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Extraction** | `pdf-parse` | Text extraction |
+| **PDF to Image** | `pdf-to-img` | PDF to image (OCR preprocessing) |
 | **Markdown** | `react-markdown` + `remark-gfm` | Markdown rendering |
 | **OCR** | `tesseract.js` | Fallback for image-based PDFs |
 

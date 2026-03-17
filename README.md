@@ -34,6 +34,7 @@
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF 擷取** | `pdf-parse` | 文字擷取 |
+| **PDF 圖片** | `pdf-to-img` | PDF 轉圖片（OCR 前置） |
 | **OCR 備用** | `tesseract.js` | 圖片 PDF 備用 |
 | **Markdown 渲染** | `react-markdown` + `remark-gfm` | GFM 語法支援 |
 

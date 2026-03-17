@@ -14,20 +14,19 @@
 
 | 欄位 | 類型 | 描述 |
 |------|------|------|
-| `file` | File | PDF 或 Markdown 文件 |
+| `file` | File | PDF 或 Markdown 文件（上限 100MB） |
 
 **Response** (200):
 
 ```json
 {
+  "success": true,
   "documentId": "665f...",
-  "filename": "lecture01.pdf",
-  "chunkCount": 42,
-  "message": "Ingestion complete"
+  "chunkCount": 42
 }
 ```
 
-**Error** (400/500):
+**Error** (400/409/413/500):
 
 ```json
 {
@@ -113,6 +112,8 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 }
 ```
 
+> `count` 會限制喺 1–15 之間，預設為 5。
+
 **Response** (200):
 
 ```json
@@ -120,13 +121,16 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
   "quizId": "666a...",
   "questions": [
     {
+      "index": 0,
       "question": "Which of the following...",
-      "options": ["A", "B", "C", "D"],
-      "topic": "React Hooks"
+      "options": ["A", "B", "C", "D"]
     }
-  ]
+  ],
+  "totalQuestions": 5
 }
 ```
+
+> 注意：`correctIndex`、`topic`、`explanation` 唔會喺 client response 中出現 — 佢哋儲存喺 server 端用嚟評分。
 
 ---
 
@@ -147,14 +151,19 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 
 ```json
 {
+  "quizId": "666a...",
   "score": 4,
-  "total": 5,
+  "totalQuestions": 5,
+  "percentage": 80,
   "results": [
     {
+      "index": 0,
       "question": "Which of the following...",
-      "correct": true,
+      "options": ["A", "B", "C", "D"],
       "correctIndex": 0,
       "userAnswer": 0,
+      "isCorrect": true,
+      "topic": "React Hooks",
       "explanation": "..."
     }
   ]
@@ -165,28 +174,42 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 
 ## GET `/api/quiz/stats`
 
-取得 Quiz 統計數據。
-
-**Query Parameters**: `?documentId=665f...`（可選）
+取得 Quiz 統計數據（知識缺口分析）。
 
 **Response** (200):
 
 ```json
 {
-  "totalAttempts": 10,
-  "averageScore": 72.5,
-  "weakTopics": [
-    { "topic": "Closures", "errorRate": 0.6 },
-    { "topic": "Promises", "errorRate": 0.4 }
-  ]
+  "topics": [
+    {
+      "name": "Closures",
+      "totalQuestions": 10,
+      "correct": 4,
+      "accuracy": 40
+    },
+    {
+      "name": "Promises",
+      "totalQuestions": 8,
+      "correct": 6,
+      "accuracy": 75
+    }
+  ],
+  "overall": {
+    "totalAttempts": 5,
+    "totalQuestions": 18,
+    "totalCorrect": 10,
+    "accuracy": 56
+  }
 }
 ```
+
+> Topics 以正確率升序排列 — 最弱嘅 Topic 排喺最前面。
 
 ---
 
 ## POST `/api/summary/generate`
 
-根據指定文件生成 AI 摘要大綱。
+根據指定文件生成 AI 摘要大綱。回傳 **streaming NDJSON**。
 
 **Request Body**:
 
@@ -196,12 +219,20 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 }
 ```
 
-**Response** (200):
+**Response** (200, streaming):
 
-```json
-{
-  "summary": "## 文件大綱\n\n### 第一章 ..."
-}
+每行一個 JSON object：
+
+```
+{"token":"## 文件大綱"}
+{"token":"\n\n### 第一章 ..."}
+{"done":true}
+```
+
+錯誤時：
+
+```
+{"error":"Summary failed"}
 ```
 
 ---
@@ -222,6 +253,9 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 |--------|------|
 | 400 | 參數缺失或無效 |
 | 404 | 資源不存在 |
+| 409 | 衝突（如重複上傳文件或重複提交 Quiz） |
+| 413 | 檔案過大（超過 100MB 上限） |
+| 502 | AI 生成格式錯誤（LLM 輸出唔合格） |
 | 500 | 伺服器內部錯誤 |
 
 ---

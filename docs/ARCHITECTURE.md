@@ -95,7 +95,10 @@ revision-app/
 ```
 PDF/MD 上傳
     ↓
-pdf-parse / MD 解析 → 按頁文字
+pdf-parse（文字擷取）→ 冇文字時 → pdf-to-img + tesseract.js（OCR）
+MD → 直接解析
+    ↓
+按頁文字
     ↓
 RecursiveCharacterTextSplitter (512 chars, 100 overlap)
     ↓
