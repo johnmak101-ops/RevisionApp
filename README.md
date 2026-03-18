@@ -19,6 +19,19 @@
 
 ---
 
+## 📸 Screenshots
+
+### 💬 Chat — AI 問答複習
+![Chat Tab](docs/screenshots/screenshot-chat.png)
+
+### 📝 Quiz — 自動出題 & 即時評分
+![Quiz Tab](docs/screenshots/screenshot-quiz.png)
+
+### 📋 Summary — AI 大綱摘要
+![Summary Tab](docs/screenshots/screenshot-summary.png)
+
+---
+
 ## 🛠️ 技術棧
 
 | 層級 | 技術 | 版本 / 備註 |
