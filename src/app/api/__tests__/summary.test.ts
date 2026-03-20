@@ -81,7 +81,7 @@ describe("POST /api/summary/generate", () => {
           lean: vi.fn().mockResolvedValue([]),
         }),
       }),
-    } as ReturnType<typeof Chunk.find>);
+    } as unknown as ReturnType<typeof Chunk.find>);
 
     const { POST } = await import("@/app/api/summary/generate/route");
     const req = new NextRequest("http://localhost/api/summary/generate", {

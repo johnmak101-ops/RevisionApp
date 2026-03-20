@@ -33,9 +33,7 @@
 | **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | Free |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF Extraction** | `pdf-parse` | Text extraction |
-| **PDF to Image** | `pdf-to-img` | PDF to image (OCR preprocessing) |
-| **OCR Fallback** | `tesseract.js` | Image-based PDF fallback |
+| **PDF Parsing** | LlamaParse REST API | Multi-language, scanned PDF support |
 | **Markdown Rendering** | `react-markdown` + `remark-gfm` | GFM syntax support |
 
 ---
@@ -46,6 +44,7 @@
 |---------|------|--------|
 | MongoDB Atlas | M0 Free Cluster | 512MB storage, vector search supported |
 | OpenRouter | Free tier models | Rate limits vary by model |
+| LlamaCloud | Free tier | Daily page parsing quota |
 | Vercel | Free tier | Deployment hosting |
 
 ---
@@ -72,6 +71,7 @@ Fill in the following variables (see [`.env.example`](.env.example)):
 | `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
 | `OPENROUTER_MODEL` | Chat LLM model (default: `nvidia/nemotron-3-nano-30b-a3b:free`) |
 | `OPENROUTER_EMBED_MODEL` | Embedding model (default: `nvidia/llama-nemotron-embed-vl-1b-v2:free`) |
+| `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key (PDF parsing) |
 
 ### 3. MongoDB Atlas Vector Index
 
@@ -212,11 +212,11 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 
 1. Push to GitHub
 2. Import the project on [Vercel](https://vercel.com)
-3. Set environment variables: `MONGODB_URI`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_EMBED_MODEL`
+3. Set environment variables: `MONGODB_URI`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_EMBED_MODEL`, `LLAMA_CLOUD_API_KEY`
 4. Deploy
 
 ---
 
 Created by **John Mak** 🚀
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-20*

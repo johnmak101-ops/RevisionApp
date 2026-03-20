@@ -8,6 +8,7 @@
 | **系統 (System)** | Revision App 後端服務 |
 | **OpenRouter AI** | 外部 LLM & Embedding 服務 |
 | **MongoDB Atlas** | 雲端資料庫 + 向量搜尋引擎 |
+| **LlamaCloud** | LlamaParse REST API，負責 PDF 解析 |
 
 ---
 
@@ -18,7 +19,7 @@
 | **ID** | UC-01 |
 | **名稱** | 上傳課程文件 |
 | **Actor** | 學員 |
-| **前置條件** | App 已開啟，OpenRouter API 可用 |
+| **前置條件** | App 已開啟，OpenRouter API 可用，LlamaCloud API 可用 |
 | **觸發條件** | 學員點擊上傳按鈕並選擇文件 |
 
 **主要流程**：
@@ -27,7 +28,7 @@
 2. 系統驗證文件格式（`.pdf`, `.md`, `.markdown`）
 3. 系統驗證文件大小（≤ 100MB）及非空
 4. 系統檢查同名文件是否已存在（去重）
-5. 系統擷取文字內容（PDF → `pdf-parse`，MD → 直接解析）
+5. 系統擷取文字內容（PDF → LlamaParse REST API，MD → 直接解析）
 6. 系統將文字分割為 Chunks（512 chars，100 overlap）
 7. 系統批次呼叫 OpenRouter Embedding API（每批 20）
 8. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
@@ -41,7 +42,7 @@
 | 文件為空 | 回傳 400 錯誤，提示無效檔案 |
 | 文件過大 (>100MB) | 回傳 413 錯誤 |
 | 同名文件已存在 | 回傳 409 錯誤，提示需先刪除舊版本 |
-| PDF 擷取失敗 | 回傳 400 錯誤，提示檔案可能損壞 |
+| LlamaParse 解析失敗/逾時 | 回傳 400 錯誤，提示重試或縮小 PDF |
 | Chunks 為空 | 回傳 400 錯誤，提示無法提取文字 |
 | Embedding API 失敗 | 回傳 500 錯誤 |
 
@@ -218,4 +219,4 @@
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*

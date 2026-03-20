@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     let pages: { text: string; pageNumber: number }[];
     try {
-      pages = isPdf ? await extractPdfText(buffer) : await extractMdText(buffer);
+      pages = isPdf ? await extractPdfText(buffer, file.name) : await extractMdText(buffer);
     } catch (parseErr) {
       console.error("Parse error:", parseErr);
       return NextResponse.json(

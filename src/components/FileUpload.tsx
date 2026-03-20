@@ -1,54 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import { useUpload } from "@/context/UploadContext";
 
 /**
  * 文件上傳元件 — 支援 PDF 和 Markdown。
- * 上傳後會呼叫 `/api/ingest` 進行切分 + embedding 索引。
+ * 上傳透過 UploadContext 在背景執行，用戶可自由切換 Tab。
  */
 export function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const { startUpload, uploadState } = useUpload();
 
-  /**
-   * 處理表單提交 — 將檔案透過 FormData POST 到 `/api/ingest`。
-   *
-   * @remarks
-   * 舊版 React 的 `React.FormEvent`（無型別參數）已棄用，
-   * 請始終使用 `React.FormEvent<HTMLFormElement>`。
-   *
-   * @deprecated 舊寫法 `React.FormEvent` — 已升級為 `React.FormEvent<HTMLFormElement>`
-   */
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const isUploading = uploadState.status === "uploading";
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || isUploading) return;
 
-    setStatus("uploading");
-    setMessage("");
+    // 🔑 Fire-and-forget — does NOT block the UI
+    startUpload(file);
+    setFile(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch("/api/ingest", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      setStatus("success");
-      setMessage(`✅ ${file.name} — ${data.chunkCount} 個區塊`);
-      setFile(null);
-    } catch (err) {
-      setStatus("error");
-      setMessage(`❌ ${err instanceof Error ? err.message : "上傳失敗"}`);
-    }
+    // Reset the file input
+    const form = e.currentTarget;
+    form.reset();
   };
 
   return (
@@ -73,17 +48,16 @@ export function FileUpload() {
         {/* Upload button */}
         <button
           type="submit"
-          disabled={!file || status === "uploading"}
+          disabled={!file || isUploading}
           className="shrink-0 rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium
             text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors whitespace-nowrap"
         >
-          {status === "uploading" ? "⏳ 處理中..." : "建立索引"}
+          {isUploading ? "⏳ 上傳中..." : "建立索引"}
         </button>
 
-        {/* Status message — inline */}
-        {message && (
-          <span className={`text-sm shrink-0 ${status === "error" ? "text-red-600" : "text-green-600"}`}>
-            {message}
+        {isUploading && (
+          <span className="text-xs text-indigo-500 shrink-0">
+            可以切換 Tab，上傳背景進行
           </span>
         )}
       </form>

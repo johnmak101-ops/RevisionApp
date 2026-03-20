@@ -1,6 +1,7 @@
 import { connectDB } from "./db";
 import { Chunk } from "@/models/Chunk";
 import { embedText } from "./embedding";
+import { toolLLM } from "./llm";
 
 /** MongoDB Atlas vector search index 名稱 */
 const VECTOR_INDEX = "chunk_vector_index";
@@ -8,6 +9,10 @@ const VECTOR_INDEX = "chunk_vector_index";
 const NUM_CANDIDATES = 50;
 /** 回傳的最大結果數 */
 const LIMIT = 5;
+/** Multi-query 每個子查詢的最大搜尋結果數 */
+const SUBQUERY_LIMIT = 4;
+/** Multi-query 合併後回傳的最大結果數 */
+const MULTI_QUERY_LIMIT = 8;
 
 /** 向量搜尋結果的統一格式 */
 export interface SearchResult {
@@ -120,4 +125,81 @@ export async function vectorSearch(
   }
 
   return results;
+}
+
+// ─────────────────────────────────────────────
+// Multi-Query Search
+// ─────────────────────────────────────────────
+
+/**
+ * 用 LLM 把用戶問題拆成多個搜尋角度，並行搜尋後合併去重。
+ *
+ * 比喻：現在係用 3 個唔同方式問同一個問題，
+ * 比只問一次搵到更多相關內容。
+ *
+ * @param question - 用戶原問題
+ * @returns 合併去重後，按相關度排序的最佳 chunks
+ */
+export async function multiQuerySearch(question: string): Promise<SearchResult[]> {
+  // ── Step 1: 用 LLM 生成 3 個搜尋角度 ────────
+  let subQueries: string[] = [question]; // 預設只用原問題（fallback）
+
+  try {
+    const QUERY_GEN_PROMPT = `You are a search query optimizer for a document retrieval system.
+Given a user question, generate exactly 3 alternative search queries that rephrase the question from different angles.
+
+STRICT RULES:
+- Stay strictly within the topic of the original question
+- Do NOT introduce any programming languages, frameworks, or tools NOT explicitly mentioned
+- Do NOT assume what kind of document the user has — work only from the question itself
+- Use synonyms, broader phrasing, and more specific phrasing as your 3 angles
+
+Return ONLY a JSON array of 3 strings, no explanation.
+Example input: "explain variable naming"
+Example output: ["rules for naming variables", "variable name conventions and restrictions", "what characters are allowed in variable names"]`;
+
+    const msg = await toolLLM.invoke([
+      { role: "system", content: QUERY_GEN_PROMPT },
+      { role: "user", content: question },
+    ]);
+
+    const raw = typeof msg.content === "string" ? msg.content.trim() : "";
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (match) {
+      const parsed = JSON.parse(match[0]) as unknown[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        subQueries = parsed
+          .filter((q): q is string => typeof q === "string" && q.length > 2)
+          .slice(0, 3);
+        console.info(`[MultiQuery] Generated ${subQueries.length} sub-queries:`, subQueries);
+      }
+    }
+  } catch (err) {
+    console.warn("[MultiQuery] LLM query generation failed, using original question:", err instanceof Error ? err.message : err);
+  }
+
+  // ── Step 2: 並行搜尋所有子查詢 ──────────────
+  const allResults = await Promise.all(
+    subQueries.map((q) => vectorSearch(q, SUBQUERY_LIMIT))
+  );
+
+  // ── Step 3: 合併 + 去重（content 相同 = 同一 chunk，保留最高分） ──
+  const seen = new Map<string, SearchResult>();
+  for (const results of allResults) {
+    for (const r of results) {
+      const key = r.content.slice(0, 100); // 用前 100 字作去重 key
+      const existing = seen.get(key);
+      if (!existing || (r.score ?? 0) > (existing.score ?? 0)) {
+        seen.set(key, r);
+      }
+    }
+  }
+
+  // ── Step 4: 按分數排序，取最佳 MULTI_QUERY_LIMIT 條 ──
+  const merged = [...seen.values()]
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .slice(0, MULTI_QUERY_LIMIT);
+
+  console.info(`[MultiQuery] Final merged results: ${merged.length} chunks`);
+  return merged;
 }

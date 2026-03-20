@@ -31,7 +31,7 @@ revision-app/
 │   │   ├── db.ts                      # MongoDB 連線（Singleton）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── md.ts                      # Markdown 解析
-│   │   ├── pdf.ts                     # PDF 文字擷取
+│   │   ├── pdf.ts                     # PDF 文字擷取（LlamaParse REST API）
 │   │   └── search.ts                 # 向量搜尋 + 關鍵字備援
 │   └── models/
 │       ├── Chunk.ts                   # 文本 Chunk（含 embedding）
@@ -95,7 +95,7 @@ revision-app/
 ```
 PDF/MD 上傳
     ↓
-pdf-parse（文字擷取）→ 冇文字時 → pdf-to-img + tesseract.js（OCR）
+PDF → LlamaParse REST API（上傳 → 輪詢 → 取得 Markdown）
 MD → 直接解析
     ↓
 按頁文字
@@ -159,6 +159,7 @@ KnowledgeGap 分析弱項 topic
 
 | 決策 | 理由 |
 |------|------|
+| LlamaParse 取代 pdf-parse + tesseract.js | 原生支援多語言、掃描 PDF，毋需本地 OCR 依賴 |
 | 直接 fetch OpenRouter 而非 LangChain Embeddings | OpenRouter response 格式差異，避免兼容問題 |
 | Warmup + dimension detection | 啟動時檢測向量維度，確保與 Atlas 索引匹配 |
 | Keyword fallback | 向量搜尋無結果時用 regex 備援，提高容錯 |
@@ -169,4 +170,4 @@ KnowledgeGap 分析弱項 topic
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*

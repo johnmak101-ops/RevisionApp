@@ -26,7 +26,7 @@ describe("embedding module", () => {
   beforeEach(() => {
     vi.resetModules();
     mockFetch = vi.fn();
-    global.fetch = mockFetch;
+    global.fetch = mockFetch as unknown as typeof globalThis.fetch;
     // Default: warmup call succeeds
     mockFetch.mockResolvedValueOnce({
       ok: true,

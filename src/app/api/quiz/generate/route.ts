@@ -19,24 +19,28 @@ const llm = new ChatOpenAI({
   temperature: 0.7,
 });
 
-/** LLM prompt — 要求輸出 JSON array 格式的 MCQ */
-const QUIZ_PROMPT = `You are a quiz generator for study materials. Based on the following content, generate exactly {count} multiple-choice questions.
+/** LLM prompt — 要求輸出 JSON array 格式的 MCQ，topic 必須來自文件 */
+const QUIZ_PROMPT = `You are a quiz generator. Your job is to create multiple-choice questions STRICTLY based on the document content provided below.
+
+STEP 1 — Identify topics: Before generating questions, read the content and note the real section headings or subject areas that actually appear in it (e.g. from "## Thread Basics" or "# 2.1 CPU Scheduling"). Use ONLY these as topic labels.
+
+STEP 2 — Generate exactly {count} questions following ALL rules below:
 
 RULES:
-1. Each question must test understanding, not just memorization
-2. Provide exactly 4 options (A-D) for each question
-3. Assign a short topic label (2-5 words) for each question
-4. Include a brief explanation for the correct answer
-5. Respond ONLY with valid JSON, no markdown fencing
+1. Every question, option, and explanation MUST be based solely on the provided content — NO outside knowledge.
+2. "topic" MUST be a heading or subject that literally appears in the content (max 5 words). Do NOT invent topics.
+3. Provide exactly 4 options (A–D). All distractors must be plausible but clearly wrong based on the content.
+4. Test understanding, not just memorisation.
+5. Respond ONLY with a valid JSON array — no markdown fencing, no extra text.
 
-OUTPUT FORMAT (JSON array):
+OUTPUT FORMAT:
 [
   {{
-    "question": "What is...",
+    "question": "...",
     "options": ["option A", "option B", "option C", "option D"],
     "correctIndex": 0,
-    "topic": "Short Topic Name",
-    "explanation": "Brief explanation of why the answer is correct"
+    "topic": "Exact Section Title From Content",
+    "explanation": "One sentence citing why the answer is correct, based on the content."
   }}
 ]
 

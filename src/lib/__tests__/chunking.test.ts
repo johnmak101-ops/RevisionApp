@@ -67,4 +67,40 @@ describe("chunkText", () => {
       expect(chunk.content.length).toBeLessThanOrEqual(600);
     }
   });
+
+  it("keeps a pipe table block as a single chunk", async () => {
+    const table = [
+      "| Type     | Use             | State       |",
+      "|----------|-----------------|-------------|",
+      "| Server   | Data fetching   | None        |",
+      "| Client   | Interactivity   | useState    |",
+      "| Presentational | UI display | Props only |",
+    ].join("\n");
+    const pages = [{ text: table, pageNumber: 1 }];
+    const result = await chunkText(pages);
+    // The entire table must be in exactly one chunk
+    expect(result).toHaveLength(1);
+    expect(result[0].content).toContain("| Server");
+    expect(result[0].content).toContain("| Client");
+  });
+
+  it("does not split a table row across chunks", async () => {
+    const table = [
+      "| Column A | Column B | Column C |",
+      "|----------|----------|----------|",
+      "| val1     | val2     | val3     |",
+      "| val4     | val5     | val6     |",
+      "| val7     | val8     | val9     |",
+    ].join("\n");
+    const pages = [{ text: table, pageNumber: 1 }];
+    const result = await chunkText(pages);
+    for (const chunk of result) {
+      // Every pipe line inside the chunk must be intact (not cut mid-row)
+      const pipeLines = chunk.content.split("\n").filter((l) => l.includes("|"));
+      for (const line of pipeLines) {
+        // A valid table row has at least 2 `|` characters
+        expect((line.match(/\|/g) ?? []).length).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
 });

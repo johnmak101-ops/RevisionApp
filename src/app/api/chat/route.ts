@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { vectorSearch } from "@/lib/search";
-import { ChatOpenAI } from "@langchain/openai";
+import { multiQuerySearch } from "@/lib/search";
+import { streamingLLM } from "@/lib/llm";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -16,22 +16,30 @@ import { RunnableSequence } from "@langchain/core/runnables";
 // ─────────────────────────────────────────────
 // LLM singleton（唔每次 request 重建）
 // ─────────────────────────────────────────────
-/** System prompt — 限制 AI 只能根據文件上下文作答 */
-const SYSTEM_TEMPLATE = `You are a helpful revision assistant for Bootcamp course materials. Always respond in the same language the user is writing in — if they write in English, reply in English; if they write in Traditional Chinese, reply in Traditional Chinese; and so on. Answer ONLY based on the provided context from the user's uploaded PDFs or Markdown files. Do NOT use any general knowledge or make up examples that are not present in the context. If the context is empty or does not contain enough information to answer the question, say so clearly and ask the user to upload relevant documents. Be concise and educational.
+/** System prompt — 幫助複習，基於上傳文件 */
+const SYSTEM_TEMPLATE = `You are an expert revision tutor for Bootcamp course materials.
 
-Context from documents:
+LANGUAGE RULE: Always respond in the SAME language the user writes in (English -> English, Traditional Chinese -> Traditional Chinese).
+
+YOUR JOB:
+- Explain concepts clearly using the provided document context below.
+- Synthesise and paraphrase the context - do NOT copy it verbatim.
+- Use bullet points, numbered steps, or short examples drawn FROM the context to make answers easy to understand.
+- If the context only partially covers the question, answer what you can from it, then briefly note what is missing.
+- ONLY if the context is completely empty or totally unrelated, tell the user to upload the relevant document.
+
+NEVER invent facts, code, or examples that are not supported by the context.
+
+FORMATTING RULES:
+- When writing a code block, ALWAYS put a newline immediately after the opening triple backticks.
+  Example: (backticks)java followed by newline then code then newline then closing (backticks)
+- NEVER write the language name and code on the same line as the opening backticks.
+- NEVER produce an empty code block.
+- Do NOT use words like 'THESE' as a code-block language identifier.
+
+Context from uploaded documents:
 {context}`;
 
-/** OpenRouter LLM singleton — streaming 模式 */
-const llm = new ChatOpenAI({
-  model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-nano-30b-a3b:free",
-  apiKey: process.env.OPENROUTER_API_KEY,
-  configuration: {
-    baseURL: "https://openrouter.ai/api/v1",
-  },
-  maxRetries: 2,
-  streaming: true,
-});
 
 // ─────────────────────────────────────────────
 // Prompt + Chain（module 頂層建立一次）
@@ -43,12 +51,12 @@ const promptTemplate = ChatPromptTemplate.fromMessages([
 ]);
 
 const outputParser = new StringOutputParser();
-const chain = RunnableSequence.from([promptTemplate, llm, outputParser]);
+const chain = RunnableSequence.from([promptTemplate, streamingLLM, outputParser]);
 
 /** 保留的歷史訊息上限（防止 token 過多） */
 const MAX_HISTORY_MESSAGES = 6;
-/** Vector search 最低相關分數門檻 */
-const MIN_VECTOR_SCORE = 0.4;
+/** Vector search 最低相關分數門檻（multi-query 下用 0.20 稍寬鬆） */
+const MIN_VECTOR_SCORE = 0.20;
 
 /**
  * 將前端 `{ role, content }[]` 轉換為 LangChain message 物件。
@@ -94,7 +102,7 @@ export async function POST(request: NextRequest) {
   // ── Retrieval ────────────────────────────────
   let results;
   try {
-    results = await vectorSearch(lastUser.content, 5);
+    results = await multiQuerySearch(lastUser.content);
   } catch (searchErr) {
     const errMsg = searchErr instanceof Error ? searchErr.message : "Search failed";
     console.error("[Chat] vectorSearch error:", errMsg);

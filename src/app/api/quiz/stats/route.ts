@@ -70,3 +70,24 @@ export async function GET() {
     );
   }
 }
+
+/**
+ * `DELETE /api/quiz/stats` — 清除所有答題記錄。
+ *
+ * 刪除 QuizAttempt collection 內的所有文件，重置整體表現統計。
+ *
+ * @returns `{ deleted: number }`
+ */
+export async function DELETE() {
+  try {
+    await connectDB();
+    const result = await QuizAttempt.deleteMany({});
+    return NextResponse.json({ deleted: result.deletedCount });
+  } catch (err) {
+    console.error("[Quiz] reset stats error:", err);
+    return NextResponse.json(
+      { error: "無法重置記錄" },
+      { status: 500 }
+    );
+  }
+}

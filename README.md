@@ -46,9 +46,7 @@
 | **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 免費 |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF 擷取** | `pdf-parse` | 文字擷取 |
-| **PDF 圖片** | `pdf-to-img` | PDF 轉圖片（OCR 前置） |
-| **OCR 備用** | `tesseract.js` | 圖片 PDF 備用 |
+| **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
 | **Markdown 渲染** | `react-markdown` + `remark-gfm` | GFM 語法支援 |
 
 ---
@@ -59,6 +57,7 @@
 |------|------|------|
 | MongoDB Atlas | M0 免費叢集 | 512MB 儲存，支援向量搜尋 |
 | OpenRouter | Free tier models | Rate limit 因模型不同 |
+| LlamaCloud | Free tier | 每日解析頁數限額 |
 | Vercel | Free tier | 部署託管 |
 
 ---
@@ -85,6 +84,7 @@ cp .env.example .env.local
 | `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
 | `OPENROUTER_MODEL` | Chat LLM 模型（預設 `nvidia/nemotron-3-nano-30b-a3b:free`） |
 | `OPENROUTER_EMBED_MODEL` | Embedding 模型（預設 `nvidia/llama-nemotron-embed-vl-1b-v2:free`） |
+| `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key（PDF 解析） |
 
 ### 3. MongoDB Atlas 向量索引
 
@@ -229,11 +229,11 @@ revision-app/
 
 1. 推送至 GitHub
 2. 在 [Vercel](https://vercel.com) 匯入專案
-3. 設定環境變數：`MONGODB_URI`、`OPENROUTER_API_KEY`、`OPENROUTER_MODEL`、`OPENROUTER_EMBED_MODEL`
+3. 設定環境變數：`MONGODB_URI`、`OPENROUTER_API_KEY`、`OPENROUTER_MODEL`、`OPENROUTER_EMBED_MODEL`、`LLAMA_CLOUD_API_KEY`
 4. 部署
 
 ---
 
 Created by **John Mak** 🚀
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*

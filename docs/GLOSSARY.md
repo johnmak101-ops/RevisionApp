@@ -20,9 +20,9 @@
 | **Keyword Fallback** | Keyword Fallback Search | 向量搜尋無結果時嘅備援方案，用 regex 關鍵字搜尋 |
 | **Score Filter** | Vector Score Filter | 過濾 cosine score 低於門檻 (0.4) 嘅向量搜尋結果，避免低質回答 |
 | **Context Window** | Context Window | LLM 單次可處理嘅 token 上限。本專案限制 context chars 以控制 |
-| **OCR** | Optical Character Recognition | 光學字元識別。圖片轉文字嘅技術（`tesseract.js`） |
+| **LlamaParse** | LlamaParse | LlamaIndex 提供嘅雲端 PDF 解析服務，支援多語言及掃描 PDF |
 | **Ingest** | Document Ingestion | 文件攝入流程：上傳 → 擷取 → 分割 → embedding → 存儲 |
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*

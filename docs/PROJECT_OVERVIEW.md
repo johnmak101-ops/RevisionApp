@@ -35,6 +35,11 @@
 │ Vector      │ │ Embed: nemotron-embed  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
+       │
+┌──────▼──────────────────────────────────┐
+│ LlamaCloud (LlamaParse REST API)        │
+│ PDF → Markdown（多語言 / 掃描 PDF 支援） │
+└─────────────────────────────────────────┘
 ```
 
 ## 技術棧
@@ -51,10 +56,8 @@
 | **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 直接 fetch API |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF 擷取** | `pdf-parse` | 文字擷取 |
-| **PDF 圖片** | `pdf-to-img` | PDF 轉圖片（OCR 前置） |
+| **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
 | **Markdown** | `react-markdown` + `remark-gfm` | 渲染 Markdown |
-| **OCR** | `tesseract.js` | 圖片 PDF 備用 |
 
 ## 免費方案總覽
 
@@ -62,8 +65,9 @@
 |------|------|------|
 | MongoDB Atlas | M0 免費叢集 | 512MB 儲存 |
 | OpenRouter | Free tier models | Rate limit 因模型不同 |
+| LlamaCloud | Free tier | 每日解析頁數限額 |
 | Vercel | Free tier | 部署託管 |
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*

@@ -36,5 +36,5 @@ yarn-error.log*
 # transformers cache
 .cache/
 
-# tesseract OCR data (downloaded at runtime)
+# OCR training data (if any future OCR lib uses it)
 *.traineddata

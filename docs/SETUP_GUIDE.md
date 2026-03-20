@@ -6,6 +6,7 @@
 - **npm** ≥ 9.x
 - **MongoDB Atlas** 帳號（M0 免費叢集）
 - **OpenRouter** 帳號（免費 API key）
+- **LlamaCloud** 帳號（[cloud.llamaindex.ai](https://cloud.llamaindex.ai) 免費額度）
 
 ---
 
@@ -34,14 +35,18 @@ MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/revision?retr
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
 OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free
 OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
+
+# LlamaParse PDF 解析（https://cloud.llamaindex.ai/api-key 取得）
+LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### 模型說明
+### 模型 / 服務說明
 
-| 用途 | 模型 | 備註 |
-|------|------|------|
+| 用途 | 模型/服務 | 備註 |
+|------|-----------|------|
 | **Chat LLM** | `nvidia/nemotron-3-nano-30b-a3b:free` | 30B 參數，免費 |
 | **Embedding** | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 多模態 embed，免費 |
+| **PDF 解析** | LlamaParse REST API | 支援多語言、掃描 PDF |
 
 ## 3. MongoDB Atlas 向量索引
 
@@ -105,6 +110,24 @@ npm run dev
 1. 確認 Atlas 已建立 `chunk_vector_index`
 2. 檢查 console 中 warmup 顯示嘅維度是否與索引一致
 
+### LlamaParse 解析逾時
+
+```
+LlamaParse job timed out after Xs
+```
+
+**原因**：PDF 文件過大或 LlamaCloud 服務繁忙
+**解決**：嘗試上傳較小嘅 PDF，或稍後重試
+
+### LlamaParse API key 無效
+
+```
+LlamaParse upload failed: 401
+```
+
+**原因**：`LLAMA_CLOUD_API_KEY` 未設定或已過期
+**解決**：前往 [cloud.llamaindex.ai/api-key](https://cloud.llamaindex.ai/api-key) 重新生成
+
 ### Ingest TypeError
 
 ```
@@ -120,9 +143,9 @@ TypeError: Cannot read properties of undefined (reading '0')
 
 1. 推送至 GitHub
 2. 在 [Vercel](https://vercel.com) 匯入專案
-3. 設定環境變數：`MONGODB_URI`、`OPENROUTER_API_KEY`、`OPENROUTER_MODEL`、`OPENROUTER_EMBED_MODEL`
+3. 設定環境變數：`MONGODB_URI`、`OPENROUTER_API_KEY`、`OPENROUTER_MODEL`、`OPENROUTER_EMBED_MODEL`、`LLAMA_CLOUD_API_KEY`
 4. 部署
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-20*
