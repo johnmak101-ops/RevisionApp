@@ -3,7 +3,7 @@
 | 術語 | 英文 | 定義 |
 |------|------|------|
 | **RAG** | Retrieval-Augmented Generation | 檢索增強生成。先從知識庫檢索相關內容，再注入 LLM prompt 生成回答嘅技術 |
-| **Embedding** | Embedding / Vector Embedding | 將文字轉為數值向量（如 768 維），令電腦可以計算文字間嘅語義相似度 |
+| **Embedding** | Embedding / Vector Embedding | 將文字轉為數值向量（維度於啟動時動態偵測），令電腦可以計算文字間嘅語義相似度 |
 | **Chunk** | Text Chunk | 文件分割後嘅文字片段。每個 chunk 獨立做 embedding 同儲存 |
 | **向量搜尋** | Vector Search | 用 cosine similarity 搵出同 query 語義最接近嘅 chunks |
 | **Cosine Similarity** | Cosine Similarity | 衡量兩個向量方向相似度嘅指標，1 = 完全一致，0 = 無關 |

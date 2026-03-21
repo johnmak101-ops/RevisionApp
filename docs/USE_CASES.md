@@ -63,12 +63,14 @@
 **主要流程**：
 
 1. 學員輸入問題
-2. 系統將問題轉為 embedding vector
-3. 系統對 MongoDB 執行 `$vectorSearch`（cosine，top 50 candidates → 5 results）
-4. 系統過濾 score < 0.4 嘅低相關結果
-5. 系統組合 context + 最近 6 條對話歷史
-6. 系統呼叫 OpenRouter Chat LLM（streaming）
-7. 前端逐 token 渲染回答（NDJSON streaming）
+2. 系統用 Multi-Query Search 策略搜尋相關內容：
+   - toolLLM 將問題拆成 3 個子查詢（唔同角度）
+   - 並行對每個子查詢執行 `$vectorSearch`（cosine，top 4）
+   - 合併去重，按分數排序取最佳 8 條
+3. 系統過濾 score < 0.4 嘅低相關結果
+4. 系統組合 context + 最近 10 條對話歷史
+5. 系統呼叫 OpenRouter Chat LLM（streaming）
+6. 前端逐 token 渲染回答（NDJSON streaming）
 
 **替代流程**：
 
@@ -96,7 +98,7 @@
 **主要流程**：
 
 1. 學員選擇目標文件
-2. 學員設定題目數量（3-15 題，預設 5）
+2. 學員設定題目數量（1-15 題，預設 5）
 3. 系統檢索文件嘅 Chunks（按 page + chunkIndex 排序）
 4. 系統組合 context（上限 12,000 chars）
 5. 系統呼叫 LLM 生成 MCQ（含 question、4 options、correctIndex、topic、explanation）

@@ -82,7 +82,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["用戶選擇文件"] --> B["設定題目數 (3-15)"]
+    A["用戶選擇文件"] --> B["設定題目數 (1-15)"]
     B --> C["POST /api/quiz/generate"]
     
     C --> D{"生成結果？"}
@@ -190,6 +190,7 @@ flowchart LR
     subgraph "External Services"
         OR["OpenRouter API"]
         MDB["MongoDB Atlas"]
+        LP["LlamaCloud (LlamaParse)"]
     end
     
     FU --> AI
@@ -204,6 +205,7 @@ flowchart LR
     
     AI --> OR
     AI --> MDB
+    AI --> LP
     AC --> OR
     AC --> MDB
     QG --> OR

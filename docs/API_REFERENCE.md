@@ -92,10 +92,15 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 ```
 
 **行為**：
-- 取最後一條 user message 做向量搜尋
-- 保留最近 6 條 history
+- 取最後一條 user message，用 **Multi-Query Search** 策略搜尋：
+  1. LLM 將問題拆成 3 個唔同角度嘅子查詢
+  2. 並行對每個子查詢執行 `$vectorSearch`（cosine，每個 top 4）
+  3. 合併去重（content 前 100 字作 key，保留最高分）
+  4. 按分數排序取最佳 8 條結果
+- 保留最近 10 條 history（`messages.slice(-10)`）
 - Score < 0.4 嘅結果會被過濾
 - 無相關結果時回傳提示信息
+- LLM 子查詢生成失敗時，自動 fallback 到原問題單次搜尋
 
 ---
 
@@ -204,6 +209,30 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 ```
 
 > Topics 以正確率升序排列 — 最弱嘅 Topic 排喺最前面。
+
+---
+
+## DELETE `/api/quiz/stats`
+
+刪除所有 Quiz 記錄（⚠️ 不可還原）。
+
+**Response** (200):
+
+```json
+{
+  "deleted": 5
+}
+```
+
+**Error** (500):
+
+```json
+{
+  "error": "Failed to reset quiz data"
+}
+```
+
+> ⚠️ 此端點會刪除 **所有** QuizAttempt 記錄。操作前請確認。
 
 ---
 

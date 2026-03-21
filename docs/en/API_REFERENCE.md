@@ -92,10 +92,15 @@ On error:
 ```
 
 **Behavior**:
-- Uses the last user message for vector search
-- Retains the most recent 6 history messages
+- Uses the last user message with **Multi-Query Search** strategy:
+  1. LLM generates 3 sub-queries from different perspectives
+  2. Runs parallel `$vectorSearch` (cosine, top 4 each)
+  3. Merges and deduplicates (first 100 chars as key, keeps highest score)
+  4. Returns top 8 results sorted by score
+- Retains the most recent 10 history messages (`messages.slice(-10)`)
 - Results with score < 0.4 are filtered out
 - Returns a prompt message when no relevant results found
+- Falls back to single-query search if LLM sub-query generation fails
 
 ---
 
@@ -204,6 +209,30 @@ Get quiz statistics (Knowledge Gap Analysis).
 ```
 
 > Topics are sorted by accuracy (ascending) — weakest topics appear first.
+
+---
+
+## DELETE `/api/quiz/stats`
+
+Delete all Quiz records (⚠️ irreversible).
+
+**Response** (200):
+
+```json
+{
+  "deleted": 5
+}
+```
+
+**Error** (500):
+
+```json
+{
+  "error": "Failed to reset quiz data"
+}
+```
+
+> ⚠️ This endpoint deletes **all** QuizAttempt records. Please confirm before use.
 
 ---
 

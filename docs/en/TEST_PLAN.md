@@ -178,7 +178,7 @@ Ensure all Revision App features function correctly, covering:
 | **ID** | TC-13 |
 | **Maps to** | UC-02 / US-2.1 |
 | **Steps** | Ask 4 related questions consecutively; 4th references 1st answer |
-| **Expected** | ✅ AI correctly understands context<br>✅ Most recent 6 conversation history included |
+| **Expected** | ✅ AI correctly understands context<br>✅ Most recent 10 conversation history included |
 | **Priority** | P1 |
 
 ---

@@ -59,7 +59,7 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 | Score < 0.4 results filtered out | ✅ |
 | Keyword fallback working properly | ✅ |
 | Prompt message when no results found | ✅ |
-| 6 history messages correctly injected as context | ✅ |
+| 10 history messages correctly injected as context | ✅ |
 | Answers based on document content, not general knowledge | ✅ |
 | Language automatically matches user input | ✅ |
 
@@ -67,7 +67,7 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 
 | Verification Item | Status |
 |-------------------|--------|
-| Generates 3-15 MCQ questions | ✅ |
+| Generates 1-15 MCQ questions | ✅ |
 | Each question has 4 options + topic + explanation | ✅ |
 | Invalid questions filtered out | ✅ |
 | Correct answers hidden during answering | ✅ |

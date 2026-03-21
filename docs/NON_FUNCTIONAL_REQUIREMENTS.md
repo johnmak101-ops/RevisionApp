@@ -43,9 +43,9 @@
 |----|------|--------|
 | NFR-04.1 | 文件大小上限 | 100MB |
 | NFR-04.2 | Chunk 大小 | 512 chars (overlap 100) |
-| NFR-04.3 | Quiz 題數範圍 | 3-15 |
-| NFR-04.4 | Chat 歷史長度 | 最近 6 條 |
-| NFR-04.5 | Vector 候選數 | 50 candidates → 5 results |
+| NFR-04.3 | Quiz 題數範圍 | 1-15 |
+| NFR-04.4 | Chat 歷史長度 | 最近 10 條 |
+| NFR-04.5 | Vector 候選數 | 50 candidates → 4/sub-query × 3 → top 8 (multiQuery) |
 | NFR-04.6 | Score 門檻 | ≥ 0.4 |
 | NFR-04.7 | Quiz context | 12,000 chars |
 | NFR-04.8 | Summary context | 20,000 chars |
@@ -61,7 +61,7 @@
 | NFR-05.1 | TypeScript 嚴格模式 | 全專案 strict type checking |
 | NFR-05.2 | 常數集中管理 | Chunk size、Batch size 等常數集中定義 |
 | NFR-05.3 | 模組化 | lib/ 模組職責清晰（embedding、search、chunking 分離） |
-| NFR-05.4 | Singleton pattern | DB 連線、LLM instance 避免重複建立 |
+| NFR-05.4 | Singleton pattern | DB 連線用 singleton；`lib/llm.ts` 共享 chat/tool LLM；quiz、summary 各有獨立 module-scoped LLM（不同 temperature/config） |
 
 ---
 

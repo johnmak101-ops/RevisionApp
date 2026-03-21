@@ -137,14 +137,23 @@ revision-app/
 │   ├── components/
 │   │   ├── ChatBox.tsx                # Chat Interface (Streaming)
 │   │   ├── FileUpload.tsx             # File Upload
-│   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
 │   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
+│   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
 │   │   ├── SummaryPanel.tsx           # Summary Panel
-│   │   └── TabNav.tsx                 # Tab Navigation
+│   │   ├── TabNav.tsx                 # Tab Navigation
+│   │   └── UploadToast.tsx            # Upload Notification Toast
+│   ├── context/
+│   │   └── UploadContext.tsx          # Upload State Global Context
+│   ├── hooks/
+│   │   ├── useQuiz.ts                 # Quiz Logic Hook
+│   │   ├── useStats.ts                # Statistics Data Hook
+│   │   └── useToast.ts                # Toast Notification Hook
 │   ├── lib/
+│   │   ├── __tests__/                 # Unit Tests
 │   │   ├── chunking.ts               # LangChain Text Splitting
 │   │   ├── db.ts                      # MongoDB Connection (Singleton)
 │   │   ├── embedding.ts              # OpenRouter Embedding API
+│   │   ├── llm.ts                     # LLM Client Configuration
 │   │   ├── md.ts                      # Markdown Parsing
 │   │   ├── pdf.ts                     # PDF Text Extraction
 │   │   └── search.ts                 # Vector Search + Keyword Fallback
@@ -161,7 +170,7 @@ revision-app/
 
 ## 📚 Project Documentation
 
-All documentation is available in both **Chinese** ([`docs/`](docs/)) and **English** ([`docs/en/`](docs/en/)):
+All documentation is available in both **Chinese** ([`docs/`](docs/)) and **English** ([`docs/en/`](docs/en/)), and also on [📘 Confluence Wiki](https://johnmak101.atlassian.net/wiki/spaces/REV):
 
 ### 📋 Project Planning
 
@@ -219,4 +228,4 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 
 Created by **John Mak** 🚀
 
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-21*

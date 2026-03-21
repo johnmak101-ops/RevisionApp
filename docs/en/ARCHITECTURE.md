@@ -25,14 +25,16 @@ revision-app/
 │   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
 │   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
 │   │   ├── SummaryPanel.tsx           # Summary Outline
-│   │   └── TabNav.tsx                 # Tab Navigation
+│   │   ├── TabNav.tsx                 # Tab Navigation
+│   │   └── UploadToast.tsx            # Upload Result Toast Notification
 │   ├── lib/
-│   │   ├── chunking.ts               # LangChain Text Splitting
+│   │   ├── chunking.ts               # LangChain Text Splitting (with table preservation)
 │   │   ├── db.ts                      # MongoDB Connection (Singleton)
 │   │   ├── embedding.ts              # OpenRouter Embedding API
+│   │   ├── llm.ts                     # LLM Singleton (streamingLLM + toolLLM)
 │   │   ├── md.ts                      # Markdown Parsing
 │   │   ├── pdf.ts                     # PDF Text Extraction
-│   │   └── search.ts                 # Vector Search + Keyword Fallback
+│   │   └── search.ts                 # Vector Search + Multi-Query + Keyword Fallback
 │   └── models/
 │       ├── Chunk.ts                   # Text Chunk (with embedding)
 │       ├── Document.ts              # Uploaded Document Record
@@ -112,13 +114,15 @@ MongoDB stores Document + Chunks (with embedding)
 ```
 User question
     ↓
-embedText(question) → query vector
-    ↓
-$vectorSearch (cosine, top 50 candidates → 5 results)
+Multi-Query Search (multiQuerySearch):
+  1. toolLLM generates 3 sub-queries (different perspectives)
+  2. Parallel embedText → $vectorSearch (cosine, top 4 each)
+  3. Merge and deduplicate (first 100 chars as key, keep highest score)
+  4. Sort by score, take top 8
     ↓
 Score filter (≥ 0.4) → Keyword fallback when no results
     ↓
-LangChain ChatPromptTemplate + History (most recent 6)
+LangChain ChatPromptTemplate + History (most recent 10)
     ↓
 OpenRouter ChatOpenAI streaming → ReadableStream
     ↓
@@ -151,6 +155,7 @@ KnowledgeGap analyzes weak topics
 | POST | `/api/quiz/generate` | AI generate quiz questions |
 | POST | `/api/quiz/submit` | Submit quiz answers |
 | GET | `/api/quiz/stats` | Quiz statistics |
+| DELETE | `/api/quiz/stats` | Reset all Quiz records |
 | POST | `/api/summary/generate` | AI generate document summary |
 
 ---
@@ -165,6 +170,9 @@ KnowledgeGap analyzes weak topics
 | Streaming NDJSON | Improves chat experience with token-by-token response |
 | Batch embedding (20/batch) | OpenRouter may limit batch size |
 | Score filter (≥ 0.4) | Filters low-relevance results to prevent hallucination |
+| Multi-Query Search | LLM splits question into 3 perspectives for parallel search, improving recall |
+| toolLLM (non-streaming) | Lightweight low-temperature LLM dedicated to tool calls (multi-query generation) |
+| Table-aware chunking | Auto-detects pipe tables and preserves them as single chunks |
 | MongoDB singleton | Prevents duplicate connections in Next.js dev mode |
 
 ---

@@ -20,7 +20,7 @@
 | **Keyword Fallback** | Keyword Fallback Search | A backup mechanism using regex keyword search when vector search returns no results |
 | **Score Filter** | Vector Score Filter | Filters vector search results with cosine score below threshold (0.4) to avoid low-quality answers |
 | **Context Window** | Context Window | Maximum token limit an LLM can process in a single request. This project limits context characters accordingly |
-| **OCR** | Optical Character Recognition | Technology for converting images to text (`tesseract.js`) |
+| **LlamaParse** | LlamaParse | Cloud PDF parsing service by LlamaIndex, supporting multilingual and scanned PDFs |
 | **Ingest** | Document Ingestion | Document ingestion pipeline: upload → extract → split → embed → store |
 
 ---

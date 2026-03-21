@@ -54,9 +54,9 @@ const outputParser = new StringOutputParser();
 const chain = RunnableSequence.from([promptTemplate, streamingLLM, outputParser]);
 
 /** 保留的歷史訊息上限（防止 token 過多） */
-const MAX_HISTORY_MESSAGES = 6;
-/** Vector search 最低相關分數門檻（multi-query 下用 0.20 稍寬鬆） */
-const MIN_VECTOR_SCORE = 0.20;
+const MAX_HISTORY_MESSAGES = 10;
+/** Vector search 最低相關分數門檻 */
+const MIN_VECTOR_SCORE = 0.40;
 
 /**
  * 將前端 `{ role, content }[]` 轉換為 LangChain message 物件。

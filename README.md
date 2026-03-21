@@ -154,14 +154,23 @@ revision-app/
 │   ├── components/
 │   │   ├── ChatBox.tsx                # 聊天界面（streaming）
 │   │   ├── FileUpload.tsx             # 文件上傳
-│   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
 │   │   ├── KnowledgeGap.tsx           # 知識缺口分析
+│   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
 │   │   ├── SummaryPanel.tsx           # 大綱摘要
-│   │   └── TabNav.tsx                 # Tab 導航
+│   │   ├── TabNav.tsx                 # Tab 導航
+│   │   └── UploadToast.tsx            # 上傳通知 Toast
+│   ├── context/
+│   │   └── UploadContext.tsx          # 上傳狀態全域 Context
+│   ├── hooks/
+│   │   ├── useQuiz.ts                 # Quiz 邏輯 Hook
+│   │   ├── useStats.ts                # 統計數據 Hook
+│   │   └── useToast.ts                # Toast 通知 Hook
 │   ├── lib/
+│   │   ├── __tests__/                 # 單元測試
 │   │   ├── chunking.ts               # LangChain 文本分割
 │   │   ├── db.ts                      # MongoDB 連線（Singleton）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
+│   │   ├── llm.ts                     # LLM Client 配置
 │   │   ├── md.ts                      # Markdown 解析
 │   │   ├── pdf.ts                     # PDF 文字擷取
 │   │   └── search.ts                 # 向量搜尋 + 關鍵字備援
@@ -178,7 +187,7 @@ revision-app/
 
 ## 📚 項目文檔
 
-所有文檔存放喺 [`docs/`](docs/) 目錄，可直接喺 GitHub 上瀏覽：
+所有文檔存放喺 [`docs/`](docs/) 目錄（中文）同 [`docs/en/`](docs/en/) 目錄（英文），亦可喺 [📘 Confluence Wiki](https://johnmak101.atlassian.net/wiki/spaces/REV) 上瀏覽。
 
 ### 📋 項目規劃
 
@@ -236,4 +245,4 @@ revision-app/
 
 Created by **John Mak** 🚀
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-21*

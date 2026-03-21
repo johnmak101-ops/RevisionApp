@@ -8,6 +8,7 @@
 | **System** | Revision App backend services |
 | **OpenRouter AI** | External LLM & Embedding services |
 | **MongoDB Atlas** | Cloud database + vector search engine |
+| **LlamaCloud** | LlamaParse REST API — PDF text extraction service (multilingual, scanned PDF support) |
 
 ---
 
@@ -18,7 +19,7 @@
 | **ID** | UC-01 |
 | **Name** | Upload Course Document |
 | **Actor** | Student |
-| **Precondition** | App is running, OpenRouter API is available |
+| **Precondition** | App is running, OpenRouter API is available, LlamaCloud API is available |
 | **Trigger** | Student clicks upload button and selects a file |
 
 **Main Flow**:
@@ -27,7 +28,7 @@
 2. System validates file format (`.pdf`, `.md`, `.markdown`)
 3. System validates file size (≤ 100MB) and non-empty
 4. System checks for duplicate filenames
-5. System extracts text content (PDF → `pdf-parse`, MD → direct parsing)
+5. System extracts text content (PDF → LlamaParse Cloud API, MD → direct parsing)
 6. System splits text into Chunks (512 chars, 100 overlap)
 7. System batch-calls OpenRouter Embedding API (20 per batch)
 8. System saves `Document` and `Chunk` records to MongoDB
@@ -62,12 +63,14 @@
 **Main Flow**:
 
 1. Student enters a question
-2. System converts the question to an embedding vector
-3. System runs `$vectorSearch` on MongoDB (cosine, top 50 candidates → 5 results)
-4. System filters out results with score < 0.4
-5. System combines context + last 6 conversation messages
-6. System calls OpenRouter Chat LLM (streaming)
-7. Frontend renders response token by token (NDJSON streaming)
+2. System uses Multi-Query Search strategy to find relevant content:
+   - toolLLM generates 3 sub-queries (different perspectives)
+   - Runs parallel `$vectorSearch` (cosine, top 4 each)
+   - Merges and deduplicates, sorts by score, takes top 8
+3. System filters out results with score < 0.4
+4. System combines context + last 10 conversation messages
+5. System calls OpenRouter Chat LLM (streaming)
+6. Frontend renders response token by token (NDJSON streaming)
 
 **Alternative Flows**:
 
@@ -95,7 +98,7 @@
 **Main Flow**:
 
 1. Student selects target document
-2. Student sets question count (3-15, default 5)
+2. Student sets question count (1-15, default 5)
 3. System retrieves document Chunks (sorted by page + chunkIndex)
 4. System assembles context (max 12,000 chars)
 5. System calls LLM to generate MCQs (question, 4 options, correctIndex, topic, explanation)

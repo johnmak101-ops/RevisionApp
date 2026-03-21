@@ -50,7 +50,7 @@
 - [ ] Answers based only on uploaded document content, not general knowledge
 - [ ] Response language matches user input language
 - [ ] Streaming token-by-token display
-- [ ] Retains last 6 conversation messages as context
+- [ ] Retains last 10 conversation messages as context
 
 ### US-2.2 Search Fault Tolerance
 
@@ -74,7 +74,7 @@
 
 **Acceptance Criteria**:
 - [ ] Can select target document
-- [ ] Can set question count (3-15)
+- [ ] Can set question count (1-15)
 - [ ] Each question has 4 options
 - [ ] Each question tagged with topic and explanation
 - [ ] Questions test comprehension, not rote memorization

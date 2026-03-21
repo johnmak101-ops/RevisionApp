@@ -43,7 +43,7 @@
 | US-2.1 Chat Review | Only answers based on uploaded documents | TC-10 | ✅ |
 | | Response language matches input | TC-10 | ✅ |
 | | Streaming token-by-token display | TC-10, TC-NF-02 | ✅ |
-| | Retains most recent 6 conversation history | TC-13 | ✅ |
+| | Retains most recent 10 conversation history | TC-13 | ✅ |
 | US-2.2 Search Tolerance | Keyword fallback on vector search failure | TC-11 | ✅ |
 | | Clear prompt when no relevant results | TC-11 | ✅ |
 
@@ -52,7 +52,7 @@
 | User Story | Acceptance Criteria | Test Case | Coverage |
 |-----------|-------------------|-----------|----------|
 | US-3.1 Auto Generation | Can select target document | TC-14 | ✅ |
-| | Question count 3-15 | TC-16 | ✅ |
+| | Question count 1-15 | TC-16 | ✅ |
 | | Each question has 4 options | TC-14 | ✅ |
 | | Each question tagged with topic + explanation | TC-14 | ✅ |
 | | Tests comprehension | TC-14 *(manual check)* | ⚠️ |

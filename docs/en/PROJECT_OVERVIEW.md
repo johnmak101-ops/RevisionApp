@@ -35,6 +35,12 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 │ Vector      │ │ Embed: nemotron-embed  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
+       │
+┌──────▼──────────────────────────────────┐
+│ LlamaCloud (LlamaParse REST API)        │
+│ PDF → Markdown (multilingual / scanned  │
+│ PDF support)                            │
+└─────────────────────────────────────────┘
 ```
 
 ## Tech Stack
@@ -51,10 +57,8 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | Direct fetch API |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF Extraction** | `pdf-parse` | Text extraction |
-| **PDF to Image** | `pdf-to-img` | PDF to image (OCR preprocessing) |
+| **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support |
 | **Markdown** | `react-markdown` + `remark-gfm` | Markdown rendering |
-| **OCR** | `tesseract.js` | Fallback for image-based PDFs |
 
 ## Free Tier Summary
 
@@ -62,6 +66,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 |---------|------|--------|
 | MongoDB Atlas | M0 Free Cluster | 512MB storage |
 | OpenRouter | Free tier models | Rate limits vary by model |
+| LlamaCloud | Free tier | Daily page parsing quota |
 | Vercel | Free tier | Deployment hosting |
 
 ---

@@ -43,9 +43,9 @@
 |----|-------------|-------|
 | NFR-04.1 | File size limit | 100MB |
 | NFR-04.2 | Chunk size | 512 chars (overlap 100) |
-| NFR-04.3 | Quiz question range | 3-15 |
-| NFR-04.4 | Chat history length | Most recent 6 messages |
-| NFR-04.5 | Vector candidates | 50 candidates → 5 results |
+| NFR-04.3 | Quiz question range | 1-15 |
+| NFR-04.4 | Chat history length | Most recent 10 messages |
+| NFR-04.5 | Vector candidates | 50 candidates → 4/sub-query × 3 → top 8 (multiQuery) |
 | NFR-04.6 | Score threshold | ≥ 0.4 |
 | NFR-04.7 | Quiz context | 12,000 chars |
 | NFR-04.8 | Summary context | 20,000 chars |
@@ -61,7 +61,7 @@
 | NFR-05.1 | TypeScript strict mode | Project-wide strict type checking |
 | NFR-05.2 | Centralized constants | Chunk size, batch size, etc. defined centrally |
 | NFR-05.3 | Modular design | `lib/` modules have clear responsibilities (embedding, search, chunking separated) |
-| NFR-05.4 | Singleton pattern | DB connections and LLM instances avoid duplicate creation |
+| NFR-05.4 | Singleton pattern | DB connections use singleton; `lib/llm.ts` shares chat/tool LLM; quiz and summary have own module-scoped LLM (different temperature/config) |
 
 ---
 
