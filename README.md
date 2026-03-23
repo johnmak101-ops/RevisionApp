@@ -3,7 +3,7 @@
 # 📚 Bootcamp 複習 App
 
 > AI 驅動嘅 Bootcamp 教材複習平台 — 支援 PDF/Markdown 上傳、RAG 聊天、自動出題、知識缺口分析同大綱生成。  
-> 全部使用免費方案運行。
+> 使用 OpenRouter 付費模型，配合免費 MongoDB Atlas 及 Vercel 運行。
 
 ---
 
@@ -42,21 +42,21 @@
 | **Styling** | Tailwind CSS | 3.4 |
 | **Database** | MongoDB Atlas | M0 免費叢集（512MB） |
 | **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` | 免費 |
-| **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 免費 |
+| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | 付費（低成本） |
+| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | 付費（低成本） |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
-| **Markdown 渲染** | `react-markdown` + `remark-gfm` | GFM 語法支援 |
+| **Markdown 渲染** | `markdown-it` + highlight.js + DOMPurify | 語法高亮、XSS 防護 |
 
 ---
 
-## 💸 免費方案
+## 💰 服務方案
 
-| 服務 | 方案 | 限制 |
+| 服務 | 方案 | 備註 |
 |------|------|------|
 | MongoDB Atlas | M0 免費叢集 | 512MB 儲存，支援向量搜尋 |
-| OpenRouter | Free tier models | Rate limit 因模型不同 |
+| OpenRouter | 付費模型 | `gemini-2.5-flash-lite`（Chat）、`qwen3-embedding-8b`（Embedding） |
 | LlamaCloud | Free tier | 每日解析頁數限額 |
 | Vercel | Free tier | 部署託管 |
 
@@ -82,8 +82,8 @@ cp .env.example .env.local
 |------|------|
 | `MONGODB_URI` | MongoDB Atlas 連線字串 |
 | `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
-| `OPENROUTER_MODEL` | Chat LLM 模型（預設 `nvidia/nemotron-3-nano-30b-a3b:free`） |
-| `OPENROUTER_EMBED_MODEL` | Embedding 模型（預設 `nvidia/llama-nemotron-embed-vl-1b-v2:free`） |
+| `OPENROUTER_MODEL` | Chat LLM 模型（預設 `google/gemini-2.5-flash-lite`） |
+| `OPENROUTER_EMBED_MODEL` | Embedding 模型（預設 `qwen/qwen3-embedding-8b`） |
 | `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key（PDF 解析） |
 
 ### 3. MongoDB Atlas 向量索引
@@ -245,4 +245,4 @@ revision-app/
 
 Created by **John Mak** 🚀
 
-*更新日期：2026-03-21*
+*更新日期：2026-03-23*

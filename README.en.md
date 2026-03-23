@@ -3,7 +3,7 @@
 # 📚 Bootcamp Revision App
 
 > An AI-powered Bootcamp study material revision platform — supports PDF/Markdown upload, RAG chat, auto quiz generation, knowledge gap analysis, and summary generation.  
-> Runs entirely on free-tier services.
+> Powered by OpenRouter paid models with free MongoDB Atlas and Vercel hosting.
 
 ---
 
@@ -29,21 +29,21 @@
 | **Styling** | Tailwind CSS | 3.4 |
 | **Database** | MongoDB Atlas | M0 Free Cluster (512MB) |
 | **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` | Free |
-| **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | Free |
+| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Paid (low-cost) |
+| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | Paid (low-cost) |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Parsing** | LlamaParse REST API | Multi-language, scanned PDF support |
-| **Markdown Rendering** | `react-markdown` + `remark-gfm` | GFM syntax support |
+| **Markdown Rendering** | `markdown-it` + highlight.js + DOMPurify | Syntax highlighting, XSS protection |
 
 ---
 
-## 💸 Free Tier Plan
+## 💰 Service Plans
 
-| Service | Plan | Limits |
-|---------|------|--------|
+| Service | Plan | Notes |
+|---------|------|-------|
 | MongoDB Atlas | M0 Free Cluster | 512MB storage, vector search supported |
-| OpenRouter | Free tier models | Rate limits vary by model |
+| OpenRouter | Paid models | `gemini-2.5-flash-lite` (Chat), `qwen3-embedding-8b` (Embedding) |
 | LlamaCloud | Free tier | Daily page parsing quota |
 | Vercel | Free tier | Deployment hosting |
 
@@ -69,8 +69,8 @@ Fill in the following variables (see [`.env.example`](.env.example)):
 |----------|-------------|
 | `MONGODB_URI` | MongoDB Atlas connection string |
 | `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
-| `OPENROUTER_MODEL` | Chat LLM model (default: `nvidia/nemotron-3-nano-30b-a3b:free`) |
-| `OPENROUTER_EMBED_MODEL` | Embedding model (default: `nvidia/llama-nemotron-embed-vl-1b-v2:free`) |
+| `OPENROUTER_MODEL` | Chat LLM model (default: `google/gemini-2.5-flash-lite`) |
+| `OPENROUTER_EMBED_MODEL` | Embedding model (default: `qwen/qwen3-embedding-8b`) |
 | `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key (PDF parsing) |
 
 ### 3. MongoDB Atlas Vector Index
@@ -228,4 +228,4 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 
 Created by **John Mak** 🚀
 
-*Last updated: 2026-03-21*
+*Last updated: 2026-03-23*

@@ -11,7 +11,7 @@ import { ChatOpenAI } from "@langchain/openai";
 
 /** OpenRouter LLM singleton（streaming 模式，用於 chat route 回應） */
 export const streamingLLM = new ChatOpenAI({
-  model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-nano-30b-a3b:free",
+  model: process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash-lite",
   apiKey: process.env.OPENROUTER_API_KEY,
   configuration: {
     baseURL: "https://openrouter.ai/api/v1",
@@ -25,7 +25,7 @@ export const streamingLLM = new ChatOpenAI({
  * 溫度設低（0.2）確保輸出穩定，max_tokens 設小節省費用。
  */
 export const toolLLM = new ChatOpenAI({
-  model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-nano-30b-a3b:free",
+  model: process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash-lite",
   apiKey: process.env.OPENROUTER_API_KEY,
   configuration: {
     baseURL: "https://openrouter.ai/api/v1",

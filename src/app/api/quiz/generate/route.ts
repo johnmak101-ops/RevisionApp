@@ -12,7 +12,7 @@ import { ChatOpenAI } from "@langchain/openai";
 
 /** OpenRouter LLM — temperature 0.7 增加題目多樣性 */
 const llm = new ChatOpenAI({
-  model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-nano-30b-a3b:free",
+  model: process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash-lite",
   apiKey: process.env.OPENROUTER_API_KEY,
   configuration: { baseURL: "https://openrouter.ai/api/v1" },
   maxRetries: 2,
