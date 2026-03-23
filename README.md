@@ -155,6 +155,8 @@ revision-app/
 │   │   ├── ChatBox.tsx                # 聊天界面（streaming）
 │   │   ├── FileUpload.tsx             # 文件上傳
 │   │   ├── KnowledgeGap.tsx           # 知識缺口分析
+│   │   ├── MarkdownRenderer.tsx       # Markdown 渲染（語法高亮）
+│   │   ├── MarkdownRendererDynamic.tsx # 動態載入 Markdown 渲染
 │   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
 │   │   ├── SummaryPanel.tsx           # 大綱摘要
 │   │   ├── TabNav.tsx                 # Tab 導航
@@ -246,3 +248,4 @@ revision-app/
 Created by **John Mak** 🚀
 
 *更新日期：2026-03-23*
+

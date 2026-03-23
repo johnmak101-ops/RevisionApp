@@ -138,6 +138,8 @@ revision-app/
 │   │   ├── ChatBox.tsx                # Chat Interface (Streaming)
 │   │   ├── FileUpload.tsx             # File Upload
 │   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
+│   │   ├── MarkdownRenderer.tsx       # Markdown Rendering (Syntax Highlighting)
+│   │   ├── MarkdownRendererDynamic.tsx # Dynamic Markdown Renderer Loader
 │   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
 │   │   ├── SummaryPanel.tsx           # Summary Panel
 │   │   ├── TabNav.tsx                 # Tab Navigation
