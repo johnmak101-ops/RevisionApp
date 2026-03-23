@@ -15,6 +15,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | 📝 Quiz Generator | AI auto-generates MCQ questions from documents | Quiz Tab |
 | 🎯 Knowledge Gap | Analyze quiz error rates to identify weak topics | Quiz Tab sidebar |
 | 📋 Summary | AI generates document outline summaries | Summary Tab |
+| 🛡️ Security | Prompt injection detection, rate limiting, input validation | All AI API endpoints |
 
 ## Architecture
 
@@ -59,6 +60,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support |
 | **Markdown** | `react-markdown` + `remark-gfm` | Markdown rendering |
+| **Security** | `@andersmyrmel/vard` | Prompt injection detection + sanitization |
 
 ## Free Tier Summary
 
@@ -71,4 +73,4 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-23*

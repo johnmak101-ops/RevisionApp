@@ -22,6 +22,10 @@
 | **Context Window** | Context Window | Maximum token limit an LLM can process in a single request. This project limits context characters accordingly |
 | **LlamaParse** | LlamaParse | Cloud PDF parsing service by LlamaIndex, supporting multilingual and scanned PDFs |
 | **Ingest** | Document Ingestion | Document ingestion pipeline: upload → extract → split → embed → store |
+| **Prompt Injection** | Prompt Injection Attack | An attack where users craft special input to bypass or override the LLM's system instructions |
+| **Vard** | Vard Prompt Guard | Open-source prompt injection detection library (`@andersmyrmel/vard`) supporting pattern matching, category blocking, and text sanitization |
+| **Rate Limiting** | Rate Limiting | Limiting the number of requests per IP within a specified time window to prevent API resource abuse |
+| **ChatPromptTemplate** | LangChain Chat Prompt Template | LangChain's prompt template system that explicitly separates system and user roles, preventing users from injecting system-level instructions |
 
 
 ---

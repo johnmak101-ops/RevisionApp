@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { multiQuerySearch } from "@/lib/search";
 import { streamingLLM } from "@/lib/llm";
+import { guardUserMessage } from "@/lib/promptGuard";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimiter";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { HumanMessage, AIMessage, AIMessageChunk, SystemMessage } from "@langchain/core/messages";
 
@@ -204,6 +206,22 @@ function textMessageResponse(text: string) {
  * 流程：取最新用戶訊息 → vectorSearch → 組合 context → LLM chain → stream via AI SDK。
  */
 export async function POST(request: NextRequest) {
+  // ── Rate Limiting ─────────────────────────────
+  const clientIp = getClientIp(request);
+  const rateCheck = checkRateLimit(`${clientIp}:chat`, RATE_LIMITS.chat);
+  if (!rateCheck.allowed) {
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil((rateCheck.retryAfterMs ?? 60000) / 1000)),
+        },
+      }
+    );
+  }
+
   const { messages } = (await request.json()) as {
     messages: UIMessage[];
   };
@@ -225,10 +243,17 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // ── Prompt Injection Guard ──────────────────────
+  const guard = guardUserMessage(lastUserText);
+  if (!guard.safe) {
+    return textMessageResponse(`⚠️ ${guard.reason}`);
+  }
+  const safeUserText = guard.sanitizedText!;
+
   // ── Retrieval ────────────────────────────────
   let results;
   try {
-    results = await multiQuerySearch(lastUserText);
+    results = await multiQuerySearch(safeUserText);
   } catch (searchErr) {
     const errMsg = searchErr instanceof Error ? searchErr.message : "Search failed";
     console.error("[Chat] vectorSearch error:", errMsg);
@@ -254,7 +279,7 @@ export async function POST(request: NextRequest) {
   const chainInput = {
     context,
     history,
-    question: lastUserText,
+    question: safeUserText,
   };
 
   // ── Stream via AI SDK ───────────────────────

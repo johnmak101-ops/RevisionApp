@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Chunk } from "@/models/Chunk";
 import { ChatOpenAI } from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { guardDocumentId } from "@/lib/promptGuard";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimiter";
 
 /**
  * @module summary/generate/route
@@ -10,7 +13,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
  * Streaming 大綱生成 API — 將文件 chunks 餵入 LLM 產生結構化 Markdown 大綱。
  */
 
-/** OpenRouter LLM singleton — streaming 模式 */
+/** OpenRouter LLM（route-local instance，streaming 模式） */
 const llm = new ChatOpenAI({
   model: process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash-lite",
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -21,8 +24,9 @@ const llm = new ChatOpenAI({
 
 const outputParser = new StringOutputParser();
 
-/** LLM prompt — 要求以 Markdown 格式生成多層大綱 */
-const SUMMARY_PROMPT = `You are an expert at creating structured study outlines. Based on the following course material, create a multi-level summary in Markdown format.
+/** LLM prompt — ChatPromptTemplate 做 system/user role 分離 */
+const summaryPromptTemplate = ChatPromptTemplate.fromMessages([
+  ["system", `You are an expert at creating structured study outlines. Create a multi-level summary in Markdown format.
 
 RULES:
 1. Use the same language as the source material
@@ -30,10 +34,9 @@ RULES:
 3. Use ## for chapters, ### for sections, - for key points
 4. Be concise but cover all important concepts
 5. Include important definitions, formulas, and examples
-6. Add 🔑 emoji before the most critical points
-
-CONTENT:
-{context}`;
+6. Add 🔑 emoji before the most critical points`],
+  ["human", "Create a structured study outline from this course material:\n\n{context}"],
+]);
 
 /**
  * `POST /api/summary/generate` — Streaming 生成文件大綱。
@@ -43,11 +46,28 @@ CONTENT:
  */
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate Limiting ─────────────────────────────
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`${clientIp}:summary`, RATE_LIMITS.summary);
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.ceil((rateCheck.retryAfterMs ?? 60000) / 1000)),
+          },
+        }
+      );
+    }
+
     const body = (await request.json()) as { documentId?: string };
 
-    if (!body.documentId) {
+    // ── Input Validation ─────────────────────────
+    if (!body.documentId || !guardDocumentId(body.documentId)) {
       return new Response(
-        JSON.stringify({ error: "請指定文件 documentId" }),
+        JSON.stringify({ error: "請提供有效嘅文件 documentId" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -74,8 +94,6 @@ export async function POST(request: NextRequest) {
       context += `[Page ${chunk.page}]\n${chunk.content}\n\n`;
     }
 
-    const prompt = SUMMARY_PROMPT.replace("{context}", context);
-
     // Streaming response
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -85,7 +103,9 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-          const langStream = await llm.pipe(outputParser).stream(prompt);
+          // 用 ChatPromptTemplate 生成 formatted messages
+          const formattedPrompt = await summaryPromptTemplate.formatMessages({ context });
+          const langStream = await llm.pipe(outputParser).stream(formattedPrompt);
           for await (const chunk of langStream) {
             sendChunk(chunk);
           }

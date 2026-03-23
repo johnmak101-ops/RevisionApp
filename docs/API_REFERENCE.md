@@ -58,38 +58,54 @@
 
 ## POST `/api/chat`
 
-RAG 聊天端點。以 streaming NDJSON 回傳。
+RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStreamResponse` + `toUIMessageStream`）。
 
 **Content-Type**: `application/json`
 
 **Request Body**:
 
+前端使用 Vercel AI SDK 嘅 `useChat` hook，自動以 `UIMessage[]` 格式傳送：
+
 ```json
 {
   "messages": [
-    { "role": "user", "content": "What is React hooks?" },
-    { "role": "assistant", "content": "React hooks are..." },
-    { "role": "user", "content": "Can you give more examples?" }
+    {
+      "id": "msg-1",
+      "role": "user",
+      "parts": [{ "type": "text", "text": "What is React hooks?" }]
+    },
+    {
+      "id": "msg-2",
+      "role": "assistant",
+      "parts": [{ "type": "text", "text": "React hooks are..." }]
+    },
+    {
+      "id": "msg-3",
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Can you give more examples?" }]
+    }
   ]
 }
 ```
 
+> 每條 message 嘅 `parts` 陣列可包含 `text`、`tool-call` 等類型。後端只提取 `type: "text"` 嘅內容。
+
 **Response** (200, streaming):
 
-每行一個 JSON object：
+使用 Vercel AI SDK 嘅 UI Message Stream 協議（非 NDJSON）。前端 `useChat` hook 自動解析，無需手動處理。
 
-```
-{"token":"React"}
-{"token":" hooks"}
-{"token":" are ..."}
-{"done":true}
-```
+**錯誤處理**：
 
-錯誤時：
+| 情況 | HTTP 狀態碼 | 回傳格式 |
+|------|------------|---------|
+| 缺少 messages | 400 | `{"error": "Messages required"}` |
+| 冇找到 user message | 400 | `{"error": "Last user message required"}` |
+| 超出 Rate Limit | 429 | `{"error": "Too many requests..."}` |
+| Prompt injection 偵測 | 200 | Streaming text：`⚠️ Your message was flagged...` |
+| 搜尋系統出錯 | 200 | Streaming text：`⚠️ 搜尋系統暫時出錯...` |
+| 無相關結果 | 200 | Streaming text：`⚠️ 冇搵到相關文件內容...` |
 
-```
-{"error":"Chat failed"}
-```
+> ⚠️ Prompt guard / search 錯誤以 `textMessageResponse()` 回傳 200 streaming text（令前端 `useChat` 顯示為 AI 訊息），而非 JSON error。
 
 **行為**：
 - 取最後一條 user message，用 **Multi-Query Search** 策略搜尋：
@@ -99,8 +115,12 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
   4. 按分數排序取最佳 8 條結果
 - 保留最近 10 條 history（`messages.slice(-10)`）
 - Score < 0.4 嘅結果會被過濾
-- 無相關結果時回傳提示信息
+- 無相關結果時回傳提示信息（streaming text）
 - LLM 子查詢生成失敗時，自動 fallback 到原問題單次搜尋
+
+**安全防護**：
+- Vard prompt injection 偵測（instruction override / role manipulation / system prompt leak）
+- Rate limit：20 req/min per IP
 
 ---
 
@@ -118,6 +138,11 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 ```
 
 > `count` 會限制喺 1–15 之間，預設為 5。
+
+**安全防護**：
+- `documentId` 必須為有效 24 字元 hex ObjectId
+- ChatPromptTemplate system/user role 分離
+- Rate limit：10 req/min per IP
 
 **Response** (200):
 
@@ -228,7 +253,7 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 
 ```json
 {
-  "error": "Failed to reset quiz data"
+  "error": "無法重置記錄"
 }
 ```
 
@@ -264,6 +289,11 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 {"error":"Summary failed"}
 ```
 
+**安全防護**：
+- `documentId` 必須為有效 24 字元 hex ObjectId
+- ChatPromptTemplate system/user role 分離
+- Rate limit：10 req/min per IP
+
 ---
 
 ## 通用錯誤格式
@@ -284,9 +314,10 @@ RAG 聊天端點。以 streaming NDJSON 回傳。
 | 404 | 資源不存在 |
 | 409 | 衝突（如重複上傳文件或重複提交 Quiz） |
 | 413 | 檔案過大（超過 100MB 上限） |
+| 429 | 請求過於頻繁（超過 Rate Limit） |
 | 502 | AI 生成格式錯誤（LLM 輸出唔合格） |
 | 500 | 伺服器內部錯誤 |
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-23*

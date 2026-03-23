@@ -3,7 +3,8 @@ import { ChatOpenAI } from "@langchain/openai";
 /**
  * @module lib/llm
  *
- * 共享 LLM singleton — 整個 app 只建立一次，避免每次 request 都重新初始化。
+ * 共享 LLM singleton — chat route 同 search module 共用，避免每次 request 都重新初始化。
+ * （quiz / summary routes 因 config 不同，各自建立獨立嘅 ChatOpenAI instance。）
  *
  * 使用 OpenRouter 作為 OpenAI-compatible gateway，
  * 透過環境變數切換模型，方便測試不同 provider。

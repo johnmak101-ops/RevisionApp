@@ -3,6 +3,9 @@ import { connectDB } from "@/lib/db";
 import { Chunk } from "@/models/Chunk";
 import { QuizAttempt } from "@/models/QuizAttempt";
 import { ChatOpenAI } from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { guardDocumentId } from "@/lib/promptGuard";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimiter";
 
 /**
  * @module quiz/generate/route
@@ -19,12 +22,9 @@ const llm = new ChatOpenAI({
   temperature: 0.7,
 });
 
-/** LLM prompt — 要求輸出 JSON array 格式的 MCQ，topic 必須來自文件 */
-const QUIZ_PROMPT = `You are a quiz generator. Your job is to create multiple-choice questions STRICTLY based on the document content provided below.
-
-STEP 1 — Identify topics: Before generating questions, read the content and note the real section headings or subject areas that actually appear in it (e.g. from "## Thread Basics" or "# 2.1 CPU Scheduling"). Use ONLY these as topic labels.
-
-STEP 2 — Generate exactly {count} questions following ALL rules below:
+/** LLM prompt — ChatPromptTemplate 做 system/user role 分離 */
+const quizPromptTemplate = ChatPromptTemplate.fromMessages([
+  ["system", `You are a quiz generator. Your job is to create multiple-choice questions STRICTLY based on the document content provided by the user.
 
 RULES:
 1. Every question, option, and explanation MUST be based solely on the provided content — NO outside knowledge.
@@ -34,18 +34,15 @@ RULES:
 5. Respond ONLY with a valid JSON array — no markdown fencing, no extra text.
 
 OUTPUT FORMAT:
-[
-  {{
-    "question": "...",
-    "options": ["option A", "option B", "option C", "option D"],
-    "correctIndex": 0,
-    "topic": "Exact Section Title From Content",
-    "explanation": "One sentence citing why the answer is correct, based on the content."
-  }}
-]
-
-CONTENT:
-{context}`;
+[{{
+  "question": "...",
+  "options": ["option A", "option B", "option C", "option D"],
+  "correctIndex": 0,
+  "topic": "Exact Section Title From Content",
+  "explanation": "One sentence citing why the answer is correct, based on the content."
+}}]`],
+  ["human", "Generate exactly {count} questions from this content:\n\n{context}"],
+]);
 
 /**
  * `POST /api/quiz/generate` — 為指定文件生成 MCQ quiz。
@@ -55,14 +52,30 @@ CONTENT:
  */
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate Limiting ─────────────────────────────
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`${clientIp}:quiz`, RATE_LIMITS.quiz);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateCheck.retryAfterMs ?? 60000) / 1000)),
+          },
+        }
+      );
+    }
+
     const body = (await request.json()) as {
       documentId?: string;
       count?: number;
     };
 
-    if (!body.documentId) {
+    // ── Input Validation ─────────────────────────
+    if (!body.documentId || !guardDocumentId(body.documentId)) {
       return NextResponse.json(
-        { error: "請指定文件 documentId" },
+        { error: "請提供有效嘅文件 documentId" },
         { status: 400 }
       );
     }
@@ -92,12 +105,13 @@ export async function POST(request: NextRequest) {
       context += `[Page ${chunk.page}]\n${chunk.content}\n\n`;
     }
 
-    // LLM 生成 quiz
-    const prompt = QUIZ_PROMPT
-      .replace("{count}", String(count))
-      .replace("{context}", context);
+    // LLM 生成 quiz（用 ChatPromptTemplate 做 role 分離）
+    const formattedPrompt = await quizPromptTemplate.formatMessages({
+      count: String(count),
+      context,
+    });
 
-    const response = await llm.invoke(prompt);
+    const response = await llm.invoke(formattedPrompt);
     const raw = typeof response.content === "string"
       ? response.content
       : JSON.stringify(response.content);

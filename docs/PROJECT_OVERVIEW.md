@@ -15,6 +15,7 @@
 | 📝 Quiz 出題 | AI 自動根據文件生成多選題 | Quiz Tab |
 | 🎯 知識缺口 | 分析 Quiz 錯誤率，識別弱項 Topic | Quiz Tab 側欄 |
 | 📋 Summary | AI 生成文件大綱摘要 | Summary Tab |
+| 🛡️ 安全防護 | Prompt injection 偵測、rate limiting、輸入驗證 | 所有 AI API 端點 |
 
 ## 技術架構
 
@@ -58,6 +59,7 @@
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
 | **Markdown** | `react-markdown` + `remark-gfm` | 渲染 Markdown |
+| **安全** | `@andersmyrmel/vard` | Prompt injection 偵測 + 清洗 |
 
 ## 免費方案總覽
 
@@ -70,4 +72,4 @@
 
 ---
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-23*

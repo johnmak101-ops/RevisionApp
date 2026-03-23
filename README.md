@@ -132,6 +132,30 @@ npm run dev
 
 ---
 
+## 🛡️ 安全防護
+
+### Prompt Injection 防護
+
+所有 AI API 端點都用 [Vard](https://github.com/AndersMyhrWorworworworworworworworworworworworwormyrmel/vard) 做 prompt injection detection：
+
+| 防護層 | 描述 |
+|--------|------|
+| **Vard Guard** | 偵測 instruction override、role manipulation、system prompt leak |
+| **Custom Patterns** | 額外攔截 DAN jailbreak、prompt leak 變體 |
+| **Input Sanitization** | 清理 delimiter injection、encoding 攻擊 |
+| **ChatPromptTemplate** | Quiz/Summary 用 system/user role 分離，防止 context injection |
+| **DocumentId 驗證** | 只接受有效 MongoDB ObjectId 格式 |
+
+### Rate Limiting
+
+| 端點 | 上限 |
+|------|------|
+| `/api/chat` | 20 req/min per IP |
+| `/api/quiz/generate` | 10 req/min per IP |
+| `/api/summary/generate` | 10 req/min per IP |
+
+---
+
 ## 🏗️ 專案結構
 
 ```
@@ -175,6 +199,8 @@ revision-app/
 │   │   ├── llm.ts                     # LLM Client 配置
 │   │   ├── md.ts                      # Markdown 解析
 │   │   ├── pdf.ts                     # PDF 文字擷取
+│   │   ├── promptGuard.ts            # Prompt Injection 防護（Vard）
+│   │   ├── rateLimiter.ts            # In-memory Rate Limiter
 │   │   └── search.ts                 # 向量搜尋 + 關鍵字備援
 │   └── models/
 │       ├── Chunk.ts                   # 文本 Chunk（含 embedding）

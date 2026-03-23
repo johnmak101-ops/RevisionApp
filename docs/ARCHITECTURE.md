@@ -36,6 +36,8 @@ revision-app/
 │   │   ├── llm.ts                     # LLM Singleton（streamingLLM + toolLLM）
 │   │   ├── md.ts                      # Markdown 解析
 │   │   ├── pdf.ts                     # PDF 文字擷取（LlamaParse REST API）
+│   │   ├── promptGuard.ts            # Prompt Injection 防護（Vard）
+│   │   ├── rateLimiter.ts            # In-memory IP Rate Limiter
 │   │   └── search.ts                 # 向量搜尋 + Multi-Query + 關鍵字備援
 │   └── models/
 │       ├── Chunk.ts                   # 文本 Chunk（含 embedding）
@@ -153,6 +155,80 @@ KnowledgeGap 分析弱項 topic
 
 ---
 
+## 安全防護
+
+### Prompt Injection 防護
+
+唔同端點有唔同嘅防護策略，取決於用戶輸入類型：
+
+**Ingest（檔案上傳）：**
+
+```
+檔案上傳
+    ↓
+格式驗證（.pdf / .md / .markdown）→ 400
+    ↓
+空檔案檢查 → 400
+    ↓
+大小上限（100MB）→ 413
+    ↓
+同名去重 → 409
+    ↓
+Chunk Injection 掃描（guardChunkContent）→ strip 可疑 chunks
+    ↓
+全部 flagged → 422 / 部分 flagged → 繼續 + warning
+    ↓
+Embedding → 存儲
+```
+
+> ⚠️ `/api/ingest` 目前冇 rate limiting，大量上傳可能消耗 LlamaParse / Embedding API quota。
+
+**Chat（有 free-text 用戶輸入）：**
+
+```
+請求進入
+    ↓
+Rate Limit 檢查 → 超限回傳 429
+    ↓
+Vard Guard 偵測 → 注入攻擊回傳警告
+    ↓
+已清洗文字 → LLM
+```
+
+**Quiz / Summary（只有 documentId 輸入）：**
+
+```
+請求進入
+    ↓
+Rate Limit 檢查 → 超限回傳 429
+    ↓
+DocumentId 格式驗證（24 字元 hex ObjectId）
+    ↓
+ChatPromptTemplate role 分離 → LLM
+```
+
+| 防護層 | 適用端點 | 描述 |
+|--------|----------|------|
+| **檔案格式驗證** | Ingest | 只接受 .pdf / .md / .markdown |
+| **大小上限 (100MB)** | Ingest | 超限回傳 413 |
+| **同名去重** | Ingest | 重複檔名回傳 409 |
+| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容（indirect prompt injection 防護） |
+| **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
+| **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
+| **Input Sanitization** | Chat | 清理 delimiter injection、encoding 攻擊 |
+| **ChatPromptTemplate** | Quiz, Summary | system/user role 分離，防止 context injection |
+| **DocumentId 驗證** | Quiz, Summary | 只接受有效 24 字元 hex MongoDB ObjectId |
+
+### Rate Limiting
+
+| 端點 | 上限 |
+|------|------|
+| `/api/chat` | 20 req/min per IP |
+| `/api/quiz/generate` | 10 req/min per IP |
+| `/api/summary/generate` | 10 req/min per IP |
+
+---
+
 ## API 端點
 
 | 方法 | 路徑 | 描述 |
@@ -185,6 +261,10 @@ KnowledgeGap 分析弱項 topic
 | Header-aware chunking | 按 Markdown headers 分段，每 chunk 帶 header context prefix（例："Java > Data Types"），提升 embedding 語義準確度 |
 | MongoDB singleton | 避免 Next.js dev 模式重複連線 |
 | System prompt 強制 fenced code | 明確要求含 = ; {} 嘅 code 必須用 fenced code block |
+| Vard prompt guard | 用 `@andersmyrmel/vard` 偵測 + 阻擋 prompt injection（instruction override、role manipulation、system prompt leak） |
+| In-memory rate limiter | 滑動窗口 rate limiting，無需 Redis，適合 Vercel serverless 部署 |
+| ChatPromptTemplate role 分離 | Quiz/Summary 改用 LangChain ChatPromptTemplate 將 system 指令同 user context 分開，防止用戶注入系統角色 |
+| Chunk Content Guard (Ingest) | 上傳時用 Vard 掃描每個 chunk，strip 含 indirect injection pattern 嘅內容，防止惡意文件污染 RAG context |
 
 ---
 

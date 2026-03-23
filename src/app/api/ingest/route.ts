@@ -6,6 +6,7 @@ import { extractPdfText } from "@/lib/pdf";
 import { extractMdText } from "@/lib/md";
 import { chunkText } from "@/lib/chunking";
 import { embedTexts } from "@/lib/embedding";
+import { guardChunkContent } from "@/lib/promptGuard";
 
 /** 可接受的 PDF MIME types */
 const PDF_TYPES = ["application/pdf", "application/x-pdf"];
@@ -71,9 +72,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const textChunks = await chunkText(pages);
+    const rawChunks = await chunkText(pages);
 
-    if (textChunks.length === 0) {
+    if (rawChunks.length === 0) {
       return NextResponse.json(
         {
           error: isPdf
@@ -81,6 +82,19 @@ export async function POST(request: NextRequest) {
             : "無法從檔案中提取文字內容",
         },
         { status: 400 }
+      );
+    }
+
+    // ── Indirect prompt injection 掃描 ──
+    const { flagged, flaggedCount } = guardChunkContent(rawChunks);
+    const textChunks = flaggedCount > 0
+      ? rawChunks.filter((_, i) => !flagged.has(i))
+      : rawChunks;
+
+    if (textChunks.length === 0) {
+      return NextResponse.json(
+        { error: "所有內容被安全系統標記為可疑，無法處理此檔案" },
+        { status: 422 }
       );
     }
 
@@ -117,6 +131,10 @@ export async function POST(request: NextRequest) {
       success: true,
       documentId: doc._id.toString(),
       chunkCount: chunks.length,
+      ...(flaggedCount > 0 && {
+        warning: `${flaggedCount} 個內容片段被安全系統標記並移除`,
+        flaggedChunks: flaggedCount,
+      }),
     });
   } catch (err) {
     console.error("Ingest error:", err);
