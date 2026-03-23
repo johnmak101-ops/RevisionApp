@@ -7,15 +7,10 @@ const CHUNK_SIZE = 512;
 const CHUNK_OVERLAP = 100;
 /** 短於此長度的 chunk 會被丟棄（避免噪音） */
 const MIN_CHUNK_LENGTH = 20;
-/**
- * 一個 block 被視為 table 所需的最少 pipe (`|`) 行數比例。
- * 超過此比例的行以 `|` 開頭或包含 `|`，即視為 table block。
- */
-const TABLE_PIPE_RATIO = 0.5;
 
 /** 從文件頁面切分出來的單一文字區塊 */
 export interface TextChunk {
-  /** 區塊文字內容 */
+  /** 區塊文字內容（已含 header context prefix） */
   content: string;
   /** 來源頁碼（1-based） */
   page: number;
@@ -24,39 +19,112 @@ export interface TextChunk {
 }
 
 /** LangChain splitter — 按語義邊界（段落 → 句號 → 空格）遞迴分割 */
-const splitter = new RecursiveCharacterTextSplitter({
+const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: CHUNK_SIZE,
   chunkOverlap: CHUNK_OVERLAP,
   separators: ["\n\n", "\n", ". ", "! ", "? ", ", ", " ", ""],
 });
 
-/**
- * 判斷一個文字 block 是否為 table。
- *
- * 判斷邏輯（heuristic）：
- * - 至少 2 行
- * - 超過 TABLE_PIPE_RATIO 比例的行包含 `|` 字元
- *
- * 可識別：
- * - Markdown pipe tables（`| col | col |`）
- * - ASCII divider tables（`+---+---+`）
- * - 簡單 column-separated lines
- */
-function isTableBlock(block: string): boolean {
-  const lines = block.split("\n").filter((l) => l.trim().length > 0);
-  if (lines.length < 2) return false;
+// ─── Markdown Header 分段 ────────────────────────
+// 仿 LangChain MarkdownHeaderTextSplitter：
+// 按 #/##/### headers 分段，每段帶 header hierarchy metadata
 
-  const pipeLines = lines.filter((l) => l.includes("|")).length;
-  return pipeLines / lines.length >= TABLE_PIPE_RATIO;
+interface HeaderSection {
+  /** 該段落的文字內容（不含 header 行本身） */
+  content: string;
+  /** header 層級 breadcrumb，例 { h1: "Java", h2: "Data Types" } */
+  headers: Record<string, string>;
+}
+
+const HEADER_REGEX = /^(#{1,3})\s+(.+)$/;
+
+/**
+ * 按 Markdown headers 分段，追蹤 header hierarchy。
+ *
+ * 例如：
+ * ```
+ * # Java Data Types
+ * ## Primitive Types
+ * some content here
+ * ```
+ * 會產生 { content: "some content here", headers: { h1: "Java Data Types", h2: "Primitive Types" } }
+ */
+function splitByHeaders(text: string): HeaderSection[] {
+  const lines = text.split("\n");
+  const sections: HeaderSection[] = [];
+
+  // 追蹤當前 header hierarchy
+  const currentHeaders: Record<string, string> = {};
+  let currentLines: string[] = [];
+
+  for (const line of lines) {
+    const match = line.match(HEADER_REGEX);
+    if (match) {
+      // 遇到新 header → 先 flush 之前累積的內容
+      if (currentLines.length > 0) {
+        const content = currentLines.join("\n").trim();
+        if (content.length >= MIN_CHUNK_LENGTH) {
+          sections.push({ content, headers: { ...currentHeaders } });
+        }
+        currentLines = [];
+      }
+
+      // 更新 header hierarchy
+      const level = match[1].length; // 1 = h1, 2 = h2, 3 = h3
+      const headerText = match[2].trim();
+      currentHeaders[`h${level}`] = headerText;
+
+      // 清除更低層級的 headers（例如遇到新 h2 就清除 h3）
+      for (let i = level + 1; i <= 3; i++) {
+        delete currentHeaders[`h${i}`];
+      }
+    } else {
+      currentLines.push(line);
+    }
+  }
+
+  // Flush 最後一段
+  if (currentLines.length > 0) {
+    const content = currentLines.join("\n").trim();
+    if (content.length >= MIN_CHUNK_LENGTH) {
+      sections.push({ content, headers: { ...currentHeaders } });
+    }
+  }
+
+  // 如果整份文件冇 headers，就將全文作為一個 section
+  if (sections.length === 0 && text.trim().length >= MIN_CHUNK_LENGTH) {
+    sections.push({ content: text.trim(), headers: {} });
+  }
+
+  return sections;
+}
+
+/**
+ * 從 header hierarchy 建構 context prefix。
+ *
+ * 例：headers = { h1: "Java Data Types", h2: "Primitive Types" }
+ * → "Java Data Types > Primitive Types\n\n"
+ *
+ * 呢個 prefix prepend 到每個 chunk 之前，令 embedding 模型
+ * 理解到呢個 chunk 屬於邊個 section。
+ */
+function buildHeaderPrefix(headers: Record<string, string>): string {
+  const parts: string[] = [];
+  if (headers.h1) parts.push(headers.h1);
+  if (headers.h2) parts.push(headers.h2);
+  if (headers.h3) parts.push(headers.h3);
+  if (parts.length === 0) return "";
+  return parts.join(" > ") + "\n\n";
 }
 
 /**
  * 將多頁文字切分成適合 embedding 的小區塊。
  *
  * 流程：
- * 1. 每頁文字按雙換行切成多個 block。
- * 2. Table block → 直接作為一個 chunk 保留（不分拆）。
- * 3. 非 table block → 交給 RecursiveCharacterTextSplitter 正常切分。
+ * 1. 每頁文字先用 splitByHeaders 按 markdown headers 分段。
+ * 2. 每段帶 header metadata（h1 / h2 / h3 breadcrumb）。
+ * 3. RecursiveCharacterTextSplitter 對過長段落做 sub-split。
+ * 4. 每個 chunk 前加 header context prefix（例 "Java Data Types > Primitive Types"）。
  *
  * @param pages - 從 PDF / Markdown 提取的頁面陣列
  * @returns 過濾過短內容後的 {@link TextChunk} 陣列
@@ -67,32 +135,22 @@ export async function chunkText(
   const allChunks: TextChunk[] = [];
 
   for (const page of pages) {
-    // 分成 block（以雙換行為段落邊界）
-    const blocks = page.text
-      .split(/\n{2,}/)
-      .map((b) => b.trim())
-      .filter((b) => b.length >= MIN_CHUNK_LENGTH);
+    // Step 1: 按 markdown headers 分段
+    const sections = splitByHeaders(page.text);
 
-    for (const block of blocks) {
-      if (isTableBlock(block)) {
-        // Table block：整個保留，唔分拆
-        allChunks.push({
-          content: block,
-          page: page.pageNumber,
-          chunkIndex: allChunks.length,
-        });
-      } else {
-        // 非 table：正常 recursive split
-        const docs = await splitter.createDocuments([block]);
-        for (const doc of docs) {
-          const trimmed = doc.pageContent.trim();
-          if (trimmed.length >= MIN_CHUNK_LENGTH) {
-            allChunks.push({
-              content: trimmed,
-              page: page.pageNumber,
-              chunkIndex: allChunks.length,
-            });
-          }
+    // Step 2: 每段 sub-split + prepend header context
+    for (const section of sections) {
+      const headerPrefix = buildHeaderPrefix(section.headers);
+      const subDocs = await textSplitter.createDocuments([section.content]);
+
+      for (const subDoc of subDocs) {
+        const trimmed = subDoc.pageContent.trim();
+        if (trimmed.length >= MIN_CHUNK_LENGTH) {
+          allChunks.push({
+            content: headerPrefix + trimmed,
+            page: page.pageNumber,
+            chunkIndex: allChunks.length,
+          });
         }
       }
     }

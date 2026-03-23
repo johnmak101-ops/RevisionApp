@@ -33,8 +33,8 @@ MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/revision?retr
 
 # OpenRouter API（https://openrouter.ai/keys 取得）
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
-OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free
-OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
+OPENROUTER_MODEL=google/gemini-2.5-flash-lite
+OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
 
 # LlamaParse PDF 解析（https://cloud.llamaindex.ai/api-key 取得）
 LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
@@ -44,8 +44,8 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
 
 | 用途 | 模型/服務 | 備註 |
 |------|-----------|------|
-| **Chat LLM** | `nvidia/nemotron-3-nano-30b-a3b:free` | 30B 參數，免費 |
-| **Embedding** | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 多模態 embed，免費 |
+| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Embedding** | `qwen/qwen3-embedding-8b` | Qwen3 8B embedding，4096 維 |
 | **PDF 解析** | LlamaParse REST API | 支援多語言、掃描 PDF |
 
 ## 3. MongoDB Atlas 向量索引
@@ -63,7 +63,7 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 2048,
+        "numDimensions": 4096,
         "similarity": "cosine"
       }
     ]
@@ -71,7 +71,7 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
 }
 ```
 
-> ⚠️ `numDimensions` 需與 embedding 模型輸出維度一致。`nvidia/llama-nemotron-embed-vl-1b-v2:free` 啟動時會 warmup 偵測維度，console 會顯示實際維度。
+> ⚠️ `numDimensions` 需與 embedding 模型輸出維度一致。`qwen/qwen3-embedding-8b` 輸出 4096 維。啟動時 warmup 會偵測維度，console 會顯示實際維度。
 
 4. 資料庫名稱：`revision`，Collection：`chunks`
 

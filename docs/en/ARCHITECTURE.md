@@ -26,14 +26,16 @@ revision-app/
 │   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
 │   │   ├── SummaryPanel.tsx           # Summary Outline
 │   │   ├── TabNav.tsx                 # Tab Navigation
+│   │   ├── MarkdownRenderer.tsx       # Markdown Renderer (markdown-it + highlight.js + DOMPurify)
+│   │   ├── MarkdownRendererDynamic.tsx # Dynamic import wrapper (next/dynamic)
 │   │   └── UploadToast.tsx            # Upload Result Toast Notification
 │   ├── lib/
-│   │   ├── chunking.ts               # LangChain Text Splitting (with table preservation)
+│   │   ├── chunking.ts               # Header-aware Text Splitting (with header context prefix)
 │   │   ├── db.ts                      # MongoDB Connection (Singleton)
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton (streamingLLM + toolLLM)
 │   │   ├── md.ts                      # Markdown Parsing
-│   │   ├── pdf.ts                     # PDF Text Extraction
+│   │   ├── pdf.ts                     # PDF Text Extraction (LlamaParse REST API)
 │   │   └── search.ts                 # Vector Search + Multi-Query + Keyword Fallback
 │   └── models/
 │       ├── Chunk.ts                   # Text Chunk (with embedding)
@@ -97,12 +99,16 @@ revision-app/
 ```
 PDF/MD Upload
     ↓
-pdf-parse (text extraction) → if no text found → pdf-to-img + tesseract.js (OCR)
+PDF → LlamaParse REST API (cloud extraction, multilingual + scanned PDF support)
 MD → direct parsing
     ↓
 Per-page text
     ↓
-RecursiveCharacterTextSplitter (512 chars, 100 overlap)
+Header-aware splitting (splitByHeaders: split by #/##/###, track header hierarchy)
+    ↓
+RecursiveCharacterTextSplitter sub-split (512 chars, 100 overlap)
+    ↓
+Prepend header context prefix per chunk (e.g. "Java > Data Types")
     ↓
 OpenRouter Embedding API (batch 20)
     ↓
@@ -124,9 +130,11 @@ Score filter (≥ 0.4) → Keyword fallback when no results
     ↓
 LangChain ChatPromptTemplate + History (most recent 10)
     ↓
-OpenRouter ChatOpenAI streaming → ReadableStream
+LangChain RunnableSequence.stream()
     ↓
-Frontend NDJSON streaming rendering
+Vercel AI SDK: toUIMessageStream → createUIMessageStreamResponse
+    ↓
+Frontend useChat (@ai-sdk/react) auto-receives + markdown-it rendering
 ```
 
 ### 3. Quiz Generation Flow
@@ -151,7 +159,7 @@ KnowledgeGap analyzes weak topics
 |--------|------|-------------|
 | POST | `/api/ingest` | Upload PDF/MD file |
 | GET | `/api/documents` | Get uploaded document list |
-| POST | `/api/chat` | RAG chat (streaming NDJSON) |
+| POST | `/api/chat` | RAG chat (Vercel AI SDK streaming) |
 | POST | `/api/quiz/generate` | AI generate quiz questions |
 | POST | `/api/quiz/submit` | Submit quiz answers |
 | GET | `/api/quiz/stats` | Quiz statistics |
@@ -164,17 +172,20 @@ KnowledgeGap analyzes weak topics
 
 | Decision | Rationale |
 |----------|-----------|
+| LlamaParse replaces pdf-parse + tesseract.js | Cloud API handles complex layouts, multilingual text, and scanned PDFs without local OCR |
 | Direct fetch to OpenRouter instead of LangChain Embeddings | Avoids compatibility issues with OpenRouter response format differences |
 | Warmup + dimension detection | Detects vector dimensions at startup, ensures match with Atlas index |
 | Keyword fallback | Uses regex backup when vector search returns no results, improves fault tolerance |
-| Streaming NDJSON | Improves chat experience with token-by-token response |
+| Vercel AI SDK streaming (Chat) | Uses `createUIMessageStreamResponse` + `toUIMessageStream` for Chat streaming; frontend uses `useChat` to auto-receive |
+| Streaming NDJSON (Summary) | Summary uses NDJSON for token-by-token response, improving experience |
 | Batch embedding (20/batch) | OpenRouter may limit batch size |
 | Score filter (≥ 0.4) | Filters low-relevance results to prevent hallucination |
 | Multi-Query Search | LLM splits question into 3 perspectives for parallel search, improving recall |
 | toolLLM (non-streaming) | Lightweight low-temperature LLM dedicated to tool calls (multi-query generation) |
-| Table-aware chunking | Auto-detects pipe tables and preserves them as single chunks |
+| Header-aware chunking | Splits by Markdown headers, prepends header context prefix per chunk (e.g. "Java > Data Types") for improved embedding accuracy |
 | MongoDB singleton | Prevents duplicate connections in Next.js dev mode |
+| System prompt enforces fenced code | Explicitly requires code with = ; {} to use fenced code blocks |
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-23*

@@ -32,16 +32,16 @@ MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/revision?retr
 
 # OpenRouter API (get your key at https://openrouter.ai/keys)
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
-OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free
-OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
+OPENROUTER_MODEL=google/gemini-2.5-flash-lite
+OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
 ```
 
 ### Model Reference
 
 | Purpose | Model | Notes |
 |---------|-------|-------|
-| **Chat LLM** | `nvidia/nemotron-3-nano-30b-a3b:free` | 30B parameters, free |
-| **Embedding** | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | Multimodal embedding, free |
+| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Embedding** | `qwen/qwen3-embedding-8b` | Qwen3 8B embedding, 4096 dims |
 
 ## 3. MongoDB Atlas Vector Index
 
@@ -58,7 +58,7 @@ OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 2048,
+        "numDimensions": 4096,
         "similarity": "cosine"
       }
     ]
@@ -66,7 +66,7 @@ OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free
 }
 ```
 
-> ⚠️ `numDimensions` must match the embedding model's output dimensions. The `nvidia/llama-nemotron-embed-vl-1b-v2:free` model detects dimensions during warmup at startup — check the console for the actual dimension value.
+> ⚠️ `numDimensions` must match the embedding model's output dimensions. `qwen/qwen3-embedding-8b` outputs 4096 dims. The system detects dimensions during warmup at startup — check the console for the actual dimension value.
 
 4. Database name: `revision`, Collection: `chunks`
 

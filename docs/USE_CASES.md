@@ -8,7 +8,7 @@
 | **系統 (System)** | Revision App 後端服務 |
 | **OpenRouter AI** | 外部 LLM & Embedding 服務 |
 | **MongoDB Atlas** | 雲端資料庫 + 向量搜尋引擎 |
-| **LlamaCloud** | LlamaParse REST API，負責 PDF 解析 |
+| **LlamaCloud** | LlamaParse REST API，負責 PDF 解析（支援多語言及掃描 PDF） |
 
 ---
 
@@ -29,7 +29,7 @@
 3. 系統驗證文件大小（≤ 100MB）及非空
 4. 系統檢查同名文件是否已存在（去重）
 5. 系統擷取文字內容（PDF → LlamaParse REST API，MD → 直接解析）
-6. 系統將文字分割為 Chunks（512 chars，100 overlap）
+6. 系統按 Markdown headers 分段，再 sub-split 為 Chunks（512 chars，100 overlap），每 chunk 帶 header context prefix
 7. 系統批次呼叫 OpenRouter Embedding API（每批 20）
 8. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
 9. 系統回傳成功信息（含 `documentId`、`chunkCount`）
@@ -70,7 +70,8 @@
 3. 系統過濾 score < 0.4 嘅低相關結果
 4. 系統組合 context + 最近 10 條對話歷史
 5. 系統呼叫 OpenRouter Chat LLM（streaming）
-6. 前端逐 token 渲染回答（NDJSON streaming）
+6. 系統用 Vercel AI SDK（`createUIMessageStreamResponse` + `toUIMessageStream`）streaming 回傳
+7. 前端用 `useChat`（@ai-sdk/react）自動接收，透過 markdown-it 渲染回答
 
 **替代流程**：
 
@@ -221,4 +222,4 @@
 
 ---
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-23*

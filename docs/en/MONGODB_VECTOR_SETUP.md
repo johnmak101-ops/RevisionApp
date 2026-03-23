@@ -65,7 +65,7 @@ The revision-app `Chunk` collection requires a vector index to use `$vectorSearc
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 2048,
+      "numDimensions": 4096,
       "similarity": "cosine"
     }
   ]
@@ -94,7 +94,7 @@ db.chunks.createSearchIndex({
       {
         type: "vector",
         path: "embedding",
-        numDimensions: 2048,
+        numDimensions: 4096,
         similarity: "cosine"
       }
     ]

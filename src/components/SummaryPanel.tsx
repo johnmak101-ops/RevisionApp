@@ -1,23 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownRenderer from "@/components/MarkdownRendererDynamic";
 
-/** 已上傳文件的摘要資訊（來自 `/api/documents`） */
 interface Doc {
-  /** MongoDB ObjectId */
   _id: string;
-  /** 原始檔名 */
   filename: string;
-  /** 切分後的 chunk 數量 */
   chunkCount: number;
 }
 
-/**
- * 摘要面板 — 選擇已上傳文件，由 AI 生成多層結構大綱。
- * 使用 streaming（NDJSON）即時顯示生成進度。
- */
 export function SummaryPanel() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [selectedDoc, setSelectedDoc] = useState("");
@@ -35,7 +26,6 @@ export function SummaryPanel() {
       .catch(() => setDocs([]));
   }, []);
 
-  /** 呼叫 `/api/summary/generate` 開始 streaming 生成大綱 */
   const handleGenerate = async () => {
     if (!selectedDoc) return;
     setLoading(true);
@@ -52,9 +42,7 @@ export function SummaryPanel() {
 
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(
-          (data as { error?: string }).error || "生成失敗"
-        );
+        throw new Error((data as { error?: string }).error || "生成失敗");
       }
 
       const reader = res.body.getReader();
@@ -99,26 +87,21 @@ export function SummaryPanel() {
     }
   };
 
-  /** 將大綱文字複製到剪貼簿 */
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(summary);
     } catch {
-      // Fallback: select all in a textarea
+      // clipboard fallback
     }
   };
 
   return (
     <div className="flex flex-col rounded-lg border border-slate-200 bg-white shadow-sm h-full">
-      {/* Header */}
       <div className="border-b border-slate-200 px-5 py-3 shrink-0">
         <h3 className="font-semibold text-slate-800">📑 Summary Agent</h3>
-        <p className="text-xs text-slate-500">
-          選文件，AI 自動生成多層結構大綱
-        </p>
+        <p className="text-xs text-slate-500">選文件，AI 自動生成多層結構大綱</p>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0 h-[70vh]">
         {error && (
           <div className="rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
@@ -126,18 +109,13 @@ export function SummaryPanel() {
           </div>
         )}
 
-        {/* Doc selector */}
         {docs.length === 0 && !summary ? (
-          <p className="text-sm text-slate-500">
-            未有上傳文件。請先上傳 PDF 或 Markdown。
-          </p>
+          <p className="text-sm text-slate-500">未有上傳文件。請先上傳 PDF 或 Markdown。</p>
         ) : (
           !summary && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  選擇文件
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">選擇文件</label>
                 <select
                   value={selectedDoc}
                   onChange={(e) => setSelectedDoc(e.target.value)}
@@ -163,21 +141,10 @@ export function SummaryPanel() {
           )
         )}
 
-        {/* Streaming / completed summary */}
         {summary && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-            <div className="prose prose-sm prose-slate max-w-none
-              [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h2]:mb-2 [&_h2]:border-b [&_h2]:border-slate-200 [&_h2]:pb-1
-              [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-slate-800 [&_h3]:mt-3 [&_h3]:mb-1
-              [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
-              [&_li]:text-sm [&_li]:text-slate-700
-              [&_p]:text-sm [&_p]:text-slate-700 [&_p]:my-1.5
-              [&_strong]:text-slate-900
-              [&_code]:bg-slate-100 [&_code]:text-indigo-700 [&_code]:text-xs [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded
-            ">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {summary}
-              </ReactMarkdown>
+            <div>
+              <MarkdownRenderer content={summary} />
               {streaming && (
                 <span className="inline-block h-3 w-1.5 animate-pulse bg-indigo-400 align-middle ml-0.5" />
               )}
@@ -186,7 +153,6 @@ export function SummaryPanel() {
         )}
       </div>
 
-      {/* Bottom bar */}
       {summary && !streaming && (
         <div className="border-t border-slate-200 p-4 shrink-0 flex gap-2">
           <button

@@ -33,8 +33,8 @@
 | Runtime | Node.js 18+ |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (含 Vector Search Index) |
-| LLM | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` |
-| Embedding | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` |
+| LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
+| Embedding | OpenRouter → `qwen/qwen3-embedding-8b` |
 | Browser | Chrome 120+ / Firefox 120+ |
 
 ---
@@ -179,6 +179,17 @@
 | **對應** | UC-02 / US-2.1 |
 | **步驟** | 連續問 4 個相關問題，第 4 題引用第 1 題嘅答案 |
 | **預期結果** | ✅ AI 能正確理解上下文<br>✅ 最近 10 條對話歷史被帶入 |
+| **優先級** | P1 |
+
+### TC-13B：RAG 聊天 — 代碼塊渲染
+
+| 項目 | 內容 |
+|------|------|
+| **ID** | TC-13B |
+| **對應** | UC-02 / REV-3 |
+| **前置條件** | 已上傳含代碼內容嘅 PDF（如 Java 筆記） |
+| **步驟** | 1. 切換至 Chat tab<br>2. 問與代碼相關嘅問題（例：「char 同 String 有什麼分別？」）<br>3. 檢查回答中嘅代碼片段 |
+| **預期結果** | ✅ 代碼顯示在 fenced code block 內（有背景色、語法高亮）<br>✅ 唔會 inline 顯示如 `char x = '2';`<br>✅ 代碼塊有複製按鈕 |
 | **優先級** | P1 |
 
 ---
@@ -341,4 +352,4 @@
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-21*

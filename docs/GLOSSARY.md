@@ -8,10 +8,10 @@
 | **向量搜尋** | Vector Search | 用 cosine similarity 搵出同 query 語義最接近嘅 chunks |
 | **Cosine Similarity** | Cosine Similarity | 衡量兩個向量方向相似度嘅指標，1 = 完全一致，0 = 無關 |
 | **Streaming** | Streaming Response | 逐 token 回傳 LLM 回應，唔等完整回答先顯示，改善用戶體驗 |
-| **NDJSON** | Newline-Delimited JSON | 每行一個 JSON object 嘅格式，用於 streaming 傳輸 |
-| **LLM** | Large Language Model | 大型語言模型（如 NVIDIA Nemotron） |
+| **NDJSON** | Newline-Delimited JSON | 每行一個 JSON object 嘅格式，用於 Summary streaming 傳輸（Chat 改用 Vercel AI SDK） |
+| **LLM** | Large Language Model | 大型語言模型（如 Google Gemini） |
 | **OpenRouter** | OpenRouter | 統一嘅 AI API 閘道，可以用同一 API key 存取多個 LLM 模型 |
-| **Nemotron** | NVIDIA Nemotron | NVIDIA 開發嘅 LLM 模型系列，本專案用 `nemotron-3-nano-30b` |
+| **Gemini** | Google Gemini | Google 開發嘅 LLM 模型系列，本專案用 `gemini-2.5-flash-lite` |
 | **MCQ** | Multiple Choice Question | 多選題 |
 | **Knowledge Gap** | Knowledge Gap Analysis | 知識缺口分析。根據 Quiz 錯題統計，識別學員嘅弱項 topic |
 | **Atlas** | MongoDB Atlas | MongoDB 嘅雲端 Database-as-a-Service，提供向量搜尋功能 |
@@ -23,6 +23,7 @@
 | **LlamaParse** | LlamaParse | LlamaIndex 提供嘅雲端 PDF 解析服務，支援多語言及掃描 PDF |
 | **Ingest** | Document Ingestion | 文件攝入流程：上傳 → 擷取 → 分割 → embedding → 存儲 |
 
+
 ---
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-23*

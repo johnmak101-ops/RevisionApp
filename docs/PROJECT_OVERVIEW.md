@@ -31,8 +31,8 @@
        │              │
 ┌──────▼──────┐ ┌─────▼──────────────────┐
 │ MongoDB     │ │ OpenRouter API         │
-│ Atlas (M0)  │ │ Chat: nemotron-3-nano  │
-│ Vector      │ │ Embed: nemotron-embed  │
+│ Atlas (M0)  │ │ Chat: gemini-2.5-flash  │
+│ Vector      │ │ Embed: qwen3-embed-8b  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
        │
@@ -52,8 +52,8 @@
 | **Styling** | Tailwind CSS | 3.4 |
 | **Database** | MongoDB Atlas | M0 免費叢集（512MB） |
 | **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` | 免費 |
-| **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | 直接 fetch API |
+| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | Qwen3 8B，4096 維 |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |

@@ -33,8 +33,8 @@ Ensure all Revision App features function correctly, covering:
 | Runtime | Node.js 18+ |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (with Vector Search Index) |
-| LLM | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` |
-| Embedding | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` |
+| LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
+| Embedding | OpenRouter → `qwen/qwen3-embedding-8b` |
 | Browser | Chrome 120+ / Firefox 120+ |
 
 ---
@@ -179,6 +179,17 @@ Ensure all Revision App features function correctly, covering:
 | **Maps to** | UC-02 / US-2.1 |
 | **Steps** | Ask 4 related questions consecutively; 4th references 1st answer |
 | **Expected** | ✅ AI correctly understands context<br>✅ Most recent 10 conversation history included |
+| **Priority** | P1 |
+
+### TC-13B: RAG Chat — Code Block Rendering
+
+| Item | Content |
+|------|---------|
+| **ID** | TC-13B |
+| **Maps to** | UC-02 / REV-3 |
+| **Precondition** | Uploaded a PDF containing code content (e.g. Java notes) |
+| **Steps** | 1. Switch to Chat tab<br>2. Ask a code-related question (e.g. "What's the difference between char and String?")<br>3. Check code snippets in the response |
+| **Expected** | ✅ Code displayed in fenced code block (with background color, syntax highlighting)<br>✅ Not rendered inline like `char x = '2';`<br>✅ Code block has copy button |
 | **Priority** | P1 |
 
 ---
@@ -341,4 +352,4 @@ Ensure all Revision App features function correctly, covering:
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-21*

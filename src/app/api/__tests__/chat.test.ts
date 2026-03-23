@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// ─── Mock vectorSearch ──────────────────────
+// ─── Mock vectorSearch (via multiQuerySearch) ──────────────────────
 vi.mock("@/lib/search", () => ({
-  vectorSearch: vi.fn().mockResolvedValue([
+  multiQuerySearch: vi.fn().mockResolvedValue([
     { content: "React hooks allow state in function components.", page: 1, pdfId: "doc1", score: 0.85 },
     { content: "useState and useEffect are basic hooks.", page: 2, pdfId: "doc1", score: 0.72 },
   ]),
@@ -46,6 +46,21 @@ vi.mock("@langchain/core/messages", () => ({
   SystemMessage: class { constructor(public content: string) {} },
 }));
 
+// ─── Mock AI SDK streaming adapters ──────────────
+vi.mock("@ai-sdk/langchain", () => ({
+  toUIMessageStream: vi.fn((stream) => stream),
+}));
+
+vi.mock("ai", () => ({
+  createUIMessageStreamResponse: vi.fn(({ stream }) => {
+    // Simulate consuming the stream and returning a plain Response
+    return new Response("mocked-stream", {
+      status: 200,
+      headers: { "Content-Type": "text/plain" },
+    });
+  }),
+}));
+
 describe("POST /api/chat", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -70,7 +85,7 @@ describe("POST /api/chat", () => {
     const req = new NextRequest("http://localhost/api/chat", {
       method: "POST",
       body: JSON.stringify({
-        messages: [{ role: "assistant", content: "hi" }],
+        messages: [{ id: "1", role: "assistant", parts: [{ type: "text", text: "hi" }] }],
       }),
       headers: { "Content-Type": "application/json" },
     });
@@ -85,17 +100,16 @@ describe("POST /api/chat", () => {
     const req = new NextRequest("http://localhost/api/chat", {
       method: "POST",
       body: JSON.stringify({
-        messages: [{ role: "user", content: "What are React hooks?" }],
+        messages: [
+          { id: "1", role: "user", parts: [{ type: "text", text: "What are React hooks?" }] },
+        ],
       }),
       headers: { "Content-Type": "application/json" },
     });
 
     const res = await POST(req);
     expect(res.status).toBe(200);
-
     const text = await res.text();
     expect(text).toBeTruthy();
-    const lines = text.trim().split("\n").filter(Boolean);
-    expect(lines.length).toBeGreaterThanOrEqual(1);
   });
 });

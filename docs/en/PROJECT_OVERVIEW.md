@@ -31,8 +31,8 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
        │              │
 ┌──────▼──────┐ ┌─────▼──────────────────┐
 │ MongoDB     │ │ OpenRouter API         │
-│ Atlas (M0)  │ │ Chat: nemotron-3-nano  │
-│ Vector      │ │ Embed: nemotron-embed  │
+│ Atlas (M0)  │ │ Chat: gemini-2.5-flash  │
+│ Vector      │ │ Embed: qwen3-embed-8b  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
        │
@@ -53,8 +53,8 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **Styling** | Tailwind CSS | 3.4 |
 | **Database** | MongoDB Atlas | M0 Free Cluster (512MB) |
 | **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `nvidia/nemotron-3-nano-30b-a3b:free` | Free |
-| **Embedding** | OpenRouter → `nvidia/llama-nemotron-embed-vl-1b-v2:free` | Direct fetch API |
+| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | Qwen3 8B, 4096 dims |
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support |

@@ -20,15 +20,17 @@ revision-app/
 │   │   ├── layout.tsx
 │   │   └── page.tsx                   # 主頁（Tab 切換）
 │   ├── components/
-│   │   ├── ChatBox.tsx                # 聊天界面（streaming）
-│   │   ├── FileUpload.tsx             # 文件上傳
+│   │   ├── ChatBox.tsx                # 聊天介面（streaming）
+│   │   ├── FileUpload.tsx             # 檔案上傳
 │   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
 │   │   ├── KnowledgeGap.tsx           # 知識缺口分析
 │   │   ├── SummaryPanel.tsx           # 大綱摘要
 │   │   ├── TabNav.tsx                 # Tab 導航
+│   │   ├── MarkdownRenderer.tsx       # Markdown 渲染器（markdown-it + highlight.js + DOMPurify）
+│   │   ├── MarkdownRendererDynamic.tsx # 動態載入包裝器（next/dynamic）
 │   │   └── UploadToast.tsx            # 上傳結果 Toast 通知
 │   ├── lib/
-│   │   ├── chunking.ts               # LangChain 文本分割（含 table 保留）
+│   │   ├── chunking.ts               # Header-aware 文本分割（含 header context prefix）
 │   │   ├── db.ts                      # MongoDB 連線（Singleton）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton（streamingLLM + toolLLM）
@@ -68,10 +70,10 @@ revision-app/
 | `embedding` | Number[] | 向量（維度由模型決定） |
 | `pdfId` | ObjectId → Document | 關聯文件 |
 | `page` | Number | 頁碼 |
-| `chunkIndex` | Number | Chunk 序號 |
-| `metadata` | Mixed | 額外元數據 |
+| `chunkIndex` | Number | chunk 序號 |
+| `metadata` | Mixed | 額外 metadata（如 OCR 信心度等） |
 
-**索引**：`pdfId: 1`（一般索引）+ `chunk_vector_index`（Atlas 向量索引，cosine）
+**Indexes**: `pdfId: 1`（標準索引）+ `chunk_vector_index`（Atlas 向量索引，cosine）
 
 ### QuizAttempt
 
@@ -86,7 +88,7 @@ revision-app/
 
 **Question subdocument**：`{ question, options[], correctIndex, userAnswer?, topic, explanation }`
 
-**索引**：`documentId: 1`, `submittedAt: -1`
+**Indexes**：`documentId: 1`, `submittedAt: -1`
 
 ---
 
@@ -102,7 +104,11 @@ MD → 直接解析
     ↓
 按頁文字
     ↓
-RecursiveCharacterTextSplitter (512 chars, 100 overlap)
+Header-aware 分段（splitByHeaders：按 #/##/### 切段，追蹤 header hierarchy）
+    ↓
+RecursiveCharacterTextSplitter sub-split (512 chars, 100 overlap)
+    ↓
+每 chunk 加 header context prefix（例："Java > Data Types"）
     ↓
 OpenRouter Embedding API (batch 20)
     ↓
@@ -124,9 +130,11 @@ Score filter (≥ 0.4) → 無結果時 keyword fallback
     ↓
 LangChain ChatPromptTemplate + History (最近 10 條)
     ↓
-OpenRouter ChatOpenAI streaming → ReadableStream
+LangChain RunnableSequence.stream()
     ↓
-Frontend NDJSON streaming 渲染
+Vercel AI SDK：toUIMessageStream → createUIMessageStreamResponse
+    ↓
+前端 useChat（@ai-sdk/react）自動接收 + markdown-it 渲染
 ```
 
 ### 3. Quiz 生成流程
@@ -151,7 +159,7 @@ KnowledgeGap 分析弱項 topic
 |------|------|------|
 | POST | `/api/ingest` | 上傳 PDF/MD 文件 |
 | GET | `/api/documents` | 取得已上傳文件列表 |
-| POST | `/api/chat` | RAG 聊天（streaming NDJSON） |
+| POST | `/api/chat` | RAG 聊天（Vercel AI SDK streaming） |
 | POST | `/api/quiz/generate` | AI 生成 Quiz 題目 |
 | POST | `/api/quiz/submit` | 提交 Quiz 答案 |
 | GET | `/api/quiz/stats` | Quiz 統計數據 |
@@ -168,14 +176,16 @@ KnowledgeGap 分析弱項 topic
 | 直接 fetch OpenRouter 而非 LangChain Embeddings | OpenRouter response 格式差異，避免兼容問題 |
 | Warmup + dimension detection | 啟動時檢測向量維度，確保與 Atlas 索引匹配 |
 | Keyword fallback | 向量搜尋無結果時用 regex 備援，提高容錯 |
-| Streaming NDJSON | 改善聊天體驗，逐 token 回傳 |
+| Vercel AI SDK streaming (Chat) | 用 `createUIMessageStreamResponse` + `toUIMessageStream` 做 Chat streaming，前端用 `useChat` 自動接收 |
+| Streaming NDJSON (Summary) | Summary 用 NDJSON 逐 token 回傳，改善體驗 |
 | Batch embedding (20/batch) | OpenRouter 可能限制 batch size |
 | Score filter (≥ 0.4) | 過濾低相關性結果，避免幻覺 |
 | Multi-Query Search | 用 LLM 拆問題成 3 個角度並行搜尋，提高召回率 |
 | toolLLM (非 streaming) | 輕量低溫度 LLM 專用於工具呼叫（multi-query 生成） |
-| Table-aware chunking | 自動偵測 pipe table，整塊保留唔切割 |
+| Header-aware chunking | 按 Markdown headers 分段，每 chunk 帶 header context prefix（例："Java > Data Types"），提升 embedding 語義準確度 |
 | MongoDB singleton | 避免 Next.js dev 模式重複連線 |
+| System prompt 強制 fenced code | 明確要求含 = ; {} 嘅 code 必須用 fenced code block |
 
 ---
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-23*

@@ -29,7 +29,7 @@
 3. System validates file size (≤ 100MB) and non-empty
 4. System checks for duplicate filenames
 5. System extracts text content (PDF → LlamaParse Cloud API, MD → direct parsing)
-6. System splits text into Chunks (512 chars, 100 overlap)
+6. System splits text by Markdown headers, then sub-splits into Chunks (512 chars, 100 overlap) with header context prefix per chunk
 7. System batch-calls OpenRouter Embedding API (20 per batch)
 8. System saves `Document` and `Chunk` records to MongoDB
 9. System returns success response (with `documentId`, `chunkCount`)
@@ -42,7 +42,7 @@
 | Empty file | Return 400 error: invalid file |
 | File too large (>100MB) | Return 413 error |
 | Duplicate filename | Return 409 error: file already exists |
-| PDF extraction fails | Return 400 error: file may be corrupted |
+| PDF extraction fails | Return 400 error: LlamaParse failed or timed out, retry or reduce PDF size |
 | Empty chunks | Return 400 error: unable to extract text |
 | Embedding API failure | Return 500 error |
 
@@ -70,7 +70,8 @@
 3. System filters out results with score < 0.4
 4. System combines context + last 10 conversation messages
 5. System calls OpenRouter Chat LLM (streaming)
-6. Frontend renders response token by token (NDJSON streaming)
+6. System streams response via Vercel AI SDK (`createUIMessageStreamResponse` + `toUIMessageStream`)
+7. Frontend receives via `useChat` (@ai-sdk/react) and renders with markdown-it
 
 **Alternative Flows**:
 
@@ -221,4 +222,4 @@
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-23*
