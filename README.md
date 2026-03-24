@@ -39,7 +39,7 @@
 | **Framework** | Next.js | 16.1.6（Turbopack） |
 | **Language** | TypeScript | 5.7+ |
 | **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 3.4 |
+| **Styling** | Tailwind CSS | 4.2 |
 | **Database** | MongoDB Atlas | M0 免費叢集（512MB） |
 | **ODM** | Mongoose | 8.8 |
 | **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | 付費（低成本） |
@@ -102,7 +102,7 @@ cp .env.example .env.local
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 2048,
+        "numDimensions": 4096,
         "similarity": "cosine"
       }
     ]
