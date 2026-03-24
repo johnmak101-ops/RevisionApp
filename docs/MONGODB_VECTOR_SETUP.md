@@ -76,6 +76,8 @@ revision-app 的 `Chunk` collection 需要一個向量索引，才能使用 `$ve
 8. 點擊 **Create Search Index**
 9. 等待索引狀態變為 **Ready**（約 1–3 分鐘）
 
+> ⚠️ `numDimensions` 必須與 embedding model 嘅輸出維度一致。應用程式啟動時會自動 warmup 偵測維度 — 請查看 console log 確認實際維度值。
+
 ### 方法 B：MongoDB Shell / Compass
 
 若使用 mongosh 或 Compass，可執行：
@@ -128,7 +130,7 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/revision?r
 
 | 項目 | 值 | 說明 |
 |------|-----|------|
-| 向量維度 | 4096 | 來自 `qwen/qwen3-embedding-8b` |
+| 向量維度 | 啟動時偵測 | 預設 `qwen/qwen3-embedding-8b` 為 4096 維 |
 | 相似度 | cosine | 與 embedding 的 normalize 方式一致 |
 | 索引名稱 | chunk_vector_index | 需與 `src/lib/search.ts` 一致 |
 | Collection | chunks | Mongoose model `Chunk` 對應的 collection |
@@ -144,8 +146,12 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/revision?r
 ### Q: 索引建立後仍搜尋失敗
 - 確認索引狀態為 **Ready**
 - 確認 collection 名稱是 `chunks`（Mongoose 預設複數）
-- 確認 `embedding` 欄位為長度 768 的 number 陣列
+- 確認 `embedding` 欄位為非空 number 陣列，長度與 `numDimensions` 一致
 
 ### Q: 想換成其他 embedding 模型
-- 若維度不同（例如 768），需修改 `numDimensions` 並重建索引
-- 同時更新 `src/lib/embedding.ts` 與 `src/models/Chunk.ts` 的驗證
+- 若維度不同（例如 1024），需修改 `numDimensions` 並重建索引
+- 同時更新 `src/lib/embedding.ts` 中的 `OPENROUTER_EMBED_MODEL`
+
+---
+
+*更新日期：2026-03-24*

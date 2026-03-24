@@ -30,9 +30,10 @@
 4. System checks for duplicate filenames
 5. System extracts text content (PDF → LlamaParse Cloud API, MD → direct parsing)
 6. System splits text by Markdown headers, then sub-splits into Chunks (512 chars, 100 overlap) with header context prefix per chunk
-7. System batch-calls OpenRouter Embedding API (20 per batch)
-8. System saves `Document` and `Chunk` records to MongoDB
-9. System returns success response (with `documentId`, `chunkCount`)
+7. System runs **PromptGuard security scan** on all chunks — flagged chunks are removed; if all chunks flagged, returns 422
+8. System batch-calls OpenRouter Embedding API (20 per batch)
+9. System saves `Document` and `Chunk` records to MongoDB
+10. System returns success response (with `id`, `chunkCount`)
 
 **Alternative Flows**:
 
@@ -43,6 +44,7 @@
 | File too large (>100MB) | Return 413 error |
 | Duplicate filename | Return 409 error: file already exists |
 | PDF extraction fails | Return 400 error: LlamaParse failed or timed out, retry or reduce PDF size |
+| All chunks flagged by PromptGuard | Return 422 error: content rejected by security |
 | Empty chunks | Return 400 error: unable to extract text |
 | Embedding API failure | Return 500 error |
 
@@ -63,20 +65,22 @@
 **Main Flow**:
 
 1. Student enters a question
-2. System uses Multi-Query Search strategy to find relevant content:
+2. System runs **PromptGuard check** — if prompt injection detected, returns warning message
+3. System uses Multi-Query Search strategy to find relevant content:
    - toolLLM generates 3 sub-queries (different perspectives)
    - Runs parallel `$vectorSearch` (cosine, top 4 each)
    - Merges and deduplicates, sorts by score, takes top 8
-3. System filters out results with score < 0.4
-4. System combines context + last 10 conversation messages
-5. System calls OpenRouter Chat LLM (streaming)
-6. System streams response via Vercel AI SDK (`createUIMessageStreamResponse` + `toUIMessageStream`)
-7. Frontend receives via `useChat` (@ai-sdk/react) and renders with markdown-it
+4. System filters out results with score < 0.4
+5. System combines context + last 10 conversation messages
+6. System calls OpenRouter Chat LLM (streaming)
+7. System streams response via Vercel AI SDK (`createUIMessageStreamResponse` + `toUIMessageStream`)
+8. Frontend receives via `useChat` (@ai-sdk/react) and renders with markdown-it
 
 **Alternative Flows**:
 
 | Condition | Handling |
 |-----------|----------|
+| Prompt injection detected | Returns warning message (PromptGuard) |
 | Vector search fails | Falls back to keyword search (regex) |
 | No relevant results (all scores < 0.4) | Returns prompt: "No relevant content found, please upload documents" |
 | LLM streaming error | Returns error chunk |
@@ -99,7 +103,7 @@
 **Main Flow**:
 
 1. Student selects target document
-2. Student sets question count (1-15, default 5)
+2. Student sets question count (3-15, default 5)
 3. System retrieves document Chunks (sorted by page + chunkIndex)
 4. System assembles context (max 12,000 chars)
 5. System calls LLM to generate MCQs (question, 4 options, correctIndex, topic, explanation)
@@ -148,9 +152,9 @@
 **Postcondition**: Student sees score and per-question details
 
 **Business Rules**:
-- ≥ 80% → "🎉 Excellent! Keep it up!"
-- ≥ 60% → "💪 Not bad, room for improvement"
-- < 60% → "📚 Keep going, review your weak areas"
+- ≥ 80% → "🎉 好掂！繼續保持！"
+- ≥ 60% → "💪 唔錯，仲有進步空間"
+- < 60% → "📚 加油，建議重溫弱項"
 
 ---
 
@@ -216,10 +220,10 @@
 **Main Flow**:
 
 1. System queries all `Document` records (sorted by upload time descending)
-2. Returns document list (filename, chunkCount, uploadedAt)
+2. Returns document list (filename, originalName, chunkCount, uploadedAt)
 
 **Postcondition**: Components can use the document list (Quiz, Summary file selectors)
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*

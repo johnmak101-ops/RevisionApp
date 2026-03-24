@@ -94,6 +94,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
+/** 存取 Upload context 嘅 convenience hook。必須喺 `<UploadProvider>` 內使用。 */
 export function useUpload(): UploadContextValue {
   const ctx = useContext(UploadContext);
   if (!ctx) throw new Error("useUpload must be used inside <UploadProvider>");

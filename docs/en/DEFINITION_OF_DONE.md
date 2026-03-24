@@ -67,15 +67,15 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 
 | Verification Item | Status |
 |-------------------|--------|
-| Generates 1-15 MCQ questions | ✅ |
+| Generates 3-15 MCQ questions | ✅ |
 | Each question has 4 options + topic + explanation | ✅ |
 | Invalid questions filtered out | ✅ |
 | Correct answers hidden during answering | ✅ |
-| All questions must be answered before submission | ✅ |
+| All questions must be answered before submission (frontend + backend 400) | ✅ |
 | Same quiz cannot be submitted twice (409) | ✅ |
 | Score calculation correct | ✅ |
 | Post-submission shows detailed results per question | ✅ |
-| Score level feedback text correct | ✅ |
+| Score level feedback text correct (frontend `QuizPanel.tsx`) | ✅ |
 
 ### Knowledge Gap
 
@@ -97,4 +97,4 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-24*

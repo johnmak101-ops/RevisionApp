@@ -1,7 +1,7 @@
 {
   "name": "chunk_vector_index",
   "type": "vectorSearch",
-  "_comment": "numDimensions 取決於所用嘅 embedding model，啟動時由 embedding.ts warmup 自動偵測。此檔案僅作為 MongoDB Atlas 建立 vector search index 嘅參考模板。nvidia/llama-nemotron-embed-vl-1b-v2:free 通常為 2048d。",
+  "_comment": "numDimensions 取決於所用嘅 embedding model，啟動時由 embedding.ts warmup 自動偵測。此檔案僅作為 MongoDB Atlas 建立 vector search index 嘅參考模板。qwen/qwen3-embedding-8b 為 4096d。",
   "definition": {
     "fields": [
       {

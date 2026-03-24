@@ -82,7 +82,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["用戶選擇文件"] --> B["設定題目數 (1-15)"]
+    A["用戶選擇文件"] --> B["設定題目數 (3-15)"]
     B --> C["POST /api/quiz/generate"]
     
     C --> D{"生成結果？"}

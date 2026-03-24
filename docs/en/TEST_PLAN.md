@@ -282,6 +282,17 @@ Ensure all Revision App features function correctly, covering:
 | **Expected** | ✅ Returns empty statistics (0 questions, 0 correct), no errors |
 | **Priority** | P2 |
 
+### TC-22A: Knowledge Gap — Reset All Records
+
+| Item | Content |
+|------|---------|
+| **ID** | TC-22A |
+| **Maps to** | UC-05 |
+| **Precondition** | At least one quiz submitted |
+| **Steps** | Call `DELETE /api/quiz/stats` |
+| **Expected** | ✅ Returns `{ deleted: N }` with count of removed records<br>✅ Subsequent `GET /api/quiz/stats` returns empty statistics |
+| **Priority** | P1 |
+
 ---
 
 ### TC-22: Summary — Normal Generation
@@ -342,14 +353,14 @@ Ensure all Revision App features function correctly, covering:
 
 | Category | Total | P0 | P1 | P2 |
 |----------|-------|----|----|-----|
-| File Upload | 7 | 3 | 3 | 1 |
-| RAG Chat | 4 | 1 | 3 | 0 |
+| File Upload | 7 | 3 | 4 | 0 |
+| RAG Chat | 5 | 1 | 4 | 0 |
 | Quiz | 6 | 3 | 3 | 0 |
-| Knowledge Gap | 2 | 0 | 1 | 1 |
+| Knowledge Gap | 3 | 0 | 2 | 1 |
 | Summary | 2 | 0 | 2 | 0 |
 | Non-Functional | 3 | 0 | 3 | 0 |
-| **Total** | **24** | **7** | **15** | **2** |
+| **Total** | **26** | **7** | **18** | **1** |
 
 ---
 
-*Last updated: 2026-03-21*
+*Last updated: 2026-03-24*

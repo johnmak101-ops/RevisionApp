@@ -130,7 +130,7 @@ If the index is correctly configured, search and response should work normally.
 
 | Item | Value | Description |
 |------|-------|-------------|
-| Vector Dimensions | Detected at startup | From the configured embedding model |
+| Vector Dimensions | Detected at startup | Default `qwen/qwen3-embedding-8b` outputs 4096 dims |
 | Similarity | cosine | Matches embedding normalization method |
 | Index Name | chunk_vector_index | Must match `src/lib/search.ts` |
 | Collection | chunks | Collection mapped by Mongoose model `Chunk` |
@@ -146,12 +146,12 @@ If the index is correctly configured, search and response should work normally.
 ### Q: Search fails even after index is created
 - Confirm index status is **Ready**
 - Confirm collection name is `chunks` (Mongoose plural default)
-- Confirm `embedding` field is a number array matching the configured dimension
+- Confirm `embedding` field is a non-empty number array matching the configured `numDimensions`
 
 ### Q: Want to use a different embedding model
-- If dimensions differ, modify `numDimensions` and rebuild the index
-- Also update `src/lib/embedding.ts` and `src/models/Chunk.ts` validation
+- If dimensions differ (e.g., 1024), modify `numDimensions` and rebuild the index
+- Also update `OPENROUTER_EMBED_MODEL` in `src/lib/embedding.ts`
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-24*

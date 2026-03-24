@@ -58,38 +58,54 @@ List all uploaded documents.
 
 ## POST `/api/chat`
 
-RAG chat endpoint. Returns streaming NDJSON response.
+RAG chat endpoint. Returns **Vercel AI SDK streaming** response (`createUIMessageStreamResponse` + `toUIMessageStream`).
 
 **Content-Type**: `application/json`
 
 **Request Body**:
 
+The frontend uses the Vercel AI SDK `useChat` hook, which automatically sends messages in `UIMessage[]` format:
+
 ```json
 {
   "messages": [
-    { "role": "user", "content": "What is React hooks?" },
-    { "role": "assistant", "content": "React hooks are..." },
-    { "role": "user", "content": "Can you give more examples?" }
+    {
+      "id": "msg-1",
+      "role": "user",
+      "parts": [{ "type": "text", "text": "What is React hooks?" }]
+    },
+    {
+      "id": "msg-2",
+      "role": "assistant",
+      "parts": [{ "type": "text", "text": "React hooks are..." }]
+    },
+    {
+      "id": "msg-3",
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Can you give more examples?" }]
+    }
   ]
 }
 ```
 
+> Each message's `parts` array can contain `text`, `tool-call`, and other types. The backend only extracts `type: "text"` content.
+
 **Response** (200, streaming):
 
-One JSON object per line:
+Uses Vercel AI SDK's UI Message Stream protocol (not NDJSON). The frontend `useChat` hook automatically parses the stream — no manual handling required.
 
-```
-{"token":"React"}
-{"token":" hooks"}
-{"token":" are ..."}
-{"done":true}
-```
+**Error Handling**:
 
-On error:
+| Scenario | HTTP Status | Response Format |
+|----------|------------|-----------------|
+| Missing messages | 400 | `{"error": "Messages required"}` |
+| No user message found | 400 | `{"error": "Last user message required"}` |
+| Rate limit exceeded | 429 | `{"error": "Too many requests..."}` |
+| Prompt injection detected | 200 | Streaming text: `⚠️ Your message was flagged...` |
+| Search system error | 200 | Streaming text: `⚠️ 搜尋系統暫時出錯...` |
+| No relevant results | 200 | Streaming text: `⚠️ 冇搵到相關文件內容...` |
 
-```
-{"error":"Chat failed"}
-```
+> ⚠️ Prompt guard / search errors return 200 streaming text via `textMessageResponse()` (displayed as an AI message by `useChat`), not JSON errors.
 
 **Behavior**:
 - Uses the last user message with **Multi-Query Search** strategy:
@@ -99,8 +115,12 @@ On error:
   4. Returns top 8 results sorted by score
 - Retains the most recent 10 history messages (`messages.slice(-10)`)
 - Results with score < 0.4 are filtered out
-- Returns a prompt message when no relevant results found
+- Returns a streaming text prompt when no relevant results found
 - Falls back to single-query search if LLM sub-query generation fails
+
+**Security**:
+- Vard prompt injection detection (instruction override / role manipulation / system prompt leak)
+- Rate limit: 20 req/min per IP
 
 ---
 
@@ -117,7 +137,12 @@ Generate MCQ questions based on a specified document.
 }
 ```
 
-> `count` is clamped between 1–15, defaults to 5.
+> `count` is clamped between 3–15, defaults to 5.
+
+**Security**:
+- `documentId` must be a valid 24-character hex ObjectId
+- ChatPromptTemplate system/user role separation
+- Rate limit: 10 req/min per IP
 
 **Response** (200):
 
@@ -228,7 +253,7 @@ Delete all Quiz records (⚠️ irreversible).
 
 ```json
 {
-  "error": "Failed to reset quiz data"
+  "error": "無法重置記錄"
 }
 ```
 
@@ -265,6 +290,11 @@ On error:
 {"error":"Summary failed"}
 ```
 
+**Security**:
+- `documentId` must be a valid 24-character hex ObjectId
+- ChatPromptTemplate system/user role separation
+- Rate limit: 10 req/min per IP
+
 ---
 
 ## Common Error Format
@@ -285,9 +315,10 @@ Common HTTP status codes:
 | 404 | Resource not found |
 | 409 | Conflict (e.g., duplicate file upload or quiz submission) |
 | 413 | File too large (exceeds 100MB limit) |
+| 429 | Too many requests (rate limit exceeded) |
 | 502 | AI generation format error (LLM returned invalid output) |
 | 500 | Internal server error |
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-23*

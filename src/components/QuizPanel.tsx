@@ -1,9 +1,17 @@
 "use client";
 
+/**
+ * @module QuizPanel
+ *
+ * Quiz 功能面板 — 三階段：setup → answering → results。
+ * 由 `useQuiz` hook 管理狀態，本檔只負責 UI 渲染。
+ */
+
 import { useQuiz } from "@/hooks/useQuiz";
 
 // ── Presentational: Setup ─────────────────────────────────────────────────────
 
+/** 單階段① — 選擇文件同題目數量，點「出題」開始生成 quiz。 */
 function QuizSetup({
   docs,
   selectedDoc,
@@ -72,6 +80,7 @@ function QuizSetup({
 
 // ── Presentational: Answering ─────────────────────────────────────────────────
 
+/** 單階段② — 顯示 MCQ 題目，讓用家選答案並提交。 */
 function QuizAnswering({
   questions,
   answers,
@@ -150,6 +159,8 @@ function QuizAnswering({
 }
 
 // ── Presentational: Results ───────────────────────────────────────────────────
+
+/** 單階段③ — 顯示成績、逐題結果及解釋。 */
 
 function QuizResults({
   results,

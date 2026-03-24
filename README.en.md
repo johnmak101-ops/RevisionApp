@@ -26,7 +26,7 @@
 | **Framework** | Next.js | 16.1.6 (Turbopack) |
 | **Language** | TypeScript | 5.7+ |
 | **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 3.4 |
+| **Styling** | Tailwind CSS | 4.2 |
 | **Database** | MongoDB Atlas | M0 Free Cluster (512MB) |
 | **ODM** | Mongoose | 8.8 |
 | **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Paid (low-cost) |
@@ -86,7 +86,7 @@ Create a vector search index for the `chunks` collection in Atlas:
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 2048,
+      "numDimensions": 4096,
       "similarity": "cosine"
     }
   ]
@@ -158,6 +158,8 @@ revision-app/
 │   │   ├── llm.ts                     # LLM Client Configuration
 │   │   ├── md.ts                      # Markdown Parsing
 │   │   ├── pdf.ts                     # PDF Text Extraction
+│   │   ├── promptGuard.ts            # Prompt Injection Guard (Vard)
+│   │   ├── rateLimiter.ts            # In-memory Rate Limiter
 │   │   └── search.ts                 # Vector Search + Keyword Fallback
 │   └── models/
 │       ├── Chunk.ts                   # Text Chunk (with embedding)

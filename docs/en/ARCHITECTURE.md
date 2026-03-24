@@ -36,6 +36,8 @@ revision-app/
 │   │   ├── llm.ts                     # LLM Singleton (streamingLLM + toolLLM)
 │   │   ├── md.ts                      # Markdown Parsing
 │   │   ├── pdf.ts                     # PDF Text Extraction (LlamaParse REST API)
+│   │   ├── promptGuard.ts            # Prompt Injection Protection (Vard)
+│   │   ├── rateLimiter.ts            # In-memory IP Rate Limiter
 │   │   └── search.ts                 # Vector Search + Multi-Query + Keyword Fallback
 │   └── models/
 │       ├── Chunk.ts                   # Text Chunk (with embedding)
@@ -153,6 +155,80 @@ KnowledgeGap analyzes weak topics
 
 ---
 
+## Security
+
+### Prompt Injection Protection
+
+Different endpoints use different protection strategies depending on user input type:
+
+**Ingest (file upload):**
+
+```
+File Upload
+    ↓
+Format Validation (.pdf / .md / .markdown) → 400
+    ↓
+Empty File Check → 400
+    ↓
+Size Limit (100MB) → 413
+    ↓
+Duplicate Filename Check → 409
+    ↓
+Chunk Injection Scan (guardChunkContent) → strip suspicious chunks
+    ↓
+All flagged → 422 / Partial flagged → continue + warning
+    ↓
+Embedding → Store
+```
+
+> ⚠️ `/api/ingest` currently has no rate limiting. Bulk uploads may exhaust LlamaParse / Embedding API quota.
+
+**Chat (free-text user input):**
+
+```
+Incoming Request
+    ↓
+Rate Limit Check → 429 if exceeded
+    ↓
+Vard Guard Detection → Warning on injection attack
+    ↓
+Sanitized text → LLM
+```
+
+**Quiz / Summary (documentId input only):**
+
+```
+Incoming Request
+    ↓
+Rate Limit Check → 429 if exceeded
+    ↓
+DocumentId Format Validation (24-char hex ObjectId)
+    ↓
+ChatPromptTemplate Role Separation → LLM
+```
+
+| Layer | Applies To | Description |
+|-------|------------|-------------|
+| **File Format Validation** | Ingest | Only accepts .pdf / .md / .markdown |
+| **Size Limit (100MB)** | Ingest | Returns 413 if exceeded |
+| **Duplicate Filename Check** | Ingest | Returns 409 on duplicate |
+| **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns (indirect prompt injection protection) |
+| **Vard Guard** | Chat | Detects instruction override, role manipulation, system prompt leak |
+| **Custom Patterns** | Chat | Additional blocking for DAN jailbreak, prompt leak variants |
+| **Input Sanitization** | Chat | Cleans delimiter injection, encoding attacks |
+| **ChatPromptTemplate** | Quiz, Summary | System/user role separation to prevent context injection |
+| **DocumentId Validation** | Quiz, Summary | Only accepts valid 24-char hex MongoDB ObjectId |
+
+### Rate Limiting
+
+| Endpoint | Limit |
+|----------|-------|
+| `/api/chat` | 20 req/min per IP |
+| `/api/quiz/generate` | 10 req/min per IP |
+| `/api/summary/generate` | 10 req/min per IP |
+
+---
+
 ## API Endpoints
 
 | Method | Path | Description |
@@ -185,6 +261,10 @@ KnowledgeGap analyzes weak topics
 | Header-aware chunking | Splits by Markdown headers, prepends header context prefix per chunk (e.g. "Java > Data Types") for improved embedding accuracy |
 | MongoDB singleton | Prevents duplicate connections in Next.js dev mode |
 | System prompt enforces fenced code | Explicitly requires code with = ; {} to use fenced code blocks |
+| Vard prompt guard | Uses `@andersmyrmel/vard` to detect + block prompt injection (instruction override, role manipulation, system prompt leak) |
+| In-memory rate limiter | Sliding-window rate limiting without Redis, suitable for Vercel serverless deployment |
+| ChatPromptTemplate role separation | Quiz/Summary use LangChain ChatPromptTemplate to separate system instructions from user context, preventing user-injected system roles |
+| Chunk Content Guard (Ingest) | Vard scans each chunk at upload time, strips content with indirect injection patterns to prevent malicious documents from polluting RAG context |
 
 ---
 

@@ -38,7 +38,9 @@ flowchart TD
     E -->|"✅ Passed"| F["Extract text"]
     
     F --> G["Split into Chunks (512 chars)"]
-    G --> H["Batch Embedding (20 per batch)"]
+    G --> PG{"PromptGuard scan"}
+    PG -->|"All flagged"| ERR5["422: Content rejected by security"]
+    PG -->|"✅ Safe (flagged chunks removed)"| H["Batch Embedding (20 per batch)"]
     H --> I["Store in MongoDB"]
     I --> J["✅ Show success + chunk count"]
     
@@ -47,6 +49,7 @@ flowchart TD
     style ERR2 fill:#cc3333,color:#fff
     style ERR3 fill:#cc3333,color:#fff
     style ERR4 fill:#cc3333,color:#fff
+    style ERR5 fill:#cc3333,color:#fff
 ```
 
 ---
@@ -57,14 +60,17 @@ flowchart TD
 flowchart TD
     A["User enters question"] --> B{"Message validation"}
     B -->|"Empty"| ERR1["400: Message cannot be empty"]
-    B -->|"✅ Has content"| C["Question → Embedding Vector"]
+    B -->|"✅ Has content"| PG{"PromptGuard check"}
+    PG -->|"⚠️ Injection detected"| WARN["Return warning message"]
+    PG -->|"✅ Safe"| MQ["Multi-Query: LLM generates 3 sub-queries"]
     
-    C --> D["MongoDB $vectorSearch"]
-    D --> E{"Search results?"}
+    MQ --> D["Parallel $vectorSearch × 3"]
+    D --> MERGE["Merge + Deduplicate results"]
+    MERGE --> E{"Relevant results?"}
     
-    E -->|"Found (score ≥ 0.4)"| F["Combine Context + Chat History"]
-    E -->|"Failed"| G["Keyword Fallback Search"]
-    E -->|"All scores < 0.4"| H["Prompt: No relevant content found"]
+    E -->|"Found (score ≥ 0.4)"| F["Combine Context + Chat History (max 10)"]
+    E -->|"Vector failed"| G["Keyword Fallback Search"]
+    E -->|"All scores < 0.4"| H["⚠️ No relevant content found"]
     
     G --> F
     F --> I["Call LLM (Streaming)"]
@@ -74,6 +80,7 @@ flowchart TD
     style K fill:#2d8a4e,color:#fff
     style ERR1 fill:#cc3333,color:#fff
     style H fill:#e6a817,color:#000
+    style WARN fill:#e6a817,color:#000
 ```
 
 ---
@@ -82,7 +89,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["User selects document"] --> B["Set question count (1-15)"]
+    A["User selects document"] --> B["Set question count (3-15)"]
     B --> C["POST /api/quiz/generate"]
     
     C --> D{"Generation result?"}
@@ -100,9 +107,9 @@ flowchart TD
     I -->|"✅ Success"| J["Show score + per-question results"]
     
     J --> K{"Score?"}
-    K -->|"≥ 80%"| L["🎉 Excellent! Keep it up!"]
-    K -->|"≥ 60%"| M["💪 Good job, room for improvement"]
-    K -->|"< 60%"| N["📚 Keep going, review weak topics"]
+    K -->|"≥ 80%"| L["🎉 好掂！繼續保持！"]
+    K -->|"≥ 60%"| M["💪 唔錯，仲有進步空間"]
+    K -->|"< 60%"| N["📚 加油，建議重溫弱項"]
     
     style ERR1 fill:#cc3333,color:#fff
     style ERR2 fill:#cc3333,color:#fff
@@ -219,4 +226,4 @@ flowchart LR
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-24*

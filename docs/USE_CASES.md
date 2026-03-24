@@ -30,9 +30,10 @@
 4. 系統檢查同名文件是否已存在（去重）
 5. 系統擷取文字內容（PDF → LlamaParse REST API，MD → 直接解析）
 6. 系統按 Markdown headers 分段，再 sub-split 為 Chunks（512 chars，100 overlap），每 chunk 帶 header context prefix
-7. 系統批次呼叫 OpenRouter Embedding API（每批 20）
-8. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
-9. 系統回傳成功信息（含 `documentId`、`chunkCount`）
+7. 系統執行 **PromptGuard 安全掃描** — 有問題嘅 chunks 會被移除；全部被 flag 就回傳 422
+8. 系統批次呼叫 OpenRouter Embedding API（每批 20）
+9. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
+10. 系統回傳成功信息（含 `id`、`chunkCount`）
 
 **替代流程**：
 
@@ -43,6 +44,7 @@
 | 文件過大 (>100MB) | 回傳 413 錯誤 |
 | 同名文件已存在 | 回傳 409 錯誤，提示需先刪除舊版本 |
 | LlamaParse 解析失敗/逾時 | 回傳 400 錯誤，提示重試或縮小 PDF |
+| 所有 chunks 被 PromptGuard 標記 | 回傳 422 錯誤：內容被安全檢查拒絕 |
 | Chunks 為空 | 回傳 400 錯誤，提示無法提取文字 |
 | Embedding API 失敗 | 回傳 500 錯誤 |
 
@@ -63,20 +65,22 @@
 **主要流程**：
 
 1. 學員輸入問題
-2. 系統用 Multi-Query Search 策略搜尋相關內容：
+2. 系統執行 **PromptGuard 檢查** — 偵測到注入攻擊就回傳警告訊息
+3. 系統用 Multi-Query Search 策略搜尋相關內容：
    - toolLLM 將問題拆成 3 個子查詢（唔同角度）
    - 並行對每個子查詢執行 `$vectorSearch`（cosine，top 4）
    - 合併去重，按分數排序取最佳 8 條
-3. 系統過濾 score < 0.4 嘅低相關結果
-4. 系統組合 context + 最近 10 條對話歷史
-5. 系統呼叫 OpenRouter Chat LLM（streaming）
-6. 系統用 Vercel AI SDK（`createUIMessageStreamResponse` + `toUIMessageStream`）streaming 回傳
-7. 前端用 `useChat`（@ai-sdk/react）自動接收，透過 markdown-it 渲染回答
+4. 系統過濾 score < 0.4 嘅低相關結果
+5. 系統組合 context + 最近 10 條對話歷史
+6. 系統呼叫 OpenRouter Chat LLM（streaming）
+7. 系統用 Vercel AI SDK（`createUIMessageStreamResponse` + `toUIMessageStream`）streaming 回傳
+8. 前端用 `useChat`（@ai-sdk/react）自動接收，透過 markdown-it 渲染回答
 
 **替代流程**：
 
 | 條件 | 處理 |
 |------|------|
+| 偵測到 Prompt Injection | 回傳警告訊息（PromptGuard） |
 | 向量搜尋失敗 | 降級至 keyword fallback（regex 搜尋） |
 | 無相關結果 (所有 score < 0.4) | 回傳提示：「冇搵到相關文件內容，請先上傳」 |
 | LLM streaming 出錯 | 回傳 error chunk |
@@ -99,7 +103,7 @@
 **主要流程**：
 
 1. 學員選擇目標文件
-2. 學員設定題目數量（1-15 題，預設 5）
+2. 學員設定題目數量（3-15 題，預設 5）
 3. 系統檢索文件嘅 Chunks（按 page + chunkIndex 排序）
 4. 系統組合 context（上限 12,000 chars）
 5. 系統呼叫 LLM 生成 MCQ（含 question、4 options、correctIndex、topic、explanation）
@@ -216,10 +220,10 @@
 **主要流程**：
 
 1. 系統查詢所有 `Document`（按上傳時間降序）
-2. 回傳文件列表（filename、chunkCount、uploadedAt）
+2. 回傳文件列表（filename、originalName、chunkCount、uploadedAt）
 
 **後置條件**：各組件可使用文件列表（Quiz、Summary 嘅文件選擇）
 
 ---
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-24*

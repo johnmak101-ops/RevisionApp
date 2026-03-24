@@ -22,8 +22,15 @@
 | **Context Window** | Context Window | LLM 單次可處理嘅 token 上限。本專案限制 context chars 以控制 |
 | **LlamaParse** | LlamaParse | LlamaIndex 提供嘅雲端 PDF 解析服務，支援多語言及掃描 PDF |
 | **Ingest** | Document Ingestion | 文件攝入流程：上傳 → 擷取 → 分割 → embedding → 存儲 |
+| **Prompt Injection** | Prompt Injection Attack | 用戶透過特別構造嘅輸入，嘗試繞過或覆寫 LLM 嘅系統指令嘅攻擊方式 |
+| **Vard** | Vard Prompt Guard | 開源 prompt injection 偵測庫（`@andersmyrmel/vard`），支援 pattern matching、分類阻擋同文字清洗 |
+| **Rate Limiting** | Rate Limiting | 限制每個 IP 在指定時間內嘅請求次數，防止濫用 API 資源 |
+| **ChatPromptTemplate** | LangChain Chat Prompt Template | LangChain 嘅 prompt 模板系統，將 system 和 user 角色明確分離，防止用戶注入系統角色 |
+| **Multi-Query Search** | Multi-Query Search | 用 LLM 將用戶問題拆成 3 個搜尋角度並行搜尋，合併去重後提高召回率 |
+| **Chunk Guard** | Chunk Content Guard | 文件攝入時掃描 chunk 內容嘅安全檢查，偵測間接 prompt injection（用 Vard pattern matching） |
+| **Qwen3 Embedding** | Qwen3 Embedding 8B | 預設 embedding 模型 (`qwen/qwen3-embedding-8b`)，透過 OpenRouter 呼叫 |
 
 
 ---
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-24*

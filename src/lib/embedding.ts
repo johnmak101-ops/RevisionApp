@@ -130,7 +130,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
  * 取得 warmup 後偵測到的 embedding 維度。
  * 若 warmup 尚未完成或失敗，回傳 `null`。
  *
- * @returns embedding 維度數（如 2048）或 `null`
+ * @returns embedding 維度數（如 4096）或 `null`
  */
 export function getDetectedDimensions(): number | null {
   return detectedDimensions;

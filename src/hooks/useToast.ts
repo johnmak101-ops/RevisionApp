@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 
+/** Toast 顯示類型 */
 export type ToastType = "success" | "error" | "info";
 
+/** Toast 內容物件 */
 export interface Toast {
   msg: string;
   type: ToastType;

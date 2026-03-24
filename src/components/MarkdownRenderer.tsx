@@ -94,11 +94,16 @@ function fixMarkdown(src: string): string {
   return result;
 }
 
+/** MarkdownRenderer 元件的 Props */
 export interface MarkdownRendererProps {
   content: string;
   className?: string;
 }
 
+/**
+ * Markdown 渲染器 — 用 markdown-it 解析、DOMPurify 消毒、highlight.js 語法高亮。
+ * 包含 AI 生成 markdown 常見格式問題的自動修復。
+ */
 export default function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const html = useMemo(() => {
     if (!content) return "";

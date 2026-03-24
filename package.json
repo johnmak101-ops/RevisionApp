@@ -16,6 +16,7 @@
   "dependencies": {
     "@ai-sdk/langchain": "^2.0.140",
     "@ai-sdk/react": "^3.0.136",
+    "@andersmyrmel/vard": "^1.2.0",
     "@langchain/core": "^1.1.32",
     "@langchain/openai": "^1.2.13",
     "@langchain/textsplitters": "^1.0.1",

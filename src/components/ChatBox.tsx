@@ -1,10 +1,18 @@
 "use client";
 
+/**
+ * @module ChatBox
+ *
+ * RAG Chat 面板 — 用 Vercel AI SDK 嘅 `useChat` 做 streaming 對話。
+ * 包含訊息列表、自動滾動、輸入框及 Markdown 渲染。
+ */
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import MarkdownRenderer from "@/components/MarkdownRendererDynamic";
 
+/** 從 UIMessage parts 提取純文字（過濾非文字 part）。 */
 function getMessageText(
   parts: Array<{ type: string; text?: string }>
 ): string {
@@ -14,6 +22,7 @@ function getMessageText(
     .join("");
 }
 
+/** AI 頭像圓形 badge */
 function AIAvatar() {
   return (
     <div className="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
@@ -22,6 +31,7 @@ function AIAvatar() {
   );
 }
 
+/** 複製按鈕 — 將指定文字複製到剪貼簿 */
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 

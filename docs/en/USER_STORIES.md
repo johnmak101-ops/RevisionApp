@@ -74,7 +74,7 @@
 
 **Acceptance Criteria**:
 - [ ] Can select target document
-- [ ] Can set question count (1-15)
+- [ ] Can set question count (3-15)
 - [ ] Each question has 4 options
 - [ ] Each question tagged with topic and explanation
 - [ ] Questions test comprehension, not rote memorization
@@ -123,4 +123,4 @@
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-24*
