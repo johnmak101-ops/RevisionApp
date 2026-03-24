@@ -32,7 +32,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
        │              │
 ┌──────▼──────┐ ┌─────▼──────────────────┐
 │ MongoDB     │ │ OpenRouter API         │
-│ Atlas (M0)  │ │ Chat: gemini-2.5-flash  │
+│ Atlas (M0)  │ │ Chat: gemini-2.5-flash-lite │
 │ Vector      │ │ Embed: qwen3-embed-8b  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
@@ -51,7 +51,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **Framework** | Next.js | 16.1.6 (Turbopack) |
 | **Language** | TypeScript | 5.7+ |
 | **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 3.4 |
+| **Styling** | Tailwind CSS | 4.x |
 | **Database** | MongoDB Atlas | M0 Free Cluster (512MB) |
 | **ODM** | Mongoose | 8.8 |
 | **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
@@ -59,7 +59,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support |
-| **Markdown** | `react-markdown` + `remark-gfm` | Markdown rendering |
+| **Markdown** | `markdown-it` + plugins (emoji, task-lists, anchor, footnote, sub/sup, container) | Markdown rendering |
 | **Security** | `@andersmyrmel/vard` | Prompt injection detection + sanitization |
 
 ## Free Tier Summary
@@ -73,4 +73,4 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*

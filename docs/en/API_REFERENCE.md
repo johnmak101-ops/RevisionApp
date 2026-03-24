@@ -137,7 +137,7 @@ Generate MCQ questions based on a specified document.
 }
 ```
 
-> `count` is clamped between 1–15, defaults to 5.
+> `count` is clamped between 3–15, defaults to 5.
 
 **Security**:
 - `documentId` must be a valid 24-character hex ObjectId

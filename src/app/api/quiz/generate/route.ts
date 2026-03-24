@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const count = Math.min(Math.max(body.count ?? 5, 1), 15);
+    const count = Math.min(Math.max(body.count ?? 5, 3), 15);
 
     await connectDB();
 

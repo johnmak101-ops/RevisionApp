@@ -41,6 +41,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 確保所有題目都有作答
+    if (body.answers!.length !== attempt.totalQuestions) {
+      return NextResponse.json(
+        { error: `請回答所有題目（需要 ${attempt.totalQuestions} 個答案，收到 ${body.answers!.length} 個）` },
+        { status: 400 }
+      );
+    }
+
     // 批改
     let correct = 0;
     const results = attempt.questions.map((q: { question: string; options: string[]; correctIndex: number; userAnswer?: number; topic: string; explanation: string }, i: number) => {

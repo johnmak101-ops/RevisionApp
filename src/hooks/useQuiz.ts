@@ -1,14 +1,23 @@
 import { useReducer } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+/**
+ * @module useQuiz
+ *
+ * Quiz 全流程狀態管理 hook — setup → answering → results。
+ * 用 `useReducer` 管理本地狀態，`useMutation` 處理 API 呼叫。
+ */
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+/** 文件列表項目 */
 export interface Doc {
   _id: string;
   filename: string;
   chunkCount: number;
 }
 
+/** 前端顯示用的題目（不含答案） */
 export interface ClientQuestion {
   index: number;
   question: string;
@@ -110,6 +119,12 @@ async function fetchDocs(): Promise<Doc[]> {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
+/**
+ * Quiz 全流程 hook。
+ *
+ * @returns docs — 文件清單； state — 當前狀態；
+ *          generate / submit / setAnswer / setDoc / setCount / reset — action dispatchers。
+ */
 export function useQuiz() {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const queryClient = useQueryClient();

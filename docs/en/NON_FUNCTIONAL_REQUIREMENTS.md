@@ -21,7 +21,7 @@
 | NFR-02.1 | Degradation strategy | Keyword fallback when vector search fails |
 | NFR-02.2 | Connection reuse | MongoDB uses singleton connection pool |
 | NFR-02.3 | Warmup | Embedding pre-warm at startup, detects dimensions |
-| NFR-02.4 | Retry | LLM requests retry up to 2 times (`maxRetries: 2`) |
+| NFR-02.4 | Retry | Chat / Quiz / Summary LLM retry up to 2 times (`maxRetries: 2`); toolLLM (multi-query) retries 1 time (`maxRetries: 1`) |
 
 ---
 
@@ -43,9 +43,9 @@
 |----|-------------|-------|
 | NFR-04.1 | File size limit | 100MB |
 | NFR-04.2 | Chunk size | 512 chars (overlap 100) |
-| NFR-04.3 | Quiz question range | 1-15 |
+| NFR-04.3 | Quiz question range | 3-15 |
 | NFR-04.4 | Chat history length | Most recent 10 messages |
-| NFR-04.5 | Vector candidates | 50 candidates → 4/sub-query × 3 → top 8 (multiQuery) |
+| NFR-04.5 | Vector candidates | 50 candidates → 4/sub-query × up to 3 (LLM-generated) → top 8 (multiQuery) |
 | NFR-04.6 | Score threshold | ≥ 0.4 |
 | NFR-04.7 | Quiz context | 12,000 chars |
 | NFR-04.8 | Summary context | 20,000 chars |
@@ -59,7 +59,7 @@
 | ID | Requirement | Description |
 |----|-------------|-------------|
 | NFR-05.1 | TypeScript strict mode | Project-wide strict type checking |
-| NFR-05.2 | Centralized constants | Chunk size, batch size, etc. defined centrally |
+| NFR-05.2 | Centralized constants | Chunk size, batch size in `lib/`; context limits (12k / 20k) defined per-route |
 | NFR-05.3 | Modular design | `lib/` modules have clear responsibilities (embedding, search, chunking separated) |
 | NFR-05.4 | Singleton pattern | DB connections use singleton; `lib/llm.ts` shares chat/tool LLM; quiz and summary have own module-scoped LLM (different temperature/config) |
 
@@ -76,4 +76,4 @@
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-24*

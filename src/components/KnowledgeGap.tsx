@@ -4,11 +4,21 @@ import { useState } from "react";
 import { useStats, TopicStat } from "@/hooks/useStats";
 import { useToast } from "@/hooks/useToast";
 
+/**
+ * @module KnowledgeGap
+ *
+ * Knowledge Gap Analysis 面板 — 彙總所有 Quiz 結果，
+ * 以 topic 為單位顯示正確率（弱項排前）。
+ * 支援重新整理及清除答題記錄。
+ */
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** 根據正確率回傳對應嘅進度條顏色 class */
 const getBarColor = (acc: number) =>
   acc >= 80 ? "bg-green-500" : acc >= 60 ? "bg-yellow-500" : "bg-red-500";
 
+/** 根據正確率回傳強/一般/弱項 badge 文字 */
 const getBadge = (acc: number) =>
   acc >= 80 ? "💪 強" : acc >= 60 ? "⚡ 一般" : "🔥 弱項";
 
@@ -24,6 +34,7 @@ const getCardBorder = (acc: number) =>
 
 // ── Presentational: TopicCard ─────────────────────────────────────────────────
 
+/** 單一 topic 的表現卡片 — 顯示名稱、badge、進度條及正確率。 */
 function TopicCard({ topic }: { topic: TopicStat }) {
   return (
     <div className={`rounded-lg border bg-white p-4 ${getCardBorder(topic.accuracy)}`}>
@@ -51,6 +62,12 @@ function TopicCard({ topic }: { topic: TopicStat }) {
 
 // ── Container ─────────────────────────────────────────────────────────────────
 
+/**
+ * Knowledge Gap 容器元件。
+ *
+ * 從 `useStats` 取得 topic 統計，以卡片列表呈現。
+ * 弱項（< 60%）另外彙總成「建議重溫」區塊。
+ */
 export function KnowledgeGap() {
   const { stats, loading, refetch, resetStats } = useStats();
   const { toast, showToast } = useToast();
@@ -99,8 +116,8 @@ export function KnowledgeGap() {
           <div>
             <p className="text-sm font-semibold text-slate-700">📊 各 Topic 表現</p>
             <p className="text-xs text-slate-400 mt-0.5">
-              共 {overall.totalAttempts} 次測驗 · {overall.totalQuestions} 題 · 整體{" "}
-              {overall.accuracy}%
+              共 {overall.totalAttempts} 次測驗 · {overall.totalQuestions} 題 · 答對{" "}
+              {overall.totalCorrect} 題 · 整體 {overall.accuracy}%
             </p>
           </div>
           <div className="flex items-center gap-3">

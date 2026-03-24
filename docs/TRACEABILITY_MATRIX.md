@@ -10,10 +10,10 @@
 |----------|-----------|--------------|--------------|---------|------|
 | UC-01 上傳 PDF | US-1.1 | TC-01, TC-03, TC-04, TC-05, TC-06, TC-07 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 |
 | UC-01 上傳 MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 |
-| UC-02 RAG 聊天 | US-2.1, US-2.2 | TC-10, TC-11, TC-12, TC-13 | `POST /api/chat` | `ChatBox` | ✅ 已實現 |
+| UC-02 RAG 聊天 | US-2.1, US-2.2 | TC-10, TC-11, TC-12, TC-13, TC-13B | `POST /api/chat` | `ChatBox` | ✅ 已實現 |
 | UC-03 Quiz 生成 | US-3.1 | TC-14, TC-15, TC-16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ 已實現 |
 | UC-04 Quiz 提交 | US-3.2 | TC-17, TC-18, TC-19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ 已實現 |
-| UC-05 知識缺口 | US-3.3 | TC-20, TC-21 | `GET /api/quiz/stats` | `KnowledgeGap` | ✅ 已實現 |
+| UC-05 知識缺口 | US-3.3 | TC-20, TC-21, TC-22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ 已實現 |
 | UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ 已實現 |
 | UC-07 文件列表 | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ 已實現 |
 
@@ -52,7 +52,7 @@
 | User Story | Acceptance Criteria | Test Case | 覆蓋 |
 |-----------|-------------------|-----------|------|
 | US-3.1 自動出題 | 可選擇目標文件 | TC-14 | ✅ |
-| | 題目數量 1-15 | TC-16 | ✅ |
+| | 題目數量 3-15 | TC-16 | ✅ |
 | | 每題 4 個選項 | TC-14 | ✅ |
 | | 每題標記 topic + explanation | TC-14 | ✅ |
 | | 測試理解力 | TC-14 *(人工驗證)* | ⚠️ |
@@ -85,10 +85,10 @@
 | Use Case | Test Cases | Coverage |
 |----------|-----------|----------|
 | UC-01 | 6 | ✅ 100% |
-| UC-02 | 4 | ✅ 100% |
+| UC-02 | 5 | ✅ 100% |
 | UC-03 | 3 | ✅ 100% |
 | UC-04 | 3 | ✅ 100% |
-| UC-05 | 2 | ✅ 100% |
+| UC-05 | 3 | ✅ 100% |
 | UC-06 | 2 | ✅ 100% |
 | UC-07 | 2 | ✅ 100% |
 
@@ -107,10 +107,11 @@
 |----------|-----------|---------|---------|
 | `POST /api/ingest` | 6 | TC-01, TC-02 | TC-03, TC-04, TC-05, TC-06, TC-07 |
 | `GET /api/documents` | 2 | TC-08 | TC-09 |
-| `POST /api/chat` | 4 | TC-10, TC-13 | TC-11, TC-12 |
+| `POST /api/chat` | 5 | TC-10, TC-13, TC-13B | TC-11, TC-12 |
 | `POST /api/quiz/generate` | 3 | TC-14, TC-16 | TC-15 |
 | `POST /api/quiz/submit` | 3 | TC-17 | TC-18, TC-19 |
 | `GET /api/quiz/stats` | 2 | TC-20 | TC-21 |
+| `DELETE /api/quiz/stats` | 1 | TC-22A | — |
 | `POST /api/summary/generate` | 2 | TC-22 | TC-23 |
 
 ---
@@ -156,10 +157,10 @@ graph LR
     subgraph Test Cases
         TC01["TC-01~07"]
         TC08["TC-08~09"]
-        TC10["TC-10~13"]
+        TC10["​TC-10~13B"]
         TC14["TC-14~16"]
         TC17["TC-17~19"]
-        TC20["TC-20~21"]
+        TC20["TC-20~22A"]
         TC22["TC-22~23"]
     end
     
@@ -186,4 +187,4 @@ graph LR
 
 ---
 
-*更新日期：2026-03-17*
+*更新日期：2026-03-24*

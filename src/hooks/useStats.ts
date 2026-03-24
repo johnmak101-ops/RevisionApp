@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+/**
+ * @module useStats
+ *
+ * Knowledge Gap 統計 hook — 從 `/api/quiz/stats` 取得 topic 正確率及整體表現。
+ */
+
+/** 單一 topic 的統計資料 */
 export interface TopicStat {
   name: string;
   totalQuestions: number;
@@ -7,6 +14,7 @@ export interface TopicStat {
   accuracy: number;
 }
 
+/** 全部統計資料（topics 分組 + overall 彙總） */
 export interface Stats {
   topics: TopicStat[];
   overall: {

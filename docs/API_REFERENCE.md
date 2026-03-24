@@ -137,7 +137,7 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 }
 ```
 
-> `count` 會限制喺 1–15 之間，預設為 5。
+> `count` 會限制喺 3–15 之間，預設為 5。
 
 **安全防護**：
 - `documentId` 必須為有效 24 字元 hex ObjectId

@@ -32,7 +32,7 @@
        │              │
 ┌──────▼──────┐ ┌─────▼──────────────────┐
 │ MongoDB     │ │ OpenRouter API         │
-│ Atlas (M0)  │ │ Chat: gemini-2.5-flash  │
+│ Atlas (M0)  │ │ Chat: gemini-2.5-flash-lite │
 │ Vector      │ │ Embed: qwen3-embed-8b  │
 │ Search      │ └────────────────────────┘
 └─────────────┘
@@ -50,7 +50,7 @@
 | **Framework** | Next.js | 16.1.6（Turbopack） |
 | **Language** | TypeScript | 5.7+ |
 | **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 3.4 |
+| **Styling** | Tailwind CSS | 4.x |
 | **Database** | MongoDB Atlas | M0 免費叢集（512MB） |
 | **ODM** | Mongoose | 8.8 |
 | **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
@@ -58,7 +58,7 @@
 | **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
 | **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
 | **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
-| **Markdown** | `react-markdown` + `remark-gfm` | 渲染 Markdown |
+| **Markdown** | `markdown-it` + plugins (emoji, task-lists, anchor, footnote, sub/sup, container) | 渲染 Markdown |
 | **安全** | `@andersmyrmel/vard` | Prompt injection 偵測 + 清洗 |
 
 ## 免費方案總覽
@@ -72,4 +72,4 @@
 
 ---
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-24*

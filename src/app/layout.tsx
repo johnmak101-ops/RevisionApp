@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "AI-powered revision app for Bootcamp PDFs",
 };
 
+/**
+ * App Root Layout — 設定 HTML lang、metadata、全域 CSS 及 Providers。
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

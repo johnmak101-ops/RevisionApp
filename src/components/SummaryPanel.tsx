@@ -3,12 +3,25 @@
 import { useState, useEffect } from "react";
 import MarkdownRenderer from "@/components/MarkdownRendererDynamic";
 
+/**
+ * @module SummaryPanel
+ *
+ * Summary Agent 面板 — 選文件後用 LLM streaming 生成多層結構大綱。
+ * 透過 NDJSON stream 逐 token 顯示，完成後可複製或重新生成。
+ */
+
+/** 文件清單項目（從 `/api/documents` 取得） */
 interface Doc {
   _id: string;
   filename: string;
   chunkCount: number;
 }
 
+/**
+ * Summary Agent 面板元件。
+ *
+ * 流程：選擇文件 → 呼叫 `/api/summary/generate` → streaming 顯示 Markdown 大綱。
+ */
 export function SummaryPanel() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [selectedDoc, setSelectedDoc] = useState("");
