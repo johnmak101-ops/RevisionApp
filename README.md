@@ -7,6 +7,35 @@
 
 ---
 
+## 🎯 商業問題陳述
+
+### 痛點分析
+
+Bootcamp 學員喺密集式學習環境中面對嚴峻挑戰：
+
+| 痛點 | 描述 | 影響 |
+|------|------|------|
+| 📚 **資訊過載** | 每日收到大量 PDF 筆記、代碼示例，難以有效消化 | 學員花更多時間「搵內容」多過「理解內容」|
+| 🔍 **資料分散** | 課程資源散落 Google Drive、Slack、LMS 各處，無統一搜尋入口 | 學員需要頻繁切換平台，浪費時間 |
+| ❓ **缺乏自我評估工具** | 學員唔知道自己弱項係咩，直至考試/面試先發現 | 知識缺口發現太遲，無法補救 |
+
+### 解決方案定位
+
+本 App 透過 AI 驅動嘅索引將分散資料統一化，並提供智能複習工具（RAG 聊天、自動出題、知識缺口分析）— 令學員做到**邊學邊問、邊做邊練、邊錯邊改**。
+
+---
+
+## 📊 成功指標 (KPIs)
+
+| KPI | 目標 | 量度方法 | 基準線 |
+|-----|------|----------|--------|
+| 學員搵資料時間 | 縮短 **30%** | RAG Chat 搜尋 vs 人手翻查時間（用戶調查） | 上線前問卷 |
+| 核心知識掌握率 | 提升 **20%** | Quiz 模組正確率追蹤（`/api/quiz/stats`） | 首次作答平均分 |
+| 課程文件格式覆蓋率 | **≥ 95%** | PDF（含掃描）+ Markdown 皆支援 | 業界格式標準 |
+| AI 答案相關性 | **≥ 90%** 基於文件 | RAG 向量搜尋分數 ≥ 0.4 命中率 | 系統日誌分析 |
+
+---
+
 ## ✨ 功能一覽
 
 | 功能 | 描述 |
@@ -134,14 +163,25 @@ npm run dev
 
 ## 🛡️ 安全防護
 
-唔同端點有唔同嘅防護策略，取決於用戶輸入類型：
+### 商業風險與防護目標
+
+安全防護唔只係技術問題 — 直接影響產品可信度同學習質素：
+
+| 防護層 | 目標 | 商業風險（如缺失） |
+|--------|------|-------------------|
+| **Vard Guard** | 偵測並攔截 Prompt Injection 攻擊（instruction override、role manipulation、system prompt leak） | 攻擊者可注入惡意指令，令 AI 輸出錯誤內容，損害學員學習質素 |
+| **Chunk Content Guard** | 掃描上傳文件每個 chunk，確保輸入資料完整性 | 惡意文件攜帶 indirect injection pattern 可污染 RAG 上下文，影響所有用戶嘅查詢結果 |
+| **Rate Limiting** | 控制 API 請求頻率，防止濫用 | 過量請求消耗 OpenRouter API 配額，導致服務中斷或意外費用 |
+| **Input Sanitization** | 清除 delimiter injection 同 encoding 攻擊 | 繞過其他防護層，直接操控 LLM 行為 |
+
+### 各端點防護層
 
 | 防護層 | 適用端點 | 描述 |
 |--------|----------|------|
 | **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
 | **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
 | **Input Sanitization** | Chat | 清理 delimiter injection、encoding 攻擊 |
-| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容 |
+| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容（防 indirect prompt injection） |
 | **ChatPromptTemplate** | Quiz, Summary | system/user role 分離，防止 context injection |
 | **DocumentId 驗證** | Quiz, Summary | 只接受有效 24 字元 hex MongoDB ObjectId |
 
@@ -250,7 +290,8 @@ revision-app/
 | 文檔 | 描述 |
 |------|------|
 | [📄 TEST_PLAN.md](docs/TEST_PLAN.md) | 測試計劃 — 測試策略、具體測試案例 |
-| [📄 TRACEABILITY_MATRIX.md](docs/TRACEABILITY_MATRIX.md) | 追蹤矩陣 — Use Case ↔ User Story ↔ Test Case 映射 |
+| [📄 TRACEABILITY_MATRIX.md](docs/TRACEABILITY_MATRIX.md) | 追蹤矩陣 — Use Case ↔ User Story ↔ Test Case 映射（含 UAT 狀態 + AI 品質評分標準） |
+| [📄 STAKEHOLDER_MAP.md](docs/STAKEHOLDER_MAP.md) | 持份者地圖 — 持份者需求、衝突分析、Power/Interest Matrix |
 
 ### ⚙️ 部署與設定
 
@@ -272,5 +313,5 @@ revision-app/
 
 Created by **John Mak** 🚀
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-24*
 

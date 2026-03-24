@@ -2,9 +2,38 @@
 
 > An AI-powered bootcamp study revision platform supporting PDF/Markdown upload, RAG chat, auto quiz generation, knowledge gap analysis, and summary outline generation.
 
+## Business Problem Statement
+
+### Pain Points
+
+Bootcamp students face critical challenges in intensive learning environments:
+
+| Pain Point | Description | Impact |
+|------------|-------------|--------|
+| 📚 **Information Overload** | Receiving large volumes of PDF slides, notes, and code examples daily, making it hard to absorb effectively | Students spend more time *searching for content* than *understanding it* |
+| 🔍 **Scattered Materials** | Course resources fragmented across Google Drive, Slack, LMS — no unified search entry point | Students waste time switching between platforms |
+| ❓ **No Self-Assessment Tool** | Students don't know their weak areas until it's too late (exam / interview) | Knowledge gaps discovered too late to address |
+
+### Solution Positioning
+
+This app unifies scattered materials through AI-powered indexing and provides intelligent revision tools (RAG chat, auto quiz, knowledge gap analysis) — enabling students to **ask while learning, practice while doing, and improve while tracking**.
+
+---
+
+## Success Metrics (KPIs)
+
+| KPI | Target | Measurement Method | Baseline |
+|-----|--------|--------------------|----------|
+| Student material retrieval time | Reduce by **30%** | RAG Chat vs manual lookup (user survey) | Pre-adoption survey |
+| Core knowledge mastery rate | Improve by **20%** | Quiz correct rate tracking (`/api/quiz/stats`) | First attempt average score |
+| Course file format coverage | **≥ 95%** | PDF (incl. scanned) + Markdown supported | Industry format benchmarks |
+| AI answer relevance | **≥ 90%** document-based | RAG vector search score ≥ 0.4 hit rate | System log analysis |
+
+---
+
 ## Project Positioning
 
-This app is a **full-stack AI revision tool** targeting bootcamp students. Users upload course PDFs or Markdown notes, the system automatically vectorizes and indexes them, then provides multiple AI-powered revision methods.
+This app is a **full-stack AI revision tool** built specifically for bootcamp students. Users upload course PDFs or Markdown notes, the system automatically vectorizes and indexes them, then provides multiple AI-powered revision methods to address scattered materials and the lack of self-assessment tools.
 
 ## Core Features
 

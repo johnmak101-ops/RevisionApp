@@ -16,6 +16,10 @@
 - [ ] 空文件或損壞文件有清晰錯誤提示
 - [ ] 文件大小上限 100MB
 
+**負面路徑 (Negative Paths)**:
+- [ ] 如果 PDF 包含大量非文字內容（如純圖片、掃描件），系統透過 LlamaParse OCR 處理，但需在 chunk 數量较低時提示用戶「部分內容可能未被索引」
+- [ ] 如果 LlamaParse API 配額已用盡，回傳具體錯誤提示（而非通用 500 錯誤）
+
 ### US-1.2 上傳 Markdown 文件
 
 > **As a** Bootcamp 學員
@@ -51,6 +55,10 @@
 - [ ] 回覆語言與用戶輸入語言一致
 - [ ] Streaming 逐 token 顯示
 - [ ] 保留最近 10 條對話歷史作為 context
+
+**負面路徑 (Negative Paths)**:
+- [ ] 當 AI 無法喺文件中搎到答案時，必須誠實回答「教材未涵蓋此內容」，而非胡亂猜測 (Hallucination Control)
+- [ ] 向量搜尋 score 低於 0.4 嘅結果必須過濾，不可作為 AI 回答依據
 
 ### US-2.2 搜尋容錯
 

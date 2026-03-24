@@ -16,6 +16,10 @@
 - [ ] Empty or corrupted files show clear error messages
 - [ ] File size limit: 100MB
 
+**Negative Paths**:
+- [ ] If the PDF contains mostly non-text content (e.g. pure images, scanned pages), the system processes it via LlamaParse OCR but must notify the user "Some content may not have been indexed" when chunk count is significantly low
+- [ ] If the LlamaParse API daily quota is exhausted, return a specific error message (not a generic 500 error)
+
 ### US-1.2 Upload Markdown Document
 
 > **As a** bootcamp student
@@ -51,6 +55,10 @@
 - [ ] Response language matches user input language
 - [ ] Streaming token-by-token display
 - [ ] Retains last 10 conversation messages as context
+
+**Negative Paths**:
+- [ ] When AI cannot find an answer within the documents, it must honestly respond "This topic is not covered in the uploaded materials" rather than guessing (Hallucination Control)
+- [ ] Vector search results with score below 0.4 must be filtered out and cannot be used as AI answer source
 
 ### US-2.2 Search Fault Tolerance
 

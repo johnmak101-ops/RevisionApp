@@ -6,16 +6,18 @@
 
 ## 1. Use Case ↔ User Story ↔ Test Case 對照表
 
-| Use Case | User Story | Test Case(s) | API Endpoint | UI 組件 | 狀態 |
-|----------|-----------|--------------|--------------|---------|------|
-| UC-01 上傳 PDF | US-1.1 | TC-01, TC-03, TC-04, TC-05, TC-06, TC-07 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 |
-| UC-01 上傳 MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 |
-| UC-02 RAG 聊天 | US-2.1, US-2.2 | TC-10, TC-11, TC-12, TC-13, TC-13B | `POST /api/chat` | `ChatBox` | ✅ 已實現 |
-| UC-03 Quiz 生成 | US-3.1 | TC-14, TC-15, TC-16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ 已實現 |
-| UC-04 Quiz 提交 | US-3.2 | TC-17, TC-18, TC-19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ 已實現 |
-| UC-05 知識缺口 | US-3.3 | TC-20, TC-21, TC-22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ 已實現 |
-| UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ 已實現 |
-| UC-07 文件列表 | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ 已實現 |
+| Use Case | User Story | Test Case(s) | API Endpoint | UI 組件 | 實現狀態 | UAT 狀態 | 用戶反饋 |
+|----------|-----------|--------------|--------------|---------|----------|----------|----------|
+| UC-01 上傳 PDF | US-1.1 | TC-01, TC-03~07 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-01 上傳 MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-02 RAG 聊天 | US-2.1, US-2.2 | TC-10~13B | `POST /api/chat` | `ChatBox` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-03 Quiz 生成 | US-3.1 | TC-14~16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-04 Quiz 提交 | US-3.2 | TC-17~19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-05 知識缺口 | US-3.3 | TC-20~22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-07 文件列表 | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ 已實現 | ⏳ 待 UAT | — |
+
+> **UAT 狀態說明**：⏳ 待 UAT → 🔄 UAT 進行中 → ✅ UAT 通過（填寫通過日期）→ ❌ UAT 失敗（記錄問題）
 
 ---
 
@@ -116,15 +118,29 @@
 
 ---
 
-## 4. 需人工驗證嘅項目
+## 4. 人工審查標準 (Manual Review Standards)
 
-以下 Acceptance Criteria 涉及 AI 生成品質，難以自動化測試，需要人工 review：
+以下項目涉及 AI 生成品質判斷，需人工根據以下標準進行評核：
 
-| ID | 項目 | 原因 |
-|----|------|------|
-| ⚠️ AC-3.1.5 | Quiz 測試理解力 vs 死記硬背 | LLM 輸出品質主觀性 |
-| ⚠️ AC-4.1.3 | Summary 🔑 標記關鍵知識點 | 需要 domain expert 驗證 |
-| ⚠️ AC-4.1.5 | Summary 語言同原文一致 | 多語言 prompt 行為不穩定 |
+### AI 生成題目品質評分表 (Quiz Quality Rubric)
+
+> **適用範圍**：TC-14 人工驗證部分（AC-3.1.5：題目測試理解力 vs 死記硬背）
+> **評分方式**：每維度 1-5 分，總分 ≥ 16/20 為合格，< 12/20 需重新生成
+
+| 評分維度 | 1 分（不合格） | 3 分（合格） | 5 分（優秀） | 評核重點 |
+|----------|---------------|-------------|-------------|----------|
+| **題幹清晰度** | 含糊不清，可有多種解讀 | 基本清晰，但有輕微歧義 | 精確無歧義，一看即明 | 題幹是否包含足夠上下文？避免用「以下哪個」等曖昧開頭 |
+| **誤導選項 (Distractors)** | 錯誤選項明顯，一眼識破 | 部分選項有一定迷惑性 | 所有錯誤選項都係合理嘅「常見誤解」，需要真正理解先能分辨 | 錯誤選項是否來自教材中嘅相關概念？避免用無關嘅荒謬選項 |
+| **解釋品質** | 只講「答案係 X」，無解釋 | 簡單說明為何正確 | 詳細解釋原理 + 點解其他選項錯誤 + 延伸學習點 | 解釋是否能幫助學員真正理解，而非只係知道答案？ |
+| **知識層次 (Bloom's)** | 純記憶（背定義、背步驟） | 理解 + 應用（解釋概念、簡單應用） | 分析 + 評估（比較方案、判斷場景適用性） | 題目是否要求學員「思考」而非「回憶」？ |
+
+### 其他需人工驗證嘅項目
+
+| ID | 項目 | 評核標準 |
+|----|------|----------|
+| ⚠️ AC-4.1.3 | Summary 🔑 標記關鍵知識點 | 標記嘅知識點是否係該主題嘅核心概念？由 domain expert 確認 |
+| ⚠️ AC-4.1.5 | Summary 語言同原文一致 | 輸入中文教材應輸出中文；輸入英文教材應輸出英文；不可混用 |
+| ⚠️ AC-2.1-NP | RAG Hallucination Control | 當教材無相關內容，AI 是否明確回答「教材未涵蓋」而非自行補充？ |
 
 ---
 

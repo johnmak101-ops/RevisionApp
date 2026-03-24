@@ -157,6 +157,17 @@ KnowledgeGap analyzes weak topics
 
 ## Security
 
+### Business Risk & Protection Goals
+
+Security protections are not purely technical — they directly impact product trust and learning quality:
+
+| Protection Layer | Goal | Business Risk (if absent) |
+|-----------------|------|---------------------------|
+| **Vard Guard** | Detect and block Prompt Injection attacks (instruction override, role manipulation, system prompt leak) | Attackers could inject malicious instructions, causing AI to produce misleading content that harms student learning quality |
+| **Chunk Content Guard** | Scan each chunk from uploaded documents to ensure input data integrity | Malicious documents carrying indirect injection patterns could contaminate the RAG context, affecting all users' query results |
+| **Rate Limiting** | Control API request frequency to prevent abuse | Excessive requests consume OpenRouter API quota, causing service interruption or unexpected costs |
+| **Input Sanitization** | Strip delimiter injection and encoding attacks | Bypasses other protection layers to directly manipulate LLM behaviour |
+
 ### Prompt Injection Protection
 
 Different endpoints use different protection strategies depending on user input type:
@@ -229,6 +240,26 @@ ChatPromptTemplate Role Separation → LLM
 
 ---
 
+## Scalability & Constraints
+
+### Technology Selection Rationale
+
+| Decision | Business Driver | Alternative | Why Not Alternative |
+|----------|-----------------|-------------|---------------------|
+| **LlamaParse** for PDF | Bootcamp materials frequently contain scanned content (handwritten notes, slide screenshots) requiring high-accuracy OCR | `pdf-parse` + `tesseract.js` | Local OCR has poor multilingual support and low accuracy for scans, degrading RAG answer quality |
+| **OpenRouter** unified API | Single endpoint for multiple LLMs, reducing vendor lock-in risk | Direct OpenAI / Google API | Fewer free-tier options; switching models requires code changes |
+| **MongoDB Atlas M0** | Free 512MB cluster is sufficient for bootcamp-scale document chunks | PostgreSQL + pgvector | MongoDB native vector search + free cluster = zero-cost startup |
+
+### Known Limitations
+
+| Limitation | Impact | Current Mitigation |
+|------------|--------|-------------------|
+| LlamaParse free tier daily page quota | Large PDF batches may exceed quota | Frontend error prompt + specific API error messages |
+| OpenRouter free model rate limits | May hit throttling during peak usage | In-memory rate limiter to control request frequency |
+| In-memory rate limiter has no persistence | Vercel serverless restarts reset counters | Acceptable risk: bootcamp usage is low-traffic |
+
+---
+
 ## API Endpoints
 
 | Method | Path | Description |
@@ -268,4 +299,4 @@ ChatPromptTemplate Role Separation → LLM
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*

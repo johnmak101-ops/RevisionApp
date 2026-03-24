@@ -7,6 +7,35 @@
 
 ---
 
+## 🎯 Business Problem Statement
+
+### Pain Points
+
+Bootcamp students face critical challenges in intensive learning environments:
+
+| Pain Point | Description | Impact |
+|------------|-------------|--------|
+| 📚 **Information Overload** | Receiving large volumes of PDF slides, notes, and code examples daily, making it hard to absorb effectively | Students spend more time *searching for content* than *understanding it* |
+| 🔍 **Scattered Materials** | Course resources fragmented across Google Drive, Slack, LMS — no unified search entry point | Students waste time switching between platforms |
+| ❓ **No Self-Assessment Tool** | Students don't know their weak areas until it's too late (exam / interview) | Knowledge gaps discovered too late to address |
+
+### Solution Positioning
+
+This app unifies scattered materials through AI-powered indexing and provides intelligent revision tools (RAG chat, auto quiz, knowledge gap analysis) — enabling students to **ask while learning, practice while doing, and improve while tracking**.
+
+---
+
+## 📊 Success Metrics (KPIs)
+
+| KPI | Target | Measurement Method | Baseline |
+|-----|--------|--------------------|----------|
+| Student material retrieval time | Reduce by **30%** | RAG Chat search vs manual lookup time (user survey) | Pre-adoption survey |
+| Core knowledge mastery rate | Improve by **20%** | Quiz module correct rate tracking (`/api/quiz/stats`) | First attempt average score |
+| Course file format coverage | **≥ 95%** | PDF (incl. scanned) + Markdown supported | Industry standard formats |
+| AI answer relevance | **≥ 90%** document-based | RAG vector search score ≥ 0.4 hit rate | System log analysis |
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -117,14 +146,25 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 🛡️ Security
 
-Different endpoints use different protection strategies depending on user input type:
+### Business Risk & Protection Goals
+
+Security protections are not purely technical — they directly impact product trust and learning quality:
+
+| Protection Layer | Goal | Business Risk (if absent) |
+|-----------------|------|---------------------------|
+| **Vard Guard** | Detect and block Prompt Injection attacks (instruction override, role manipulation, system prompt leak) | Attackers could inject malicious instructions, causing AI to produce misleading content that harms student learning quality |
+| **Chunk Content Guard** | Scan each chunk from uploaded documents to ensure input data integrity | Malicious documents carrying indirect injection patterns could contaminate the RAG context, affecting all users' query results |
+| **Rate Limiting** | Control API request frequency to prevent abuse | Excessive requests consume OpenRouter API quota, causing service interruption or unexpected costs |
+| **Input Sanitization** | Strip delimiter injection and encoding attacks | Bypasses other protection layers to directly manipulate LLM behaviour |
+
+### Protection Layers by Endpoint
 
 | Protection Layer | Endpoint | Description |
 |-----------------|----------|-------------|
 | **Vard Guard** | Chat | Detects instruction override, role manipulation, system prompt leak |
 | **Custom Patterns** | Chat | Blocks DAN jailbreak, prompt leak variants |
 | **Input Sanitization** | Chat | Strips delimiter injection, encoding attacks |
-| **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns |
+| **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns (indirect prompt injection defence) |
 | **ChatPromptTemplate** | Quiz, Summary | system/user role separation to prevent context injection |
 | **DocumentId Validation** | Quiz, Summary | Only accepts valid 24-char hex MongoDB ObjectId |
 
@@ -233,7 +273,8 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 | Document | Description |
 |----------|-------------|
 | [📄 TEST_PLAN.md](docs/en/TEST_PLAN.md) | Test Plan — Testing strategy and specific test cases |
-| [📄 TRACEABILITY_MATRIX.md](docs/en/TRACEABILITY_MATRIX.md) | Traceability Matrix — Use Case ↔ User Story ↔ Test Case mapping |
+| [📄 TRACEABILITY_MATRIX.md](docs/en/TRACEABILITY_MATRIX.md) | Traceability Matrix — Use Case ↔ User Story ↔ Test Case mapping (incl. UAT tracking + AI quality rubric) |
+| [📄 STAKEHOLDER_MAP.md](docs/en/STAKEHOLDER_MAP.md) | Stakeholder Map — Stakeholder needs, conflict analysis, Power/Interest Matrix |
 
 ### ⚙️ Deployment & Setup
 
@@ -255,4 +296,4 @@ All documentation is available in both **Chinese** ([`docs/`](docs/)) and **Engl
 
 Created by **John Mak** 🚀
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*

@@ -6,16 +6,18 @@
 
 ## 1. Use Case ↔ User Story ↔ Test Case Mapping
 
-| Use Case | User Story | Test Case(s) | API Endpoint | UI Component | Status |
-|----------|-----------|--------------|--------------|-------------|--------|
-| UC-01 Upload PDF | US-1.1 | TC-01, TC-03, TC-04, TC-05, TC-06, TC-07 | `POST /api/ingest` | `FileUpload` | ✅ Implemented |
-| UC-01 Upload MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ Implemented |
-| UC-02 RAG Chat | US-2.1, US-2.2 | TC-10, TC-11, TC-12, TC-13, TC-13B | `POST /api/chat` | `ChatBox` | ✅ Implemented |
-| UC-03 Quiz Generation | US-3.1 | TC-14, TC-15, TC-16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ Implemented |
-| UC-04 Quiz Submission | US-3.2 | TC-17, TC-18, TC-19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ Implemented |
-| UC-05 Knowledge Gap | US-3.3 | TC-20, TC-21, TC-22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ Implemented |
-| UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ Implemented |
-| UC-07 Document List | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ Implemented |
+| Use Case | User Story | Test Case(s) | API Endpoint | UI Component | Impl. Status | UAT Status | User Feedback |
+|----------|-----------|--------------|--------------|-------------|----------|----------|----------|
+| UC-01 Upload PDF | US-1.1 | TC-01, TC-03~07 | `POST /api/ingest` | `FileUpload` | ✅ Implemented | ⏳ Pending | — |
+| UC-01 Upload MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ Implemented | ⏳ Pending | — |
+| UC-02 RAG Chat | US-2.1, US-2.2 | TC-10~13B | `POST /api/chat` | `ChatBox` | ✅ Implemented | ⏳ Pending | — |
+| UC-03 Quiz Generation | US-3.1 | TC-14~16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ Implemented | ⏳ Pending | — |
+| UC-04 Quiz Submission | US-3.2 | TC-17~19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ Implemented | ⏳ Pending | — |
+| UC-05 Knowledge Gap | US-3.3 | TC-20~22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ Implemented | ⏳ Pending | — |
+| UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ Implemented | ⏳ Pending | — |
+| UC-07 Document List | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ Implemented | ⏳ Pending | — |
+
+> **UAT Status legend**: ⏳ Pending → 🔄 In Progress → ✅ Passed (fill in date) → ❌ Failed (record issue)
 
 ---
 
@@ -116,15 +118,29 @@
 
 ---
 
-## 4. Items Requiring Manual Verification
+## 4. Manual Review Standards
 
-The following Acceptance Criteria involve AI generation quality and are difficult to automate, requiring manual review:
+The following items involve AI generation quality judgements and require human evaluation:
 
-| ID | Item | Reason |
-|----|------|--------|
-| ⚠️ AC-3.1.5 | Quiz tests comprehension vs. rote memorization | LLM output quality is subjective |
-| ⚠️ AC-4.1.3 | Summary 🔑 marks key knowledge points | Requires domain expert verification |
-| ⚠️ AC-4.1.5 | Summary language matches source document | Multi-language prompt behavior is unstable |
+### AI Quiz Quality Rubric
+
+> **Scope**: TC-14 manual verification (AC-3.1.5: questions test comprehension vs. rote memorisation)
+> **Scoring**: Each dimension 1–5 points. Total ≥ 16/20 = pass; < 12/20 = regenerate
+
+| Dimension | 1 (Fail) | 3 (Pass) | 5 (Excellent) | Review Focus |
+|-----------|----------|----------|---------------|-------------|
+| **Question Clarity** | Ambiguous, multiple valid interpretations | Mostly clear, minor ambiguity | Precise, unambiguous, immediately understandable | Does the stem include enough context? Avoid openers like "Which of the following" without sufficient setup |
+| **Distractors** | Wrong options are obviously incorrect | Some options have limited plausibility | All wrong options represent realistic misconceptions — correct answer requires genuine understanding | Do wrong options come from related concepts in the material? Avoid irrelevant/absurd distractors |
+| **Explanation Quality** | Only states "Answer is X", no reasoning | Brief explanation of why correct | Detailed reasoning + why other options are wrong + learning extension | Does the explanation build real understanding, not just answer recall? |
+| **Knowledge Level (Bloom's)** | Pure recall (memorise definition, repeat steps) | Understand + Apply (explain concept, simple application) | Analyse + Evaluate (compare approaches, judge scenario appropriateness) | Does the question require students to *think* rather than *remember*? |
+
+### Other Items Requiring Manual Verification
+
+| ID | Item | Review Standard |
+|----|------|----------------|
+| ⚠️ AC-4.1.3 | Summary 🔑 marks key knowledge points | Are marked points genuinely core concepts for the topic? Confirmed by domain expert |
+| ⚠️ AC-4.1.5 | Summary language matches source document | English input → English output; Chinese input → Chinese output; no mixing |
+| ⚠️ AC-2.1-NP | RAG Hallucination Control | When material lacks relevant content, does AI explicitly say "not covered" rather than fabricating? |
 
 ---
 

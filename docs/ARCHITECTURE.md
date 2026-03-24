@@ -157,6 +157,17 @@ KnowledgeGap 分析弱項 topic
 
 ## 安全防護
 
+### 商業風險與防護目標
+
+安全防護唔係純技術考量，而係直接影響產品可信度同用戶體驗：
+
+| 防護層 | 防護目標 | 商業風險（如果冇呢層防護） |
+|--------|----------|---------------------------|
+| **Vard Guard** | 偵測並阻止 Prompt Injection 攻擊（instruction override、role manipulation、system prompt leak） | 攻擊者可能注入惡意指令，令 AI 回答偏離教材內容，產生誤導性資訊，影響學員學習品質 |
+| **Chunk Content Guard** | 掃描上傳文件中每個 chunk 嘅內容，確保輸入數據潔淨度 | 惡意文件可能夾帶 indirect prompt injection pattern，污染 RAG 上下文後所有用戶嘅查詢結果都會受影響 |
+| **Rate Limiting** | 限制 API 請求頻率，防止濫用 | 過量請求消耗 OpenRouter API quota，導致服務中斷或產生非預期費用 |
+| **Input Sanitization** | 清理 delimiter injection、encoding 攻擊 | 繞過防護層後直接操控 LLM 行為 |
+
 ### Prompt Injection 防護
 
 唔同端點有唔同嘅防護策略，取決於用戶輸入類型：
@@ -229,6 +240,26 @@ ChatPromptTemplate role 分離 → LLM
 
 ---
 
+## 擴展性與限制 (Scalability & Constraints)
+
+### 技術選型商業理由
+
+| 技術決策 | 商業驅動 | 技術替代方案 | 點解唔用替代方案 |
+|----------|----------|-------------|------------------|
+| **LlamaParse** 處理 PDF | Bootcamp 教材經常包含掃描件（手寫筆記、投影片截圖），需要高準確度 OCR | `pdf-parse` + `tesseract.js` | 本地 OCR 多語言支援差，掃描件準確度低，影響 RAG 回答品質 |
+| **OpenRouter** 統一 API | 一個端點存取多個 LLM 模型，降低供應商鎖定風險 | 直接用 OpenAI / Google API | 免費 tier 選擇少，切換模型需要改代碼 |
+| **MongoDB Atlas M0** | 免費叢集 512MB 足夠存儲 Bootcamp 課程教材量級嘅 chunks | PostgreSQL + pgvector | MongoDB 原生向量搜尋 + 免費叢集，零成本啟動 |
+
+### 已知限制
+
+| 限制 | 影響 | 目前處理方式 |
+|------|------|-------------|
+| LlamaParse 免費 tier 每日頁數配額 | 大量 PDF 上傳時可能超額 | 前端錯誤提示 + API 回傳具體錯誤訊息 |
+| OpenRouter 免費模型 rate limit | 高峰期可能遇到限流 | in-memory rate limiter 控制請求頻率 |
+| In-memory rate limiter 無持久化 | Vercel serverless 重啟後計數器歸零 | 可接受風險：Bootcamp 使用場景低流量 |
+
+---
+
 ## API 端點
 
 | 方法 | 路徑 | 描述 |
@@ -268,4 +299,4 @@ ChatPromptTemplate role 分離 → LLM
 
 ---
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-24*
