@@ -36,8 +36,9 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 /**
- * 取得共用的 MongoDB 連線（singleton pattern）。
- * 開發模式下會快取到 `global` 避免 HMR 重複連線。
+ * 取得共用的 MongoDB 連線（cached connection pattern）。
+ * 開發模式下會快取到 `global` 避免 HMR 重複連線；
+ * Production（Vercel serverless）每個 instance 各自持有連線。
  *
  * @returns mongoose 實例
  */

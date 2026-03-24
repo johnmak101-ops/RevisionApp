@@ -134,17 +134,16 @@ npm run dev
 
 ## 🛡️ 安全防護
 
-### Prompt Injection 防護
+唔同端點有唔同嘅防護策略，取決於用戶輸入類型：
 
-所有 AI API 端點都用 [Vard](https://github.com/AndersMyhrWorworworworworworworworworworworworwormyrmel/vard) 做 prompt injection detection：
-
-| 防護層 | 描述 |
-|--------|------|
-| **Vard Guard** | 偵測 instruction override、role manipulation、system prompt leak |
-| **Custom Patterns** | 額外攔截 DAN jailbreak、prompt leak 變體 |
-| **Input Sanitization** | 清理 delimiter injection、encoding 攻擊 |
-| **ChatPromptTemplate** | Quiz/Summary 用 system/user role 分離，防止 context injection |
-| **DocumentId 驗證** | 只接受有效 MongoDB ObjectId 格式 |
+| 防護層 | 適用端點 | 描述 |
+|--------|----------|------|
+| **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
+| **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
+| **Input Sanitization** | Chat | 清理 delimiter injection、encoding 攻擊 |
+| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容 |
+| **ChatPromptTemplate** | Quiz, Summary | system/user role 分離，防止 context injection |
+| **DocumentId 驗證** | Quiz, Summary | 只接受有效 24 字元 hex MongoDB ObjectId |
 
 ### Rate Limiting
 
@@ -194,7 +193,7 @@ revision-app/
 │   ├── lib/
 │   │   ├── __tests__/                 # 單元測試
 │   │   ├── chunking.ts               # LangChain 文本分割
-│   │   ├── db.ts                      # MongoDB 連線（Singleton）
+│   │   ├── db.ts                      # MongoDB 連線（Cached，Dev 用 global 防 HMR 重複連線）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Client 配置
 │   │   ├── md.ts                      # Markdown 解析

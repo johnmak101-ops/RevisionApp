@@ -15,7 +15,7 @@ This app is a **full-stack AI revision tool** targeting bootcamp students. Users
 | 📝 Quiz Generator | AI auto-generates MCQ questions from documents | Quiz Tab |
 | 🎯 Knowledge Gap | Analyze quiz error rates to identify weak topics | Quiz Tab sidebar |
 | 📋 Summary | AI generates document outline summaries | Summary Tab |
-| 🛡️ Security | Prompt injection detection, rate limiting, input validation | All AI API endpoints |
+| 🛡️ Security | Vard prompt injection detection (Chat, Ingest), rate limiting, input validation | AI API endpoints (see ARCHITECTURE.md) |
 
 ## Architecture
 

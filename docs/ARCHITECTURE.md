@@ -31,7 +31,7 @@ revision-app/
 │   │   └── UploadToast.tsx            # 上傳結果 Toast 通知
 │   ├── lib/
 │   │   ├── chunking.ts               # Header-aware 文本分割（含 header context prefix）
-│   │   ├── db.ts                      # MongoDB 連線（Singleton）
+│   │   ├── db.ts                      # MongoDB 連線（Cached，Dev 用 global 防 HMR 重複連線）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton（streamingLLM + toolLLM）
 │   │   ├── md.ts                      # Markdown 解析
@@ -259,7 +259,7 @@ ChatPromptTemplate role 分離 → LLM
 | Multi-Query Search | 用 LLM 拆問題成 3 個角度並行搜尋，提高召回率 |
 | toolLLM (非 streaming) | 輕量低溫度 LLM 專用於工具呼叫（multi-query 生成） |
 | Header-aware chunking | 按 Markdown headers 分段，每 chunk 帶 header context prefix（例："Java > Data Types"），提升 embedding 語義準確度 |
-| MongoDB singleton | 避免 Next.js dev 模式重複連線 |
+| MongoDB cached connection | Dev 模式用 `global` 快取避免 HMR 重複連線；Production（Vercel serverless）每個 instance 各自持有連線 |
 | System prompt 強制 fenced code | 明確要求含 = ; {} 嘅 code 必須用 fenced code block |
 | Vard prompt guard | 用 `@andersmyrmel/vard` 偵測 + 阻擋 prompt injection（instruction override、role manipulation、system prompt leak） |
 | In-memory rate limiter | 滑動窗口 rate limiting，無需 Redis，適合 Vercel serverless 部署 |

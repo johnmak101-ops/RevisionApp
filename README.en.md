@@ -115,6 +115,29 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
+## 🛡️ Security
+
+Different endpoints use different protection strategies depending on user input type:
+
+| Protection Layer | Endpoint | Description |
+|-----------------|----------|-------------|
+| **Vard Guard** | Chat | Detects instruction override, role manipulation, system prompt leak |
+| **Custom Patterns** | Chat | Blocks DAN jailbreak, prompt leak variants |
+| **Input Sanitization** | Chat | Strips delimiter injection, encoding attacks |
+| **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns |
+| **ChatPromptTemplate** | Quiz, Summary | system/user role separation to prevent context injection |
+| **DocumentId Validation** | Quiz, Summary | Only accepts valid 24-char hex MongoDB ObjectId |
+
+### Rate Limiting
+
+| Endpoint | Limit |
+|----------|-------|
+| `/api/chat` | 20 req/min per IP |
+| `/api/quiz/generate` | 10 req/min per IP |
+| `/api/summary/generate` | 10 req/min per IP |
+
+---
+
 ## 🏗️ Project Structure
 
 ```
@@ -153,7 +176,7 @@ revision-app/
 │   ├── lib/
 │   │   ├── __tests__/                 # Unit Tests
 │   │   ├── chunking.ts               # LangChain Text Splitting
-│   │   ├── db.ts                      # MongoDB Connection (Singleton)
+│   │   ├── db.ts                      # MongoDB Connection (Cached, global cache in dev to prevent HMR duplicates)
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Client Configuration
 │   │   ├── md.ts                      # Markdown Parsing

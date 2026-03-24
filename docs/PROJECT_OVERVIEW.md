@@ -15,7 +15,7 @@
 | 📝 Quiz 出題 | AI 自動根據文件生成多選題 | Quiz Tab |
 | 🎯 知識缺口 | 分析 Quiz 錯誤率，識別弱項 Topic | Quiz Tab 側欄 |
 | 📋 Summary | AI 生成文件大綱摘要 | Summary Tab |
-| 🛡️ 安全防護 | Prompt injection 偵測、rate limiting、輸入驗證 | 所有 AI API 端點 |
+| 🛡️ 安全防護 | Vard prompt injection 偵測（Chat、Ingest）、rate limiting、輸入驗證 | AI API 端點（詳見 ARCHITECTURE.md） |
 
 ## 技術架構
 

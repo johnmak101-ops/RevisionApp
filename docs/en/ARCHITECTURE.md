@@ -31,7 +31,7 @@ revision-app/
 │   │   └── UploadToast.tsx            # Upload Result Toast Notification
 │   ├── lib/
 │   │   ├── chunking.ts               # Header-aware Text Splitting (with header context prefix)
-│   │   ├── db.ts                      # MongoDB Connection (Singleton)
+│   │   ├── db.ts                      # MongoDB Connection (Cached, global cache in dev to prevent HMR duplicates)
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton (streamingLLM + toolLLM)
 │   │   ├── md.ts                      # Markdown Parsing
@@ -259,7 +259,7 @@ ChatPromptTemplate Role Separation → LLM
 | Multi-Query Search | LLM splits question into 3 perspectives for parallel search, improving recall |
 | toolLLM (non-streaming) | Lightweight low-temperature LLM dedicated to tool calls (multi-query generation) |
 | Header-aware chunking | Splits by Markdown headers, prepends header context prefix per chunk (e.g. "Java > Data Types") for improved embedding accuracy |
-| MongoDB singleton | Prevents duplicate connections in Next.js dev mode |
+| MongoDB cached connection | Dev mode uses `global` cache to prevent HMR duplicate connections; Production (Vercel serverless) each instance holds its own connection |
 | System prompt enforces fenced code | Explicitly requires code with = ; {} to use fenced code blocks |
 | Vard prompt guard | Uses `@andersmyrmel/vard` to detect + block prompt injection (instruction override, role manipulation, system prompt leak) |
 | In-memory rate limiter | Sliding-window rate limiting without Redis, suitable for Vercel serverless deployment |

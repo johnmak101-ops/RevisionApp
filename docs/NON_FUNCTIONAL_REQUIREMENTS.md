@@ -19,7 +19,7 @@
 | ID | 需求 | 描述 |
 |----|------|------|
 | NFR-02.1 | 降級策略 | 向量搜尋失敗時有 keyword fallback |
-| NFR-02.2 | 連線復用 | MongoDB 使用 singleton 連線池 |
+| NFR-02.2 | 連線復用 | MongoDB 使用 cached connection（Dev 用 `global` 防 HMR 重複連線） |
 | NFR-02.3 | Warmup | 啟動時 embedding 預熱，偵測維度 |
 | NFR-02.4 | Retry | Chat / Quiz / Summary LLM 重試 2 次 (`maxRetries: 2`)；toolLLM（multi-query）重試 1 次 (`maxRetries: 1`) |
 
@@ -61,7 +61,7 @@
 | NFR-05.1 | TypeScript 嚴格模式 | 全專案 strict type checking |
 | NFR-05.2 | 常數集中管理 | Chunk size、Batch size 喺 `lib/` 集中；context 上限（12k / 20k）各 route 獨立定義 |
 | NFR-05.3 | 模組化 | lib/ 模組職責清晰（embedding、search、chunking 分離） |
-| NFR-05.4 | Singleton pattern | DB 連線用 singleton；`lib/llm.ts` 共享 chat/tool LLM；quiz、summary 各有獨立 module-scoped LLM（不同 temperature/config） |
+| NFR-05.4 | Cached / Shared instances | DB 連線用 module-level cache（Dev 用 `global` 防 HMR 重複連線）；`lib/llm.ts` 共享 chat/tool LLM；quiz、summary 各有獨立 module-scoped LLM（不同 temperature/config） |
 
 ---
 
