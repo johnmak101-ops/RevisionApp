@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -135,6 +135,12 @@ export function useQuiz() {
     queryFn: fetchDocs,
     staleTime: 60_000, // docs change rarely
   });
+
+  useEffect(() => {
+    if (state.selectedDoc && !docs.some((d) => d._id === state.selectedDoc)) {
+      dispatch({ type: "SET_DOC", doc: "" });
+    }
+  }, [docs, state.selectedDoc]);
 
   // ── Generate quiz ─────────────────────────────────────────────────────────
   const generateMutation = useMutation({

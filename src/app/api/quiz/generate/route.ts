@@ -144,17 +144,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 過濾 + 規範化
+    // 過濾 + 規範化（必須恰好 4 個選項；先截斷再驗證 correctIndex，避免 >4 選項時 index 越界）
     const validQuestions = questions
-      .filter(
-        (q) =>
-          q.question &&
-          Array.isArray(q.options) &&
-          q.options.length >= 2 &&
-          typeof q.correctIndex === "number" &&
-          q.correctIndex >= 0 &&
-          q.correctIndex < q.options.length
-      )
+      .filter((q) => {
+        if (!q.question || !Array.isArray(q.options)) return false;
+        const opts = q.options.slice(0, 4);
+        if (opts.length !== 4) return false;
+        const ci = q.correctIndex;
+        return typeof ci === "number" && ci >= 0 && ci < 4;
+      })
       .map((q) => ({
         question: q.question,
         options: q.options.slice(0, 4),

@@ -65,14 +65,22 @@ The revision-app `Chunk` collection requires a vector index to use `$vectorSearc
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 4096,
+      "numDimensions": 2560,
       "similarity": "cosine"
+    },
+    {
+      "type": "filter",
+      "path": "filename"
+    },
+    {
+      "type": "filter",
+      "path": "chapter"
     }
   ]
 }
 ```
 
-7. Set **Index Name** to `chunk_vector_index` (must match `VECTOR_INDEX` in `src/lib/search.ts`)
+7. Set **Index Name** to `chunk_vector_index` (must match `VECTOR_INDEX` in `src/lib/search.ts`; full JSON template in `scripts/vector-index.json`)
 8. Click **Create Search Index**
 9. Wait for index status to become **Ready** (approximately 1–3 minutes)
 
@@ -94,9 +102,11 @@ db.chunks.createSearchIndex({
       {
         type: "vector",
         path: "embedding",
-        numDimensions: 4096,
+        numDimensions: 2560,
         similarity: "cosine"
-      }
+      },
+      { type: "filter", path: "filename" },
+      { type: "filter", path: "chapter" }
     ]
   }
 })
@@ -130,7 +140,7 @@ If the index is correctly configured, search and response should work normally.
 
 | Item | Value | Description |
 |------|-------|-------------|
-| Vector Dimensions | Detected at startup | Default `qwen/qwen3-embedding-8b` outputs 4096 dims |
+| Vector Dimensions | Detected at startup | Default `qwen/qwen3-embedding-4b` outputs 2560 dims |
 | Similarity | cosine | Matches embedding normalization method |
 | Index Name | chunk_vector_index | Must match `src/lib/search.ts` |
 | Collection | chunks | Collection mapped by Mongoose model `Chunk` |
@@ -154,4 +164,4 @@ If the index is correctly configured, search and response should work normally.
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

@@ -14,6 +14,30 @@ const SUBQUERY_LIMIT = 4;
 /** Multi-query 合併後回傳的最大結果數 */
 const MULTI_QUERY_LIMIT = 8;
 
+// ─── Score Normalization ─────────────────────
+/** 低於此分數的 chunk 會被手棄（too irrelevant） */
+const MIN_SCORE_THRESHOLD = 0.60;
+/** raw cosine similarity 的預期最低值（對應 qwen3-embedding-4b） */
+const MIN_RAW_SCORE = 0.60;
+/** raw cosine similarity 的預期最高值（對應 qwen3-embedding-4b） */
+const MAX_RAW_SCORE = 0.82;
+
+/**
+ * 將 MongoDB Atlas `$vectorSearch` 的 raw cosine similarity score
+ * 重新標準化到 0–1 範圍，令分數更直觀易讀。
+ *
+ * - raw <= MIN_RAW_SCORE → 0
+ * - raw >= MAX_RAW_SCORE → 1
+ * - 其他 → 線性插值
+ *
+ * @param raw - raw cosine similarity（qwen3-4b 通常 0.50–0.82）
+ * @returns 標準化後的分數（0–1，保留 4 位小數）
+ */
+function normalizeScore(raw: number): number {
+  const normalized = (raw - MIN_RAW_SCORE) / (MAX_RAW_SCORE - MIN_RAW_SCORE);
+  return Math.round(Math.min(Math.max(normalized, 0), 1) * 10000) / 10000;
+}
+
 /** 向量搜尋結果的統一格式 */
 export interface SearchResult {
   /** chunk 文字內容 */
@@ -22,15 +46,28 @@ export interface SearchResult {
   page: number;
   /** 所屬文件 ID */
   pdfId: string;
+  /** 所屬檔案名稱 */
+  filename?: string;
+  /** 所屬章節（h1 header） */
+  chapter?: string;
   /** 向量相似度分數（0–1），關鍵字備援時固定為 0.5 */
   score?: number;
 }
 
-function mapResults(results: { content: string; page: number; pdfId: { toString?: () => string } | string; score?: number }[]): SearchResult[] {
+function mapResults(results: {
+  content: string;
+  page: number;
+  pdfId: { toString?: () => string } | string;
+  filename?: string;
+  chapter?: string;
+  score?: number;
+}[]): SearchResult[] {
   return results.map((r) => ({
     content: r.content,
     page: r.page,
     pdfId: typeof r.pdfId === "object" && r.pdfId?.toString ? r.pdfId.toString() : String(r.pdfId),
+    filename: r.filename,
+    chapter: r.chapter,
     score: r.score,
   }));
 }
@@ -77,11 +114,13 @@ function escapeRegex(s: string): string {
  *
  * @param query - 用戶查詢字串
  * @param limit - 最大回傳筆數（預設 5）
+ * @param filter - 可選 MongoDB pre-filter（例：`{ filename: "Java.pdf" }`）
  * @returns 排序後的相似 chunk 結果
  */
 export async function vectorSearch(
   query: string,
-  limit = LIMIT
+  limit = LIMIT,
+  filter?: Record<string, unknown>
 ): Promise<SearchResult[]> {
   await connectDB();
 
@@ -100,14 +139,20 @@ export async function vectorSearch(
           queryVector,
           numCandidates: NUM_CANDIDATES,
           limit,
+          ...(filter && Object.keys(filter).length > 0 ? { filter } : {}),
         },
       },
-      { $project: { content: 1, page: 1, pdfId: 1, score: { $meta: "vectorSearchScore" } } },
+      { $project: { content: 1, page: 1, pdfId: 1, filename: 1, chapter: 1, score: { $meta: "vectorSearchScore" } } },
     ]);
-    results = mapResults(agg);
+    results = mapResults(agg)
+      .filter((r) => (r.score ?? 0) >= MIN_SCORE_THRESHOLD)  // 丟棄低質 chunk
+      .map((r) => ({
+        ...r,
+        score: r.score !== undefined ? normalizeScore(r.score) : undefined,
+      }));
     if (results.length > 0) {
       console.info(
-        `[Search] Vector results: ${results.length}, scores: [${results.map((r) => r.score?.toFixed(3)).join(", ")}]`
+        `[Search] Vector results: ${results.length} (after threshold ${MIN_SCORE_THRESHOLD}), scores: [${results.map((r) => r.score?.toFixed(3)).join(", ")}]`
       );
     } else {
       console.info("[Search] Vector search returned 0 results");
@@ -140,7 +185,10 @@ export async function vectorSearch(
  * @param question - 用戶原問題
  * @returns 合併去重後，按相關度排序的最佳 chunks
  */
-export async function multiQuerySearch(question: string): Promise<SearchResult[]> {
+export async function multiQuerySearch(
+  question: string,
+  filter?: Record<string, unknown>
+): Promise<SearchResult[]> {
   // ── Step 1: 用 LLM 生成 3 個搜尋角度 ────────
   let subQueries: string[] = [question]; // 預設只用原問題（fallback）
 
@@ -180,7 +228,7 @@ Example output: ["rules for naming variables", "variable name conventions and re
 
   // ── Step 2: 並行搜尋所有子查詢 ──────────────
   const allResults = await Promise.all(
-    subQueries.map((q) => vectorSearch(q, SUBQUERY_LIMIT))
+    subQueries.map((q) => vectorSearch(q, SUBQUERY_LIMIT, filter))
   );
 
   // ── Step 3: 合併 + 去重（content 相同 = 同一 chunk，保留最高分） ──

@@ -26,13 +26,29 @@ Upload a PDF or Markdown file with automatic text extraction, chunking, embeddin
 }
 ```
 
-**Error** (400/409/413/500):
+If the Chunk Content Guard strips fragments, the response may also include:
+
+```json
+{
+  "success": true,
+  "documentId": "665f...",
+  "chunkCount": 40,
+  "warning": "2 content fragments were flagged and removed by the security system",
+  "flaggedChunks": 2
+}
+```
+
+**Error** (400/409/413/422/500):
 
 ```json
 {
   "error": "Error description"
 }
 ```
+
+| Status | Scenario |
+|--------|----------|
+| 422 | All content flagged as suspicious — nothing to index |
 
 ---
 
@@ -53,6 +69,45 @@ List all uploaded documents.
   }
 ]
 ```
+
+> Today `POST /api/ingest` sets both `filename` and `originalName` to the uploaded file name; they may diverge if display renaming is added later.
+
+---
+
+## DELETE `/api/documents/[id]`
+
+Deletes one indexed document: removes **all Chunks** with matching `pdfId`, all **`QuizAttempt`** rows with matching `documentId`, then the **`Document`**. ⚠️ Irreversible.
+
+**Path parameters**:
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | MongoDB ObjectId of the document (24 hex chars, same as `_id` from `GET /api/documents`) |
+
+**Response** (200):
+
+```json
+{
+  "success": true,
+  "deletedDocumentId": "665f...",
+  "deletedChunks": 42
+}
+```
+
+**Error** (400/404/500):
+
+```json
+{
+  "error": "Error description"
+}
+```
+
+| Status | Scenario |
+|--------|----------|
+| 400 | `id` is not a valid ObjectId |
+| 404 | Document not found |
+
+> If **409** on re-upload (duplicate filename), delete the existing document first, then ingest again.
 
 ---
 
@@ -113,13 +168,15 @@ Uses Vercel AI SDK's UI Message Stream protocol (not NDJSON). The frontend `useC
   2. Runs parallel `$vectorSearch` (cosine, top 4 each)
   3. Merges and deduplicates (first 100 chars as key, keeps highest score)
   4. Returns top 8 results sorted by score
-- Retains the most recent 10 history messages (`messages.slice(-10)`)
-- Results with score < 0.4 are filtered out
-- Returns a streaming text prompt when no relevant results found
+- Chat history: up to 10 prior messages, excluding the current last user message (`chat/route.ts`)
+- **Two-stage score thresholds** (`search.ts` → `chat/route.ts`):
+  1. In `vectorSearch()`, chunks whose **raw** Atlas cosine score is below **0.60** are dropped; remaining scores are **normalized to 0–1**
+  2. Before building context, `chat/route.ts` drops chunks with **normalized score < 0.40**
+- Returns a streaming text prompt when no relevant results remain
 - Falls back to single-query search if LLM sub-query generation fails
 
 **Security**:
-- Vard prompt injection detection (instruction override / role manipulation / system prompt leak)
+- Vard (`@andersmyrmel/vard`) prompt injection detection (instruction override / role manipulation / system prompt leak)
 - Rate limit: 20 req/min per IP
 
 ---
@@ -312,6 +369,7 @@ Common HTTP status codes:
 | Status Code | Description |
 |-------------|-------------|
 | 400 | Missing or invalid parameters |
+| 422 | Unprocessable (e.g. ingest when every chunk is security-flagged) |
 | 404 | Resource not found |
 | 409 | Conflict (e.g., duplicate file upload or quiz submission) |
 | 413 | File too large (exceeds 100MB limit) |
@@ -321,4 +379,4 @@ Common HTTP status codes:
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-25*

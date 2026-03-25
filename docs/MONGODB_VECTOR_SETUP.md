@@ -65,14 +65,22 @@ revision-app 的 `Chunk` collection 需要一個向量索引，才能使用 `$ve
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 4096,
+      "numDimensions": 2560,
       "similarity": "cosine"
+    },
+    {
+      "type": "filter",
+      "path": "filename"
+    },
+    {
+      "type": "filter",
+      "path": "chapter"
     }
   ]
 }
 ```
 
-7. **Index Name** 設為 `chunk_vector_index`（需與 `src/lib/search.ts` 中的 `VECTOR_INDEX` 一致）
+7. **Index Name** 設為 `chunk_vector_index`（需與 `src/lib/search.ts` 中的 `VECTOR_INDEX` 一致；完整 JSON 範本見 `scripts/vector-index.json`）
 8. 點擊 **Create Search Index**
 9. 等待索引狀態變為 **Ready**（約 1–3 分鐘）
 
@@ -94,9 +102,11 @@ db.chunks.createSearchIndex({
       {
         type: "vector",
         path: "embedding",
-        numDimensions: 4096,
+        numDimensions: 2560,
         similarity: "cosine"
-      }
+      },
+      { type: "filter", path: "filename" },
+      { type: "filter", path: "chapter" }
     ]
   }
 })
@@ -130,14 +140,34 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/revision?r
 
 | 項目 | 值 | 說明 |
 |------|-----|------|
-| 向量維度 | 啟動時偵測 | 預設 `qwen/qwen3-embedding-8b` 為 4096 維 |
+| 向量維度 | **2560** | `qwen/qwen3-embedding-4b` 的維度 |
 | 相似度 | cosine | 與 embedding 的 normalize 方式一致 |
 | 索引名稱 | chunk_vector_index | 需與 `src/lib/search.ts` 一致 |
 | Collection | chunks | Mongoose model `Chunk` 對應的 collection |
 
+### Embedding Model 維度對照表
+
+| Model | `numDimensions` | 價錢(/1M) | 備註 |
+|-------|:-----------:|:---:|------|
+| `qwen/qwen3-embedding-4b` | **2560** | $0.02 | ✅ 目前使用 |
+| `qwen/qwen3-embedding-8b` | 4096 | $0.01 | 舊版本 |
+| `text-embedding-3-small` | 1536 | $0.02 | 需 OpenAI provider |
+
 ---
 
-## 六、常見問題
+## 六、換 Embedding Model 步驟
+
+> ⚠️ 換 model 後，**舊的 embedding 全部失效**，必須完整執行以下步驟。
+
+1. **更新 `.env.local`**：修改 `OPENROUTER_EMBED_MODEL` 為新 model
+2. **MongoDB Atlas → Search → 找到 `chunk_vector_index` → 刪除**
+3. **重新建立 index**：使用新 model 對應的 `numDimensions`（參考上表）
+4. **刪除所有 Chunks**：在 Atlas 入面 `chunks` collection → Delete All Documents
+5. **重新 ingest 所有文件**：喺 App 逐份文件重新上傳
+
+---
+
+## 七、常見問題
 
 ### Q: 出現 "MongoServerError: $vectorSearch is not supported"
 - 確認使用 **MongoDB Atlas**（M0 以上），本地 MongoDB 不支援 Vector Search
@@ -154,4 +184,4 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/revision?r
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-25*

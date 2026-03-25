@@ -33,7 +33,7 @@ flowchart TD
     C -->|"> 100MB"| ERR2["Show error: File too large"]
     
     D --> E{"Server validation"}
-    E -->|"Duplicate name"| ERR3["409: File already exists"]
+    E -->|"Duplicate name"| ERR3["409: Already uploaded — delete from Indexed documents first"]
     E -->|"Empty/corrupted"| ERR4["400: Invalid file"]
     E -->|"✅ Passed"| F["Extract text"]
     
@@ -43,13 +43,30 @@ flowchart TD
     PG -->|"✅ Safe (flagged chunks removed)"| H["Batch Embedding (20 per batch)"]
     H --> I["Store in MongoDB"]
     I --> J["✅ Show success + chunk count"]
+    J --> K["Invalidate documents query cache"]
     
     style J fill:#2d8a4e,color:#fff
+    style K fill:#2d8a4e,color:#fff
     style ERR1 fill:#cc3333,color:#fff
     style ERR2 fill:#cc3333,color:#fff
     style ERR3 fill:#cc3333,color:#fff
     style ERR4 fill:#cc3333,color:#fff
     style ERR5 fill:#cc3333,color:#fff
+```
+
+---
+
+## 2a. Delete Indexed Document (summary)
+
+```mermaid
+flowchart TD
+    A["User clicks Delete"] --> B{"Confirm?"}
+    B -->|"Cancel"| Z["No-op"]
+    B -->|"OK"| C["DELETE /api/documents/id"]
+    C --> D{"Result"}
+    D -->|"200"| E["Invalidate documents query cache"]
+    D -->|"4xx/5xx"| F["Show error"]
+    E --> G["List and Quiz/Summary selectors refresh"]
 ```
 
 ---
@@ -68,9 +85,9 @@ flowchart TD
     D --> MERGE["Merge + Deduplicate results"]
     MERGE --> E{"Relevant results?"}
     
-    E -->|"Found (score ≥ 0.4)"| F["Combine Context + Chat History (max 10)"]
+    E -->|"Found (normalized ≥ 0.40)"| F["Combine Context + Chat History (max 10)"]
     E -->|"Vector failed"| G["Keyword Fallback Search"]
-    E -->|"All scores < 0.4"| H["⚠️ No relevant content found"]
+    E -->|"All normalized < 0.40"| H["⚠️ No relevant content found"]
     
     G --> F
     F --> I["Call LLM (Streaming)"]
@@ -82,6 +99,8 @@ flowchart TD
     style H fill:#e6a817,color:#000
     style WARN fill:#e6a817,color:#000
 ```
+
+> **Implementation**: After `$vectorSearch`, `search.ts` drops chunks with **raw** cosine < **0.60**, then normalizes remaining scores to 0–1. The diagram’s “normalized” refers to that value; `chat/route.ts` only builds context from chunks with normalized ≥ **0.40**.
 
 ---
 
@@ -197,7 +216,7 @@ flowchart LR
     subgraph "External Services"
         OR["OpenRouter API"]
         MDB["MongoDB Atlas"]
-        LP["LlamaCloud (LlamaParse)"]
+        LP["LlamaCloud (LlamaParse + parsing_instruction)"]
     end
     
     FU --> AI

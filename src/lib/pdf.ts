@@ -36,6 +36,25 @@ async function uploadPdf(buffer: Buffer, filename: string): Promise<string> {
   const form = new FormData();
   form.append("file", blob, filename);
 
+  // ── Free-tier parsing improvements ──────────────────────────────────────────
+  // parsing_instruction is available on all tiers and significantly improves
+  // table accuracy by giving the parser explicit formatting guidance.
+  form.append(
+    "parsing_instruction",
+    `This document is a programming bootcamp course material (e.g. Java, Spring Boot).
+It contains structured tables comparing data types, sizes, ranges, and example values.
+
+CRITICAL TABLE RULES:
+1. Preserve every table EXACTLY as it appears — do NOT skip, merge, or reorder any rows or columns.
+2. Every cell in every row must be filled. If a cell appears empty in the source, write an empty string in that cell.
+3. Use standard Markdown table syntax: header row, separator row (|---|---|), then data rows.
+4. NEVER allow column data to shift into the wrong column — check alignment carefully.
+5. If a row has 4 columns, every data row must also have 4 columns.
+6. Code snippets and inline code must be preserved inside backticks.
+7. Section headings (#, ##, ###) must be preserved with the correct level.`
+  );
+  form.append("result_type", "markdown");
+
   const res = await fetch(`${LLAMA_BASE}/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${LLAMA_CLOUD_API_KEY}` },

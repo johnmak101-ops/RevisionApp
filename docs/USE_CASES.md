@@ -1,5 +1,21 @@
 # 用例文件 (Use Cases)
 
+## 用例一覽 (Use Case Overview)
+
+本項目核心圍繞 **「溫書 (Revision)」** 流程展開，涵蓋從教材上傳到知識鞏固的全過程：
+
+1.  **UC-01 上傳文件**：支援 PDF/Markdown 解析並建立向量索引。
+2.  **UC-02 RAG 聊天**：基於教材內容進行智能問答，支援多查詢及防護。
+3.  **UC-03 生成 Quiz**：AI 自動提取知識點生成多選題。
+4.  **UC-04 提交 Quiz**：自動計分並追蹤學習進度。
+5.  **UC-05 知識缺口**：分析弱項並提供改善建議。
+6.  **UC-06 生成摘要**：一鍵提取章節重點與大綱。
+7.  **UC-07 查看文件**：隨時查看已上傳教材清單。
+8.  **UC-09 刪除文件**：刪除已索引文件（含 chunks 與關聯 Quiz），以便重新上傳同名檔。
+9.  **UC-08 重置記錄**：一鍵清除答題記錄，重新開始。
+
+---
+
 ## 角色定義 (Actors)
 
 | 角色 | 描述 |
@@ -8,7 +24,7 @@
 | **系統 (System)** | Revision App 後端服務 |
 | **OpenRouter AI** | 外部 LLM & Embedding 服務 |
 | **MongoDB Atlas** | 雲端資料庫 + 向量搜尋引擎 |
-| **LlamaCloud** | LlamaParse REST API，負責 PDF 解析（支援多語言及掃描 PDF） |
+| **LlamaCloud** | LlamaParse REST API，負責 PDF 解析（支援多語言及掃描 PDF，配合 `parsing_instruction` 提升表格準確度） |
 
 ---
 
@@ -28,12 +44,12 @@
 2. 系統驗證文件格式（`.pdf`, `.md`, `.markdown`）
 3. 系統驗證文件大小（≤ 100MB）及非空
 4. 系統檢查同名文件是否已存在（去重）
-5. 系統擷取文字內容（PDF → LlamaParse REST API，MD → 直接解析）
+5. 系統擷取文字內容（PDF → LlamaParse REST API + `parsing_instruction`，MD → 直接解析）
 6. 系統按 Markdown headers 分段，再 sub-split 為 Chunks（512 chars，100 overlap），每 chunk 帶 header context prefix
 7. 系統執行 **PromptGuard 安全掃描** — 有問題嘅 chunks 會被移除；全部被 flag 就回傳 422
 8. 系統批次呼叫 OpenRouter Embedding API（每批 20）
 9. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
-10. 系統回傳成功信息（含 `id`、`chunkCount`）
+10. 系統回傳成功信息（含 `id`、`chunkCount`）；若部分 chunks 被 PromptGuard 標記，回傳 `warning` + `flaggedChunks` 數量
 
 **替代流程**：
 
@@ -42,7 +58,7 @@
 | 文件格式不符 | 回傳 400 錯誤，提示只接受 PDF/Markdown |
 | 文件為空 | 回傳 400 錯誤，提示無效檔案 |
 | 文件過大 (>100MB) | 回傳 413 錯誤 |
-| 同名文件已存在 | 回傳 409 錯誤，提示需先刪除舊版本 |
+| 同名文件已存在 | 回傳 409 錯誤，提示先喺「已索引文件」刪除該筆，或使用 `DELETE /api/documents/[id]` |
 | LlamaParse 解析失敗/逾時 | 回傳 400 錯誤，提示重試或縮小 PDF |
 | 所有 chunks 被 PromptGuard 標記 | 回傳 422 錯誤：內容被安全檢查拒絕 |
 | Chunks 為空 | 回傳 400 錯誤，提示無法提取文字 |
@@ -65,24 +81,29 @@
 **主要流程**：
 
 1. 學員輸入問題
-2. 系統執行 **PromptGuard 檢查** — 偵測到注入攻擊就回傳警告訊息
-3. 系統用 Multi-Query Search 策略搜尋相關內容：
+2. 系統執行 **Rate Limiting** 檢查（IP-based sliding window，上限 20 次/分鐘）
+3. 系統執行 **PromptGuard 檢查** — 驗證訊息長度（≤ 2000 字）+ 偵測注入攻擊；不安全就回傳警告訊息，安全就回傳 sanitized 文字
+4. 系統用 Multi-Query Search 策略搜尋相關內容：
    - toolLLM 將問題拆成 3 個子查詢（唔同角度）
    - 並行對每個子查詢執行 `$vectorSearch`（cosine，top 4）
    - 合併去重，按分數排序取最佳 8 條
-4. 系統過濾 score < 0.4 嘅低相關結果
-5. 系統組合 context + 最近 10 條對話歷史
-6. 系統呼叫 OpenRouter Chat LLM（streaming）
-7. 系統用 Vercel AI SDK（`createUIMessageStreamResponse` + `toUIMessageStream`）streaming 回傳
-8. 前端用 `useChat`（@ai-sdk/react）自動接收，透過 markdown-it 渲染回答
+5. 系統雙層過濾低相關結果：
+   - 第一層：`search.ts` 丟棄 raw cosine < 0.60 嘅 chunks
+   - 第二層：`chat/route.ts` 丟棄 normalized score < 0.40 嘅結果（`search.ts` 嘅 `normalizeScore` 以固定 raw 區間線性映射到 0–1，非按批次 min-max）
+6. 系統組合 context + 最近 10 條對話歷史
+7. 系統呼叫 OpenRouter Chat LLM（streaming）
+8. 系統用 Vercel AI SDK（`createUIMessageStreamResponse` + `toUIMessageStream`）streaming 回傳
+9. 前端用 `useChat`（@ai-sdk/react）自動接收，透過 markdown-it 渲染回答
 
 **替代流程**：
 
 | 條件 | 處理 |
 |------|------|
+| Rate Limit 超過 (20次/min) | 回傳 429 + `Retry-After` header |
+| 訊息超過 2000 字 | 回傳警告訊息（PromptGuard） |
 | 偵測到 Prompt Injection | 回傳警告訊息（PromptGuard） |
 | 向量搜尋失敗 | 降級至 keyword fallback（regex 搜尋） |
-| 無相關結果 (所有 score < 0.4) | 回傳提示：「冇搵到相關文件內容，請先上傳」 |
+| 無相關結果 (雙層過濾後為空) | 回傳提示：「冇搵到相關文件內容，請先上傳」 |
 | LLM streaming 出錯 | 回傳 error chunk |
 | Messages 為空 | 回傳 400 錯誤 |
 
@@ -104,17 +125,21 @@
 
 1. 學員選擇目標文件
 2. 學員設定題目數量（3-15 題，預設 5）
-3. 系統檢索文件嘅 Chunks（按 page + chunkIndex 排序）
-4. 系統組合 context（上限 12,000 chars）
-5. 系統呼叫 LLM 生成 MCQ（含 question、4 options、correctIndex、topic、explanation）
-6. 系統驗證並過濾無效題目
-7. 系統建立 `QuizAttempt` 記錄（未提交狀態）
-8. 系統回傳題目（**隱藏 correctIndex 和 explanation**）
+3. 系統執行 **Rate Limiting** 檢查（上限 10 次/分鐘）
+4. 系統驗證 `documentId` 格式（`guardDocumentId`：24 位 hex，MongoDB ObjectId）
+5. 系統檢索文件嘅 Chunks（按 page + chunkIndex 排序）
+6. 系統組合 context（上限 12,000 chars）
+7. 系統呼叫 LLM 生成 MCQ（含 question、4 options、correctIndex、topic、explanation）
+8. 系統驗證並過濾無效題目
+9. 系統建立 `QuizAttempt` 記錄（未提交狀態）
+10. 系統回傳題目（**隱藏 correctIndex 和 explanation**）
 
 **替代流程**：
 
 | 條件 | 處理 |
 |------|------|
+| Rate Limit 超過 (10次/min) | 回傳 429 + `Retry-After` header |
+| documentId 格式無效 | 回傳 400 錯誤 |
 | 文件無 Chunks | 回傳 404 錯誤 |
 | LLM 回傳無效 JSON | 回傳 502 錯誤，提示重試 |
 | 所有題目都唔合格 | 回傳 502 錯誤 |
@@ -148,6 +173,7 @@
 |------|------|
 | Quiz 已提交過 | 回傳 409 錯誤，提示已交 |
 | QuizId 不存在 | 回傳 404 錯誤 |
+| 答案數量不符 | 回傳 400 錯誤，提示需要回答所有題目 |
 
 **後置條件**：學員看到分數及每題對錯詳情
 
@@ -192,16 +218,21 @@
 **主要流程**：
 
 1. 學員選擇目標文件
-2. 系統檢索 Chunks（按 page + chunkIndex 排序，上限 20,000 chars）
-3. 系統呼叫 LLM 生成結構化 Markdown 摘要（streaming）
-4. 前端逐 token 渲染摘要
+2. 系統執行 **Rate Limiting** 檢查（上限 10 次/分鐘）
+3. 系統驗證 `documentId` 格式（`guardDocumentId`：24 位 hex）
+4. 系統檢索 Chunks（按 page + chunkIndex 排序，上限 20,000 chars）
+5. 系統呼叫 LLM 生成結構化 Markdown 摘要（streaming）
+6. 系統以 NDJSON 格式回傳（每行 `{ token }` → 最終 `{ done: true }`）
+7. 前端逐 token 渲染摘要
 
 **替代流程**：
 
 | 條件 | 處理 |
 |------|------|
+| Rate Limit 超過 (10次/min) | 回傳 429 + `Retry-After` header |
+| documentId 格式無效 | 回傳 400 錯誤 |
 | 文件無 Chunks | 回傳 404 錯誤 |
-| LLM streaming 出錯 | 回傳 error chunk |
+| LLM streaming 出錯 | 回傳 NDJSON `{ error }` chunk |
 
 **後置條件**：學員看到結構化嘅學習大綱
 
@@ -215,15 +246,74 @@
 | **名稱** | 查看已上傳文件列表 |
 | **Actor** | 學員 |
 | **前置條件** | 無 |
-| **觸發條件** | 頁面載入時自動呼叫 |
+| **觸發條件** | 頁面載入或 `["documents"]` 快取失效時（`DocumentList`、`useQuiz`、`SummaryPanel`） |
 
 **主要流程**：
 
-1. 系統查詢所有 `Document`（按上傳時間降序）
-2. 回傳文件列表（filename、originalName、chunkCount、uploadedAt）
+1. 前端呼叫 `GET /api/documents`
+2. 系統查詢所有 `Document`（按上傳時間降序）
+3. 回傳文件列表（filename、originalName、chunkCount、uploadedAt）
 
-**後置條件**：各組件可使用文件列表（Quiz、Summary 嘅文件選擇）
+**後置條件**：主頁「已索引文件」、Quiz／Summary 文件下拉可使用同一資料源
 
 ---
 
-*更新日期：2026-03-24*
+## UC-09：刪除已索引文件
+
+| 項目 | 內容 |
+|------|------|
+| **ID** | UC-09 |
+| **名稱** | 刪除已索引文件 |
+| **Actor** | 學員 |
+| **前置條件** | 至少有一份已索引文件 |
+| **觸發條件** | 學員喺「已索引文件」按 **刪除** 並確認 |
+
+**主要流程**：
+
+1. 前端呼叫 `DELETE /api/documents/{id}`（`id` 為 `GET /api/documents` 回傳嘅 `_id`）
+2. 系統驗證 `id` 為有效 24 字元 hex ObjectId
+3. 系統刪除所有 `Chunk`（`pdfId` = 該 id）
+4. 系統刪除所有 `QuizAttempt`（`documentId` = 該 id）
+5. 系統刪除 `Document`
+6. 回傳 `{ success, deletedDocumentId, deletedChunks }`；前端刷新文件清單（與 Quiz／Summary 共用 `documents` 快取）
+
+**替代流程**：
+
+| 條件 | 處理 |
+|------|------|
+| 無效 id | 400 |
+| 文件不存在 | 404 |
+
+**後置條件**：該文件不再出現於 RAG／Quiz／Summary；同名檔可重新 ingest。
+
+---
+
+## UC-08：重置答題記錄
+
+| 項目 | 內容 |
+|------|------|
+| **ID** | UC-08 |
+| **名稱** | 重置答題記錄 |
+| **Actor** | 學員 |
+| **前置條件** | 至少一份 Quiz 已提交 |
+| **觸發條件** | 學員點擊「重置記錄」按鈕 |
+
+**主要流程**：
+
+1. 學員確認要清除所有答題記錄
+2. 系統刪除 `QuizAttempt` collection 內所有文件
+3. 系統回傳已刪除數量 `{ deleted: number }`
+4. 前端清空 Knowledge Gap 統計
+
+**替代流程**：
+
+| 條件 | 處理 |
+|------|------|
+| 無記錄可刪 | 回傳 `{ deleted: 0 }` |
+| DB 操作失敗 | 回傳 500 錯誤 |
+
+**後置條件**：所有答題記錄已清除，Knowledge Gap 歸零
+
+---
+
+*更新日期：2026-03-25*

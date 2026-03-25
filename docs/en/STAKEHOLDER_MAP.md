@@ -75,7 +75,7 @@ Different stakeholders have potentially competing needs. The BA identifies these
 | Conflict Scenario | Stakeholder A Need | Stakeholder B Need | Balancing Strategy |
 |-------------------|-------------------|-------------------|-------------------|
 | Speed vs. Accuracy | Students: want instant answers | IT Admin: wants to control API costs | Rate limiting (20 req/min) balances speed and cost |
-| Parsing Quality vs. Cost | Students: want all PDFs accurately parsed | IT Admin: LlamaCloud free tier has page limits | Use LlamaParse for improved scanned PDF accuracy; inform users of quota limits via frontend |
+| Parsing Quality vs. Cost | Students: want all PDFs accurately parsed | IT Admin: LlamaCloud free tier has page limits | Use LlamaParse + `parsing_instruction` for improved scanned PDF and table accuracy; inform users of quota limits via frontend |
 | AI Freedom vs. Security | Students: want AI to answer as broadly as possible | IT Admin: prevent Prompt Injection and system abuse | Vard Guard + Chunk Content Guard blocks malicious activity without impacting legitimate use |
 
 ---

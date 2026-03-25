@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ const UploadContext = createContext<UploadContextValue | null>(null);
  * and trigger background uploads.
  */
 export function UploadProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [uploadState, setUploadState] = useState<UploadState>({
     status: "idle",
     filename: "",
@@ -69,6 +71,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
           filename: file.name,
           message: `✅ ${file.name} — ${data.chunkCount} 個區塊已索引`,
         });
+        void queryClient.invalidateQueries({ queryKey: ["documents"] });
       })
       .catch((err) => {
         // Ignore abort errors (user navigated / cancelled intentionally)
@@ -79,7 +82,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
           message: `❌ ${err instanceof Error ? err.message : "上傳失敗"}`,
         });
       });
-  }, []);
+  }, [queryClient]);
 
   const dismiss = useCallback(() => {
     setUploadState({ status: "idle", filename: "", message: "" });

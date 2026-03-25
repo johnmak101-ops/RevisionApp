@@ -46,7 +46,7 @@
 | NFR-04.3 | Quiz 題數範圍 | 3-15 |
 | NFR-04.4 | Chat 歷史長度 | 最近 10 條 |
 | NFR-04.5 | Vector 候選數 | 50 candidates → 4/sub-query × 最多 3（LLM 生成）→ top 8 (multiQuery) |
-| NFR-04.6 | Score 門檻 | ≥ 0.4 |
+| NFR-04.6 | Score 門檻 | Vector：`search.ts` 丟棄 raw cosine < **0.60**；Chat context：`chat/route.ts` 僅用 normalized ≥ **0.40** |
 | NFR-04.7 | Quiz context | 12,000 chars |
 | NFR-04.8 | Summary context | 20,000 chars |
 | NFR-04.9 | Min chunk length | 20 chars（過短嘅 chunk 會被丟棄） |
@@ -76,4 +76,4 @@
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-25*

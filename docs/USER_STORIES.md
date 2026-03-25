@@ -12,12 +12,12 @@
 - [ ] 支援 `.pdf` 格式
 - [ ] 上傳後自動擷取文字、分割、embedding、存儲
 - [ ] 顯示上傳成功信息（含 chunk 數量）
-- [ ] 同名文件不能重複上傳（409 錯誤）
+- [ ] 同名文件不能重複上傳（409 錯誤）；可先刪除「已索引文件」再傳（見 US-1.4）
 - [ ] 空文件或損壞文件有清晰錯誤提示
 - [ ] 文件大小上限 100MB
 
 **負面路徑 (Negative Paths)**:
-- [ ] 如果 PDF 包含大量非文字內容（如純圖片、掃描件），系統透過 LlamaParse OCR 處理，但需在 chunk 數量较低時提示用戶「部分內容可能未被索引」
+- [ ] 如果 PDF 包含大量非文字內容（如純圖片、掃描件），系統透過 LlamaParse OCR + `parsing_instruction` 處理，但需在 chunk 數量较低時提示用戶「部分內容可能未被索引」
 - [ ] 如果 LlamaParse API 配額已用盡，回傳具體錯誤提示（而非通用 500 錯誤）
 
 ### US-1.2 上傳 Markdown 文件
@@ -37,8 +37,19 @@
 > **So that** 我知道邊啲資料已經可以用
 
 **Acceptance Criteria**:
-- [ ] 顯示文件名、chunk 數量、上傳時間
+- [ ] 顯示文件名、chunk 數量、上傳時間（API 回傳；主頁「已索引文件」顯示檔名與 chunk 數）
 - [ ] 按上傳時間倒序排列
+
+### US-1.4 刪除已索引文件
+
+> **As a** Bootcamp 學員
+> **I want to** 刪除唔再需要嘅已索引文件
+> **So that** 可以釋放索引、或重新上傳同名檔案
+
+**Acceptance Criteria**:
+- [ ] 主頁「已索引文件」可逐筆刪除（確認後執行）
+- [ ] 刪除後呼叫 `DELETE /api/documents/[id]`，一併清除 chunks 與關聯 Quiz 記錄
+- [ ] 刪除後文件清單與 Quiz／Summary 下拉即時一致（共用 `documents` 快取）
 
 ---
 
@@ -57,8 +68,8 @@
 - [ ] 保留最近 10 條對話歷史作為 context
 
 **負面路徑 (Negative Paths)**:
-- [ ] 當 AI 無法喺文件中搎到答案時，必須誠實回答「教材未涵蓋此內容」，而非胡亂猜測 (Hallucination Control)
-- [ ] 向量搜尋 score 低於 0.4 嘅結果必須過濾，不可作為 AI 回答依據
+- [ ] 當 AI 無法喺文件中搵到答案時，必須誠實回答「教材未涵蓋此內容」，而非胡亂猜測 (Hallucination Control)
+- [ ] 檢索結果須經兩段過濾：`search.ts` 丟棄 raw cosine < 0.60；正規化後 `chat/route.ts` 丟棄 normalized < 0.40，不可將後者用作回答 context
 
 ### US-2.2 搜尋容錯
 

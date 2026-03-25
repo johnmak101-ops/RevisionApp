@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+const VALID_DOC_ID = "507f1f77bcf86cd799439011";
+const OTHER_DOC_ID = "507f1f77bcf86cd799439099";
+
 // ─── Mock DB ─────────────────────────────────
 vi.mock("@/lib/db", () => ({ connectDB: vi.fn() }));
 
@@ -59,7 +62,7 @@ describe("POST /api/summary/generate", () => {
     const { POST } = await import("@/app/api/summary/generate/route");
     const req = new NextRequest("http://localhost/api/summary/generate", {
       method: "POST",
-      body: JSON.stringify({ documentId: "doc-1" }),
+      body: JSON.stringify({ documentId: VALID_DOC_ID }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);
@@ -86,7 +89,7 @@ describe("POST /api/summary/generate", () => {
     const { POST } = await import("@/app/api/summary/generate/route");
     const req = new NextRequest("http://localhost/api/summary/generate", {
       method: "POST",
-      body: JSON.stringify({ documentId: "nonexistent" }),
+      body: JSON.stringify({ documentId: OTHER_DOC_ID }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);

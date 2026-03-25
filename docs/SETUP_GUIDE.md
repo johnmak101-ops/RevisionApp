@@ -2,7 +2,7 @@
 
 ## 前置條件
 
-- **Node.js** ≥ 18.x
+- **Node.js** **20.x LTS**（建議；Next.js 16 與本 repo `package.json` 的 `engines` 一致）。18.x 或會建置成功，但未列為正式支援。
 - **npm** ≥ 9.x
 - **MongoDB Atlas** 帳號（M0 免費叢集）
 - **OpenRouter** 帳號（免費 API key）
@@ -34,7 +34,7 @@ MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/revision?retr
 # OpenRouter API（https://openrouter.ai/keys 取得）
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
 OPENROUTER_MODEL=google/gemini-2.5-flash-lite
-OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
+OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-4b
 
 # LlamaParse PDF 解析（https://cloud.llamaindex.ai/api-key 取得）
 LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
@@ -45,8 +45,8 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
 | 用途 | 模型/服務 | 備註 |
 |------|-----------|------|
 | **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
-| **Embedding** | `qwen/qwen3-embedding-8b` | Qwen3 8B embedding，4096 維 |
-| **PDF 解析** | LlamaParse REST API | 支援多語言、掃描 PDF |
+| **Embedding** | `qwen/qwen3-embedding-4b` | Qwen3 4B embedding，2560 維 |
+| **PDF 解析** | LlamaParse REST API | 支援多語言、掃描 PDF、自訂 `parsing_instruction` |
 
 ## 3. MongoDB Atlas 向量索引
 
@@ -63,15 +63,23 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 4096,
+        "numDimensions": 2560,
         "similarity": "cosine"
+      },
+      {
+        "type": "filter",
+        "path": "filename"
+      },
+      {
+        "type": "filter",
+        "path": "chapter"
       }
     ]
   }
 }
 ```
 
-> ⚠️ `numDimensions` 需與 embedding 模型輸出維度一致。`qwen/qwen3-embedding-8b` 輸出 4096 維。啟動時 warmup 會偵測維度，console 會顯示實際維度。
+> ⚠️ `numDimensions` 需與 embedding 模型輸出維度一致。`qwen/qwen3-embedding-4b` 輸出 2560 維。啟動時 warmup 會偵測維度，console 會顯示實際維度。完整定義與 `scripts/vector-index.json` 一致。
 
 4. 資料庫名稱：`revision`，Collection：`chunks`
 
@@ -89,6 +97,7 @@ npm run dev
 2. 等待 ingest 完成（console 會顯示 chunk 及 embedding 進度）
 3. 切換到 Chat Tab 試問問題
 4. 切換到 Quiz Tab 生成測驗
+5. （選做）喺「已索引文件」刪除一筆，確認清單更新；再傳同名檔應可成功 ingest
 
 ---
 
@@ -148,4 +157,4 @@ TypeError: Cannot read properties of undefined (reading '0')
 
 ---
 
-*更新日期：2026-03-20*
+*更新日期：2026-03-25*

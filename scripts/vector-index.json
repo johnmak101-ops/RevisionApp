@@ -1,14 +1,22 @@
 {
   "name": "chunk_vector_index",
   "type": "vectorSearch",
-  "_comment": "numDimensions 取決於所用嘅 embedding model，啟動時由 embedding.ts warmup 自動偵測。此檔案僅作為 MongoDB Atlas 建立 vector search index 嘅參考模板。qwen/qwen3-embedding-8b 為 4096d。",
+  "_comment": "numDimensions 取決於所用嘅 embedding model。qwen/qwen3-embedding-4b = 2560d | qwen/qwen3-embedding-8b = 4096d | text-embedding-3-small = 1536d。換 model 後必須刪除舊 index 並以新 numDimensions 重建。",
   "definition": {
     "fields": [
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 4096,
+        "numDimensions": 2560,
         "similarity": "cosine"
+      },
+      {
+        "type": "filter",
+        "path": "filename"
+      },
+      {
+        "type": "filter",
+        "path": "chapter"
       }
     ]
   }

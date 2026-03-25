@@ -2,16 +2,21 @@
   "name": "revision-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit && eslint .",
     "test": "vitest run",
     "test:unit": "vitest run src/lib/",
     "test:e2e": "vitest run src/app/api/",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "sync:confluence": "node scripts/sync-confluence.mjs",
+    "sync:confluence:dry": "node scripts/sync-confluence.mjs --dry-run"
   },
   "dependencies": {
     "@ai-sdk/langchain": "^2.0.140",
@@ -37,21 +42,19 @@
     "markdown-it-task-lists": "^2.1.1",
     "mongoose": "^8.8.0",
     "next": "16.1.6",
-    "pdf-parse": "^1.1.1",
-    "pdf-to-img": "^5.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwindcss": "^4.2.1",
-    "tesseract.js": "^7.0.0"
+    "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.5",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.0.0",
-    "@types/pdf-parse": "^1.1.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitest/coverage-v8": "^4.1.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.1",
     "typescript": "^5.7.0",
     "vitest": "^4.1.0"
   }

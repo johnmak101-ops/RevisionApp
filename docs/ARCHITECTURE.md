@@ -8,7 +8,8 @@ revision-app/
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── chat/route.ts          # RAG 聊天（Streaming）
-│   │   │   ├── documents/route.ts     # 文件列表管理
+│   │   │   ├── documents/route.ts     # 文件列表（GET）
+│   │   │   ├── documents/[id]/route.ts # 刪除單一文件（DELETE）
 │   │   │   ├── ingest/route.ts        # PDF/MD 上傳 → 向量化
 │   │   │   ├── quiz/
 │   │   │   │   ├── generate/route.ts  # AI 自動出題
@@ -22,6 +23,7 @@ revision-app/
 │   ├── components/
 │   │   ├── ChatBox.tsx                # 聊天介面（streaming）
 │   │   ├── FileUpload.tsx             # 檔案上傳
+│   │   ├── DocumentList.tsx           # 已索引文件清單（刪除）
 │   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
 │   │   ├── KnowledgeGap.tsx           # 知識缺口分析
 │   │   ├── SummaryPanel.tsx           # 大綱摘要
@@ -35,7 +37,7 @@ revision-app/
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton（streamingLLM + toolLLM）
 │   │   ├── md.ts                      # Markdown 解析
-│   │   ├── pdf.ts                     # PDF 文字擷取（LlamaParse REST API）
+│   │   ├── pdf.ts                     # PDF 文字擷取（LlamaParse REST API + parsing_instruction）
 │   │   ├── promptGuard.ts            # Prompt Injection 防護（Vard）
 │   │   ├── rateLimiter.ts            # In-memory IP Rate Limiter
 │   │   └── search.ts                 # 向量搜尋 + Multi-Query + 關鍵字備援
@@ -73,9 +75,11 @@ revision-app/
 | `pdfId` | ObjectId → Document | 關聯文件 |
 | `page` | Number | 頁碼 |
 | `chunkIndex` | Number | chunk 序號 |
+| `filename` | String | 來源檔名（`$vectorSearch` pre-filter） |
+| `chapter` | String | 所屬 h1 章節（可選，pre-filter） |
 | `metadata` | Mixed | 額外 metadata（如 OCR 信心度等） |
 
-**Indexes**: `pdfId: 1`（標準索引）+ `chunk_vector_index`（Atlas 向量索引，cosine）
+**Indexes**: `pdfId: 1`、`filename: 1`、`chapter: 1`（標準索引）+ `chunk_vector_index`（Atlas 向量索引，cosine；定義見 `scripts/vector-index.json`）
 
 ### QuizAttempt
 
@@ -101,7 +105,7 @@ revision-app/
 ```
 PDF/MD 上傳
     ↓
-PDF → LlamaParse REST API（上傳 → 輪詢 → 取得 Markdown）
+PDF → LlamaParse REST API（上傳 + parsing_instruction 表格格式指引 + 輪詢 → 取得 Markdown）
 MD → 直接解析
     ↓
 按頁文字
@@ -128,7 +132,7 @@ Multi-Query Search (multiQuerySearch)：
   3. 合併去重（content 前 100 字作 key，保留最高分）
   4. 按分數排序取最佳 8 條
     ↓
-Score filter (≥ 0.4) → 無結果時 keyword fallback
+`vectorSearch`: raw cosine < 0.60 丟棄 → 其餘正規化到 0–1 → `chat/route`: normalized < 0.40 丟棄 → 無結果時 keyword fallback
     ↓
 LangChain ChatPromptTemplate + History (最近 10 條)
     ↓
@@ -222,7 +226,7 @@ ChatPromptTemplate role 分離 → LLM
 |--------|----------|------|
 | **檔案格式驗證** | Ingest | 只接受 .pdf / .md / .markdown |
 | **大小上限 (100MB)** | Ingest | 超限回傳 413 |
-| **同名去重** | Ingest | 重複檔名回傳 409 |
+| **同名去重** | Ingest | 重複檔名回傳 409；可用 `DELETE /api/documents/[id]` 或頁面「已索引文件」刪除後再上傳 |
 | **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容（indirect prompt injection 防護） |
 | **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
 | **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
@@ -246,7 +250,7 @@ ChatPromptTemplate role 分離 → LLM
 
 | 技術決策 | 商業驅動 | 技術替代方案 | 點解唔用替代方案 |
 |----------|----------|-------------|------------------|
-| **LlamaParse** 處理 PDF | Bootcamp 教材經常包含掃描件（手寫筆記、投影片截圖），需要高準確度 OCR | `pdf-parse` + `tesseract.js` | 本地 OCR 多語言支援差，掃描件準確度低，影響 RAG 回答品質 |
+| **LlamaParse** 處理 PDF | Bootcamp 教材經常包含掃描件（手寫筆記、投影片截圖），需要高準確度 OCR。透過 `parsing_instruction` 提供表格格式指引，確保教材中資料型態對照表、代碼片段正確保留 | `pdf-parse` + `tesseract.js` | 本地 OCR 多語言支援差，掃描件準確度低，影響 RAG 回答品質 |
 | **OpenRouter** 統一 API | 一個端點存取多個 LLM 模型，降低供應商鎖定風險 | 直接用 OpenAI / Google API | 免費 tier 選擇少，切換模型需要改代碼 |
 | **MongoDB Atlas M0** | 免費叢集 512MB 足夠存儲 Bootcamp 課程教材量級嘅 chunks | PostgreSQL + pgvector | MongoDB 原生向量搜尋 + 免費叢集，零成本啟動 |
 
@@ -266,6 +270,7 @@ ChatPromptTemplate role 分離 → LLM
 |------|------|------|
 | POST | `/api/ingest` | 上傳 PDF/MD 文件 |
 | GET | `/api/documents` | 取得已上傳文件列表 |
+| DELETE | `/api/documents/[id]` | 刪除文件、chunks、關聯 QuizAttempt |
 | POST | `/api/chat` | RAG 聊天（Vercel AI SDK streaming） |
 | POST | `/api/quiz/generate` | AI 生成 Quiz 題目 |
 | POST | `/api/quiz/submit` | 提交 Quiz 答案 |
@@ -279,14 +284,14 @@ ChatPromptTemplate role 分離 → LLM
 
 | 決策 | 理由 |
 |------|------|
-| LlamaParse 取代 pdf-parse + tesseract.js | 原生支援多語言、掃描 PDF，毋需本地 OCR 依賴 |
+| LlamaParse 取代 pdf-parse + tesseract.js | 原生支援多語言、掃描 PDF，毋需本地 OCR 依賴。配合 `parsing_instruction` 提升表格處理準確度 |
 | 直接 fetch OpenRouter 而非 LangChain Embeddings | OpenRouter response 格式差異，避免兼容問題 |
 | Warmup + dimension detection | 啟動時檢測向量維度，確保與 Atlas 索引匹配 |
 | Keyword fallback | 向量搜尋無結果時用 regex 備援，提高容錯 |
 | Vercel AI SDK streaming (Chat) | 用 `createUIMessageStreamResponse` + `toUIMessageStream` 做 Chat streaming，前端用 `useChat` 自動接收 |
 | Streaming NDJSON (Summary) | Summary 用 NDJSON 逐 token 回傳，改善體驗 |
 | Batch embedding (20/batch) | OpenRouter 可能限制 batch size |
-| Score filter (≥ 0.4) | 過濾低相關性結果，避免幻覺 |
+| 兩段式 score 門檻 | `search.ts` 先丟棄 raw cosine < 0.60，正規化後 `chat/route.ts` 再丟棄 normalized < 0.40，避免低相關 context |
 | Multi-Query Search | 用 LLM 拆問題成 3 個角度並行搜尋，提高召回率 |
 | toolLLM (非 streaming) | 輕量低溫度 LLM 專用於工具呼叫（multi-query 生成） |
 | Header-aware chunking | 按 Markdown headers 分段，每 chunk 帶 header context prefix（例："Java > Data Types"），提升 embedding 語義準確度 |
@@ -299,4 +304,4 @@ ChatPromptTemplate role 分離 → LLM
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-25*

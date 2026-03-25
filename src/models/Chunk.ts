@@ -13,6 +13,10 @@ export interface IChunk {
   page: number;
   /** 該文件內的 chunk 序號 */
   chunkIndex: number;
+  /** 來源檔案名稱（原始檔名，供 vectorSearch pre-filter 用） */
+  filename: string;
+  /** 所屬章節（h1 header 文字，供 vectorSearch pre-filter 用） */
+  chapter?: string;
   /** 額外 metadata（如 OCR 信心度等） */
   metadata?: Record<string, unknown>;
 }
@@ -31,11 +35,15 @@ const ChunkSchema = new Schema<IChunk>(
     pdfId: { type: Schema.Types.ObjectId, ref: "Document", required: true },
     page: { type: Number, required: true },
     chunkIndex: { type: Number, required: true, default: 0 },
+    filename: { type: String, required: true },
+    chapter: { type: String },
     metadata: { type: Schema.Types.Mixed },
   },
   { timestamps: true }
 );
 
 ChunkSchema.index({ pdfId: 1 });
+ChunkSchema.index({ filename: 1 });  // for vectorSearch pre-filter
+ChunkSchema.index({ chapter: 1 });   // for vectorSearch pre-filter
 
 export const Chunk = models.Chunk ?? model<IChunk>("Chunk", ChunkSchema);

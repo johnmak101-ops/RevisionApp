@@ -18,19 +18,20 @@
 | **M0** | M0 Free Tier | MongoDB Atlas 嘅免費方案，512MB 儲存 |
 | **Warmup** | Embedding Warmup | 系統啟動時發送測試請求，預熱 embedding model 同偵測向量維度 |
 | **Keyword Fallback** | Keyword Fallback Search | 向量搜尋無結果時嘅備援方案，用 regex 關鍵字搜尋 |
-| **Score Filter** | Vector Score Filter | 過濾 cosine score 低於門檻 (0.4) 嘅向量搜尋結果，避免低質回答 |
+| **Score Filter** | Vector Score Filter | 兩段門檻：`search.ts` 先丟棄 Atlas **raw** cosine < **0.60**；正規化後 `chat/route.ts` 再丟棄 **normalized** < **0.40** 先可作 RAG context |
 | **Context Window** | Context Window | LLM 單次可處理嘅 token 上限。本專案限制 context chars 以控制 |
-| **LlamaParse** | LlamaParse | LlamaIndex 提供嘅雲端 PDF 解析服務，支援多語言及掃描 PDF |
+| **LlamaParse** | LlamaParse | LlamaIndex 提供嘅雲端 PDF 解析服務，支援多語言及掃描 PDF。透過 `parsing_instruction` 提供表格格式指引，提升表格準確度 |
 | **Ingest** | Document Ingestion | 文件攝入流程：上傳 → 擷取 → 分割 → embedding → 存儲 |
+| **刪除索引** | Delete Indexed Document | `DELETE /api/documents/[id]` 刪除 `Document`、其 `Chunk`（`pdfId`）及關聯 `QuizAttempt`（`documentId`） |
 | **Prompt Injection** | Prompt Injection Attack | 用戶透過特別構造嘅輸入，嘗試繞過或覆寫 LLM 嘅系統指令嘅攻擊方式 |
 | **Vard** | Vard Prompt Guard | 開源 prompt injection 偵測庫（`@andersmyrmel/vard`），支援 pattern matching、分類阻擋同文字清洗 |
 | **Rate Limiting** | Rate Limiting | 限制每個 IP 在指定時間內嘅請求次數，防止濫用 API 資源 |
 | **ChatPromptTemplate** | LangChain Chat Prompt Template | LangChain 嘅 prompt 模板系統，將 system 和 user 角色明確分離，防止用戶注入系統角色 |
 | **Multi-Query Search** | Multi-Query Search | 用 LLM 將用戶問題拆成 3 個搜尋角度並行搜尋，合併去重後提高召回率 |
 | **Chunk Guard** | Chunk Content Guard | 文件攝入時掃描 chunk 內容嘅安全檢查，偵測間接 prompt injection（用 Vard pattern matching） |
-| **Qwen3 Embedding** | Qwen3 Embedding 8B | 預設 embedding 模型 (`qwen/qwen3-embedding-8b`)，透過 OpenRouter 呼叫 |
+| **Qwen3 Embedding** | Qwen3 Embedding 4B | 預設 embedding 模型 (`qwen/qwen3-embedding-4b`)，透過 OpenRouter 呼叫，2560 維 |
 
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-25*

@@ -4,11 +4,15 @@
 
 All Features / User Stories / Bug Fixes must satisfy the following conditions before being marked as "Done":
 
+### Product / UAT gate (release readiness)
+
+If the release is **stakeholder UAT or production-ready**, in addition to the sections below, satisfy [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) **Minimum UAT / Go-Live Gate** (U1–U7). That table is the short sign-off list; detailed steps live in `TEST_PLAN.md`.
+
 ### Code Quality
 
 - [ ] TypeScript strict mode with no compilation errors
 - [ ] `npm run build` passes successfully
-- [ ] `npm run lint` has no errors (warnings are acceptable)
+- [ ] `npm run lint` has no errors (`tsc --noEmit` + `eslint .` with `eslint-config-next`)
 - [ ] No hardcoded secrets (API keys etc. must use env variables)
 - [ ] Proper error handling (try/catch + user-friendly error messages)
 - [ ] Defensive coding: assume data may be missing, APIs may fail
@@ -29,7 +33,8 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 ### Documentation
 
 - [ ] New features have updated README (if applicable)
-- [ ] API endpoints documented in `docs/API_REFERENCE.md`
+- [ ] If scope or assumptions change: review `docs/en/PRODUCT_SCOPE.md` (and Chinese twin under `docs/` if maintained)
+- [ ] API endpoints documented in `docs/en/API_REFERENCE.md`
 - [ ] Meaningful Git commit messages
 
 ---
@@ -56,7 +61,7 @@ All Features / User Stories / Bug Fixes must satisfy the following conditions be
 |-------------------|--------|
 | Streaming token-by-token response | ✅ |
 | Vector search correctly retrieves relevant chunks | ✅ |
-| Score < 0.4 results filtered out | ✅ |
+| Raw cosine < 0.60 filtered in `vectorSearch`; normalized < 0.40 filtered in chat | ✅ |
 | Keyword fallback working properly | ✅ |
 | Prompt message when no results found | ✅ |
 | 10 history messages correctly injected as context | ✅ |

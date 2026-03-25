@@ -46,7 +46,7 @@
 | NFR-04.3 | Quiz question range | 3-15 |
 | NFR-04.4 | Chat history length | Most recent 10 messages |
 | NFR-04.5 | Vector candidates | 50 candidates → 4/sub-query × up to 3 (LLM-generated) → top 8 (multiQuery) |
-| NFR-04.6 | Score threshold | ≥ 0.4 |
+| NFR-04.6 | Score threshold | Vector: `search.ts` drops raw cosine < **0.60**; Chat context: `chat/route.ts` keeps only normalized ≥ **0.40** |
 | NFR-04.7 | Quiz context | 12,000 chars |
 | NFR-04.8 | Summary context | 20,000 chars |
 | NFR-04.9 | Min chunk length | 20 chars (shorter chunks are discarded) |
@@ -76,4 +76,4 @@
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

@@ -1,317 +1,75 @@
 **🌐 Language / 語言：** [English](README.en.md) | **中文**
 
-# 📚 Bootcamp 複習 App
+# Revision App
 
-> AI 驅動嘅 Bootcamp 教材複習平台 — 支援 PDF/Markdown 上傳、RAG 聊天、自動出題、知識缺口分析同大綱生成。  
-> 使用 OpenRouter 付費模型，配合免費 MongoDB Atlas 及 Vercel 運行。
+**個人作品集** — 產品範圍、需求發現、用例／用戶故事、追蹤矩陣、測試與 UAT 門檻等 **BA／產品向文檔**，以及 **全端實作**，皆由本人整理與開發；細節見下文文檔導覽。
 
----
+> Bootcamp 教材複習平台：PDF／Markdown 上傳、RAG 聊天、自動 Quiz、知識缺口、AI 摘要。Next.js 16、MongoDB Atlas、OpenRouter、Vercel。
 
-## 🎯 商業問題陳述
+**Demo**：無公開託管連結，請跟下文 **「快速開始」** 自行部署；介面預覽見下文 **「截圖」** 一節。
 
-### 痛點分析
-
-Bootcamp 學員喺密集式學習環境中面對嚴峻挑戰：
-
-| 痛點 | 描述 | 影響 |
-|------|------|------|
-| 📚 **資訊過載** | 每日收到大量 PDF 筆記、代碼示例，難以有效消化 | 學員花更多時間「搵內容」多過「理解內容」|
-| 🔍 **資料分散** | 課程資源散落 Google Drive、Slack、LMS 各處，無統一搜尋入口 | 學員需要頻繁切換平台，浪費時間 |
-| ❓ **缺乏自我評估工具** | 學員唔知道自己弱項係咩，直至考試/面試先發現 | 知識缺口發現太遲，無法補救 |
-
-### 解決方案定位
-
-本 App 透過 AI 驅動嘅索引將分散資料統一化，並提供智能複習工具（RAG 聊天、自動出題、知識缺口分析）— 令學員做到**邊學邊問、邊做邊練、邊錯邊改**。
+**商業背景、痛點、KPI、MVP／Out of scope／UAT 門檻** → [`docs/PRODUCT_SCOPE.md`](docs/PRODUCT_SCOPE.md)  
+**需求發現、優先級、~50% 時間假設（一頁）** → [`docs/DISCOVERY_AND_PRIORITIZATION.md`](docs/DISCOVERY_AND_PRIORITIZATION.md)  
+**用例流程、Actor、防護細節** → [`docs/USE_CASES.md`](docs/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md)  
+**安全架構（Vard、Chunk guard、rate limit）** → [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ---
 
-## 📊 成功指標 (KPIs)
+## 核心功能
 
-| KPI | 目標 | 量度方法 | 基準線 |
-|-----|------|----------|--------|
-| 學員搵資料時間 | 縮短 **30%** | RAG Chat 搜尋 vs 人手翻查時間（用戶調查） | 上線前問卷 |
-| 核心知識掌握率 | 提升 **20%** | Quiz 模組正確率追蹤（`/api/quiz/stats`） | 首次作答平均分 |
-| 課程文件格式覆蓋率 | **≥ 95%** | PDF（含掃描）+ Markdown 皆支援 | 業界格式標準 |
-| AI 答案相關性 | **≥ 90%** 基於文件 | RAG 向量搜尋分數 ≥ 0.4 命中率 | 系統日誌分析 |
-
----
-
-## ✨ 功能一覽
-
-| 功能 | 描述 |
+| 功能 | 說明 |
 |------|------|
-| 📄 **文件上傳** | 支援 PDF、Markdown 格式上傳，自動向量化索引 |
-| 💬 **RAG 聊天** | 根據上傳文件內容回答問題（Streaming 即時回覆） |
-| 📝 **Quiz 出題** | AI 自動根據文件生成多選題，即時評分 |
-| 🎯 **知識缺口** | 分析 Quiz 錯誤率，識別弱項 Topic |
-| 📋 **Summary** | AI 生成文件大綱摘要（Streaming） |
+| 文件上傳／已索引列表 | PDF、Markdown；可刪單筆釋放索引或處理同名 409 |
+| RAG 聊天 | 依已索引內容串流回答 |
+| Quiz／知識缺口 | AI 選擇題、依 topic 弱項分析 |
+| Summary | 文件大綱摘要 |
+| 安全 | Prompt 防護、API 限流、輸入驗證 |
 
 ---
 
-## 📸 Screenshots
+## 文檔導覽
 
-### 💬 Chat — AI 問答複習
-![Chat Tab](docs/screenshots/screenshot-chat.png)
-
-### 📝 Quiz — 自動出題 & 即時評分
-![Quiz Tab](docs/screenshots/screenshot-quiz.png)
-
-### 📋 Summary — AI 大綱摘要
-![Summary Tab](docs/screenshots/screenshot-summary.png)
+| 讀者 | 連結 |
+|------|------|
+| **產品／BA** | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) · [DISCOVERY / 優先級](docs/DISCOVERY_AND_PRIORITIZATION.md) · [USE_CASES](docs/USE_CASES.md) · [USER_STORIES](docs/USER_STORIES.md) · [TRACEABILITY_MATRIX](docs/TRACEABILITY_MATRIX.md) · [TEST_PLAN](docs/TEST_PLAN.md) · [STAKEHOLDER_MAP](docs/STAKEHOLDER_MAP.md) · [NFR](docs/NON_FUNCTIONAL_REQUIREMENTS.md) |
+| **工程** | [DEVELOPER_GUIDE](docs/DEVELOPER_GUIDE.md) · [SETUP_GUIDE](docs/SETUP_GUIDE.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [API_REFERENCE](docs/API_REFERENCE.md) · [SEQUENCE_DIAGRAMS](docs/SEQUENCE_DIAGRAMS.md) · [UI_FLOW_DIAGRAM](docs/UI_FLOW_DIAGRAM.md) · [MONGODB_VECTOR_SETUP](docs/MONGODB_VECTOR_SETUP.md) · [GLOSSARY](docs/GLOSSARY.md) |
+| **品質** | [DEFINITION_OF_DONE](docs/DEFINITION_OF_DONE.md) |
+| **英文** | [README.en.md](README.en.md) · `docs/en/` 下同名檔 |
 
 ---
 
-## 🛠️ 技術棧
+## 截圖
 
-| 層級 | 技術 | 版本 / 備註 |
-|------|------|-------------|
-| **Framework** | Next.js | 16.1.6（Turbopack） |
-| **Language** | TypeScript | 5.7+ |
-| **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 4.2 |
-| **Database** | MongoDB Atlas | M0 免費叢集（512MB） |
-| **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | 付費（低成本） |
-| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | 付費（低成本） |
-| **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
-| **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF 解析** | LlamaParse REST API | 多語言、掃描 PDF 支援 |
-| **Markdown 渲染** | `markdown-it` + highlight.js + DOMPurify | 語法高亮、XSS 防護 |
+以下為本地／自部署環境嘅介面截圖（Chat、Quiz、Summary）。
+
+| Chat | Quiz | Summary |
+|:----:|:----:|:-------:|
+| ![Chat](docs/screenshots/screenshot-chat.png) | ![Quiz](docs/screenshots/screenshot-quiz.png) | ![Summary](docs/screenshots/screenshot-summary.png) |
 
 ---
 
-## 💰 服務方案
+## 技術棧（摘要）
 
-| 服務 | 方案 | 備註 |
-|------|------|------|
-| MongoDB Atlas | M0 免費叢集 | 512MB 儲存，支援向量搜尋 |
-| OpenRouter | 付費模型 | `gemini-2.5-flash-lite`（Chat）、`qwen3-embedding-8b`（Embedding） |
-| LlamaCloud | Free tier | 每日解析頁數限額 |
-| Vercel | Free tier | 部署託管 |
+Next.js **16**（Turbopack）· MongoDB Atlas 向量搜尋 · OpenRouter（`gemini-2.5-flash-lite` 對話 + `qwen/qwen3-embedding-4b` 向量）· LlamaParse · `@andersmyrmel/vard`
 
 ---
 
-## 🚀 快速開始
-
-### 1. 安裝依賴
+## 快速開始
 
 ```bash
 npm install
-```
-
-### 2. 環境變數
-
-```bash
 cp .env.example .env.local
 ```
 
-填入以下變數（詳見 [`.env.example`](.env.example)）：
+填入 `MONGODB_URI`、`OPENROUTER_API_KEY`、`LLAMA_CLOUD_API_KEY` 等（見 [SETUP_GUIDE](docs/SETUP_GUIDE.md)）。
 
-| 變數 | 描述 |
-|------|------|
-| `MONGODB_URI` | MongoDB Atlas 連線字串 |
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
-| `OPENROUTER_MODEL` | Chat LLM 模型（預設 `google/gemini-2.5-flash-lite`） |
-| `OPENROUTER_EMBED_MODEL` | Embedding 模型（預設 `qwen/qwen3-embedding-8b`） |
-| `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key（PDF 解析） |
-
-### 3. MongoDB Atlas 向量索引
-
-在 Atlas 中為 `chunks` collection 建立向量搜尋索引：
-
-1. Atlas → 你的叢集 → **Search** → **Create Index**
-2. 選擇 **JSON Editor**，貼上 [`scripts/vector-index.json`](scripts/vector-index.json) 內容：
-
-```json
-{
-  "name": "chunk_vector_index",
-  "type": "vectorSearch",
-  "definition": {
-    "fields": [
-      {
-        "type": "vector",
-        "path": "embedding",
-        "numDimensions": 4096,
-        "similarity": "cosine"
-      }
-    ]
-  }
-}
-```
-
-> 📖 詳細步驟請參閱 [`docs/MONGODB_VECTOR_SETUP.md`](docs/MONGODB_VECTOR_SETUP.md)
-
-### 4. 啟動開發伺服器
+Atlas 建立向量索引：使用 [`scripts/vector-index.json`](scripts/vector-index.json)，步驟見 [MONGODB_VECTOR_SETUP](docs/MONGODB_VECTOR_SETUP.md)。
 
 ```bash
 npm run dev
 ```
 
-開啟 [http://localhost:3000](http://localhost:3000)
-
 ---
 
-## 📖 使用方式
-
-1. **上傳文件** — 左側上傳 Bootcamp PDF 或 Markdown 教材
-2. **聊天複習** — Chat Tab 輸入問題，AI 根據文件內容即時回覆
-3. **Quiz 測驗** — Quiz Tab 選擇文件，AI 自動出題，即時評分
-4. **知識缺口** — Quiz 完成後查看弱項分析
-5. **大綱摘要** — Summary Tab 一鍵生成文件大綱
-
----
-
-## 🛡️ 安全防護
-
-### 商業風險與防護目標
-
-安全防護唔只係技術問題 — 直接影響產品可信度同學習質素：
-
-| 防護層 | 目標 | 商業風險（如缺失） |
-|--------|------|-------------------|
-| **Vard Guard** | 偵測並攔截 Prompt Injection 攻擊（instruction override、role manipulation、system prompt leak） | 攻擊者可注入惡意指令，令 AI 輸出錯誤內容，損害學員學習質素 |
-| **Chunk Content Guard** | 掃描上傳文件每個 chunk，確保輸入資料完整性 | 惡意文件攜帶 indirect injection pattern 可污染 RAG 上下文，影響所有用戶嘅查詢結果 |
-| **Rate Limiting** | 控制 API 請求頻率，防止濫用 | 過量請求消耗 OpenRouter API 配額，導致服務中斷或意外費用 |
-| **Input Sanitization** | 清除 delimiter injection 同 encoding 攻擊 | 繞過其他防護層，直接操控 LLM 行為 |
-
-### 各端點防護層
-
-| 防護層 | 適用端點 | 描述 |
-|--------|----------|------|
-| **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
-| **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
-| **Input Sanitization** | Chat | 清理 delimiter injection、encoding 攻擊 |
-| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容（防 indirect prompt injection） |
-| **ChatPromptTemplate** | Quiz, Summary | system/user role 分離，防止 context injection |
-| **DocumentId 驗證** | Quiz, Summary | 只接受有效 24 字元 hex MongoDB ObjectId |
-
-### Rate Limiting
-
-| 端點 | 上限 |
-|------|------|
-| `/api/chat` | 20 req/min per IP |
-| `/api/quiz/generate` | 10 req/min per IP |
-| `/api/summary/generate` | 10 req/min per IP |
-
----
-
-## 🏗️ 專案結構
-
-```
-revision-app/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── chat/route.ts          # RAG 聊天（Streaming）
-│   │   │   ├── documents/route.ts     # 文件列表 API
-│   │   │   ├── ingest/route.ts        # PDF/MD 上傳 → 向量化
-│   │   │   ├── quiz/
-│   │   │   │   ├── generate/route.ts  # AI 自動出題
-│   │   │   │   ├── submit/route.ts    # 提交答案 & 評分
-│   │   │   │   └── stats/route.ts     # 答題統計
-│   │   │   └── summary/
-│   │   │       └── generate/route.ts  # AI 大綱摘要（Streaming）
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx                   # 主頁（Tab 切換）
-│   ├── components/
-│   │   ├── ChatBox.tsx                # 聊天界面（streaming）
-│   │   ├── FileUpload.tsx             # 文件上傳
-│   │   ├── KnowledgeGap.tsx           # 知識缺口分析
-│   │   ├── MarkdownRenderer.tsx       # Markdown 渲染（語法高亮）
-│   │   ├── MarkdownRendererDynamic.tsx # 動態載入 Markdown 渲染
-│   │   ├── QuizPanel.tsx              # Quiz 出題 & 作答
-│   │   ├── SummaryPanel.tsx           # 大綱摘要
-│   │   ├── TabNav.tsx                 # Tab 導航
-│   │   └── UploadToast.tsx            # 上傳通知 Toast
-│   ├── context/
-│   │   └── UploadContext.tsx          # 上傳狀態全域 Context
-│   ├── hooks/
-│   │   ├── useQuiz.ts                 # Quiz 邏輯 Hook
-│   │   ├── useStats.ts                # 統計數據 Hook
-│   │   └── useToast.ts                # Toast 通知 Hook
-│   ├── lib/
-│   │   ├── __tests__/                 # 單元測試
-│   │   ├── chunking.ts               # LangChain 文本分割
-│   │   ├── db.ts                      # MongoDB 連線（Cached，Dev 用 global 防 HMR 重複連線）
-│   │   ├── embedding.ts              # OpenRouter Embedding API
-│   │   ├── llm.ts                     # LLM Client 配置
-│   │   ├── md.ts                      # Markdown 解析
-│   │   ├── pdf.ts                     # PDF 文字擷取
-│   │   ├── promptGuard.ts            # Prompt Injection 防護（Vard）
-│   │   ├── rateLimiter.ts            # In-memory Rate Limiter
-│   │   └── search.ts                 # 向量搜尋 + 關鍵字備援
-│   └── models/
-│       ├── Chunk.ts                   # 文本 Chunk（含 embedding）
-│       ├── Document.ts              # 上傳文件記錄
-│       └── QuizAttempt.ts           # Quiz 答題記錄
-├── scripts/
-│   └── vector-index.json             # Atlas 向量索引定義
-└── docs/                             # 📖 項目文檔
-```
-
----
-
-## 📚 項目文檔
-
-所有文檔存放喺 [`docs/`](docs/) 目錄（中文）同 [`docs/en/`](docs/en/) 目錄（英文），亦可喺 [📘 Confluence Wiki](https://johnmak101.atlassian.net/wiki/spaces/REV) 上瀏覽。
-
-### 📋 項目規劃
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | 項目總覽 — 核心功能、技術棧、免費方案 |
-| [📄 ARCHITECTURE.md](docs/ARCHITECTURE.md) | 系統架構 — 目錄結構、數據模型、核心流程、設計決策 |
-| [📄 GLOSSARY.md](docs/GLOSSARY.md) | 術語表 — 項目相關技術術語定義 |
-
-### 📐 需求與設計
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 USE_CASES.md](docs/USE_CASES.md) | 用例描述 — 系統功能用例（含前置/後置條件） |
-| [📄 USER_STORIES.md](docs/USER_STORIES.md) | 用戶故事 — Agile 用戶故事列表 |
-| [📄 DEFINITION_OF_DONE.md](docs/DEFINITION_OF_DONE.md) | 完成定義 — 各功能嘅 DoD 標準 |
-| [📄 NON_FUNCTIONAL_REQUIREMENTS.md](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | 非功能需求 — 性能、安全、可用性要求 |
-
-### 🎨 UI/UX
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 UI_FLOW_DIAGRAM.md](docs/UI_FLOW_DIAGRAM.md) | 畫面流程圖 — Tab 導航、用戶操作流程（Mermaid） |
-
-### 🔌 API
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 API_REFERENCE.md](docs/API_REFERENCE.md) | API 參考 — 所有端點嘅請求/回應格式 |
-
-### 🧪 測試與追蹤
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 TEST_PLAN.md](docs/TEST_PLAN.md) | 測試計劃 — 測試策略、具體測試案例 |
-| [📄 TRACEABILITY_MATRIX.md](docs/TRACEABILITY_MATRIX.md) | 追蹤矩陣 — Use Case ↔ User Story ↔ Test Case 映射（含 UAT 狀態 + AI 品質評分標準） |
-| [📄 STAKEHOLDER_MAP.md](docs/STAKEHOLDER_MAP.md) | 持份者地圖 — 持份者需求、衝突分析、Power/Interest Matrix |
-
-### ⚙️ 部署與設定
-
-| 文檔 | 描述 |
-|------|------|
-| [📄 SETUP_GUIDE.md](docs/SETUP_GUIDE.md) | 安裝指南 — 詳細開發環境設置步驟 |
-| [📄 MONGODB_VECTOR_SETUP.md](docs/MONGODB_VECTOR_SETUP.md) | MongoDB 向量搜尋設定 — Atlas 索引建立教學 |
-
----
-
-## 🌐 部署到 Vercel
-
-1. 推送至 GitHub
-2. 在 [Vercel](https://vercel.com) 匯入專案
-3. 設定環境變數：`MONGODB_URI`、`OPENROUTER_API_KEY`、`OPENROUTER_MODEL`、`OPENROUTER_EMBED_MODEL`、`LLAMA_CLOUD_API_KEY`
-4. 部署
-
----
-
-Created by **John Mak** 🚀
-
-*更新日期：2026-03-24*
-
+Created by **John Mak**  
+*最後更新：2026-03-25*

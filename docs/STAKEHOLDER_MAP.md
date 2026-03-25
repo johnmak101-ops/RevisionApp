@@ -75,7 +75,7 @@ graph TD
 | 衝突場景 | Stakeholder A 需求 | Stakeholder B 需求 | 平衡策略 |
 |----------|-------------------|-------------------|----------|
 | 回應速度 vs 準確性 | 學員：希望即時回答 | IT 管理員：希望控制 API 成本 | 設置 Rate Limiting（20 req/min），在速度同成本間取平衡 |
-| 文件解析品質 vs 成本 | 學員：希望所有 PDF 都能準確解析 | IT 管理員：LlamaCloud 免費 tier 有頁數限制 | 採用 LlamaParse 提升掃描件準確度，同時前端提示用量限制 |
+| 文件解析品質 vs 成本 | 學員：希望所有 PDF 都能準確解析 | IT 管理員：LlamaCloud 免費 tier 有頁數限制 | 採用 LlamaParse + `parsing_instruction` 提升掃描件及表格準確度，同時前端提示用量限制 |
 | AI 自由度 vs 安全性 | 學員：希望 AI 盡量回答更多問題 | IT 管理員：防止 Prompt Injection 同系統濫用 | Vard Guard + Chunk Content Guard 在不影響正常使用嘅前提下阻擋惡意操作 |
 
 ---

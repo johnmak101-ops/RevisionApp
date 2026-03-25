@@ -18,19 +18,20 @@
 | **M0** | M0 Free Tier | MongoDB Atlas's free plan with 512MB storage |
 | **Warmup** | Embedding Warmup | A startup test request to pre-warm the embedding model and detect vector dimensions |
 | **Keyword Fallback** | Keyword Fallback Search | A backup mechanism using regex keyword search when vector search returns no results |
-| **Score Filter** | Vector Score Filter | Filters vector search results with cosine score below threshold (0.4) to avoid low-quality answers |
+| **Score Filter** | Vector Score Filter | Two-stage thresholds: `search.ts` drops **raw** Atlas cosine < **0.60**; after normalization, `chat/route.ts` drops **normalized** < **0.40** before RAG context |
 | **Context Window** | Context Window | Maximum token limit an LLM can process in a single request. This project limits context characters accordingly |
-| **LlamaParse** | LlamaParse | Cloud PDF parsing service by LlamaIndex, supporting multilingual and scanned PDFs |
+| **LlamaParse** | LlamaParse | Cloud PDF parsing service by LlamaIndex, supporting multilingual and scanned PDFs. Uses custom `parsing_instruction` to improve table extraction accuracy |
 | **Ingest** | Document Ingestion | Document ingestion pipeline: upload → extract → split → embed → store |
+| **Delete indexed doc** | Delete Indexed Document | `DELETE /api/documents/[id]` removes the `Document`, its `Chunk` rows (`pdfId`), and related `QuizAttempt` rows (`documentId`) |
 | **Prompt Injection** | Prompt Injection Attack | An attack where users craft special input to bypass or override the LLM's system instructions |
 | **Vard** | Vard Prompt Guard | Open-source prompt injection detection library (`@andersmyrmel/vard`) supporting pattern matching, category blocking, and text sanitization |
 | **Rate Limiting** | Rate Limiting | Limiting the number of requests per IP within a specified time window to prevent API resource abuse |
 | **ChatPromptTemplate** | LangChain Chat Prompt Template | LangChain's prompt template system that explicitly separates system and user roles, preventing users from injecting system-level instructions |
 | **Multi-Query Search** | Multi-Query Search | Uses LLM to split a user question into 3 search perspectives, searches in parallel, then merges and deduplicates results to improve recall |
 | **Chunk Guard** | Chunk Content Guard | Security scan during document ingestion that detects indirect prompt injection in chunk content (uses Vard pattern matching) |
-| **Qwen3 Embedding** | Qwen3 Embedding 8B | Default embedding model (`qwen/qwen3-embedding-8b`), called via OpenRouter |
+| **Qwen3 Embedding** | Qwen3 Embedding 4B | Default embedding model (`qwen/qwen3-embedding-4b`), called via OpenRouter, 2560 dims |
 
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

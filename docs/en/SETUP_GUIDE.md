@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** ≥ 18.x
+- **Node.js** **20.x LTS** (recommended; aligns with Next.js 16 and `package.json` `engines`). Node 18 may still build but is not formally supported.
 - **npm** ≥ 9.x
 - **MongoDB Atlas** account (M0 free cluster)
 - **OpenRouter** account (free API key)
@@ -33,7 +33,7 @@ MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/revision?retr
 # OpenRouter API (get your key at https://openrouter.ai/keys)
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
 OPENROUTER_MODEL=google/gemini-2.5-flash-lite
-OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
+OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-4b
 ```
 
 ### Model Reference
@@ -41,7 +41,8 @@ OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
 | Purpose | Model | Notes |
 |---------|-------|-------|
 | **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
-| **Embedding** | `qwen/qwen3-embedding-8b` | Qwen3 8B embedding, 4096 dims |
+| **Embedding** | `qwen/qwen3-embedding-4b` | Qwen3 4B embedding, 2560 dims |
+| **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support, custom `parsing_instruction` |
 
 ## 3. MongoDB Atlas Vector Index
 
@@ -58,15 +59,23 @@ OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-8b
       {
         "type": "vector",
         "path": "embedding",
-        "numDimensions": 4096,
+        "numDimensions": 2560,
         "similarity": "cosine"
+      },
+      {
+        "type": "filter",
+        "path": "filename"
+      },
+      {
+        "type": "filter",
+        "path": "chapter"
       }
     ]
   }
 }
 ```
 
-> ⚠️ `numDimensions` must match the embedding model's output dimensions. `qwen/qwen3-embedding-8b` outputs 4096 dims. The system detects dimensions during warmup at startup — check the console for the actual dimension value.
+> ⚠️ `numDimensions` must match the embedding model's output dimensions. `qwen/qwen3-embedding-4b` outputs 2560 dims. The system detects dimensions during warmup at startup — check the console for the actual dimension value. This matches `scripts/vector-index.json`.
 
 4. Database name: `revision`, Collection: `chunks`
 
@@ -84,6 +93,7 @@ Open http://localhost:3000
 2. Wait for ingestion to complete (console will show chunk and embedding progress)
 3. Switch to the Chat Tab and try asking a question
 4. Switch to the Quiz Tab and generate a quiz
+5. (Optional) Delete one row under **Indexed documents** and confirm the list updates; re-uploading the same filename should succeed
 
 ---
 
@@ -120,9 +130,9 @@ TypeError: Cannot read properties of undefined (reading '0')
 
 1. Push to GitHub
 2. Import the project on [Vercel](https://vercel.com)
-3. Set environment variables: `MONGODB_URI`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_EMBED_MODEL`
+3. Set environment variables: `MONGODB_URI`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_EMBED_MODEL`, `LLAMA_CLOUD_API_KEY`
 4. Deploy
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-25*

@@ -2,7 +2,9 @@
 
 ## 1. 測試目標
 
-確保 Revision App 所有功能正確運作，涵蓋：
+> **UAT／上線最低門檻**（持份者簽字用精簡表）見 [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) 同名小節；**本文件**為完整測試案例與步驟。
+
+本計劃確保 Revision App 下列範圍正確運作：
 - 文件上傳及索引流程
 - RAG 聊天問答品質及穩定性
 - Quiz 生成、答題、評分完整流程
@@ -18,6 +20,7 @@
 |------|----------|--------|
 | 文件上傳 (Ingest) | `POST /api/ingest` | P0 |
 | 文件列表 | `GET /api/documents` | P1 |
+| 刪除已索引文件 | `DELETE /api/documents/[id]` | P0 |
 | RAG 聊天 | `POST /api/chat` | P0 |
 | Quiz 生成 | `POST /api/quiz/generate` | P0 |
 | Quiz 提交 | `POST /api/quiz/submit` | P0 |
@@ -30,11 +33,11 @@
 
 | 項目 | 規格 |
 |------|------|
-| Runtime | Node.js 18+ |
+| Runtime | Node.js 20.x LTS（建議） |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (含 Vector Search Index) |
 | LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
-| Embedding | OpenRouter → `qwen/qwen3-embedding-8b` |
+| Embedding | OpenRouter → `qwen/qwen3-embedding-4b` |
 | Browser | Chrome 120+ / Firefox 120+ |
 
 ---
@@ -101,7 +104,7 @@
 | **ID** | TC-06 |
 | **對應** | UC-01 / US-1.1 |
 | **步驟** | 上傳同名文件兩次 |
-| **預期結果** | ❌ 第二次回傳 409 錯誤，提示文件已存在 |
+| **預期結果** | ❌ 第二次回傳 409，提示先刪除「已索引文件」中該筆 |
 | **優先級** | P0 |
 
 ### TC-07：文件上傳 — 損壞 PDF
@@ -113,6 +116,17 @@
 | **步驟** | 上傳二進制損壞嘅 PDF |
 | **預期結果** | ❌ 回傳 400 錯誤，提示文件可能損壞 |
 | **優先級** | P1 |
+
+### TC-06b：刪除文件後可重新上傳同名
+
+| 項目 | 內容 |
+|------|------|
+| **ID** | TC-06b |
+| **對應** | UC-09 |
+| **前置條件** | 已上傳 `notes.md` |
+| **步驟** | 1. `DELETE /api/documents/{id}` 或頁面刪除<br>2. 再上傳同名 `notes.md` |
+| **預期結果** | ✅ 刪除回傳 200 含 `deletedChunks`<br>✅ 第二次 ingest 回傳 200 |
+| **優先級** | P0 |
 
 ---
 
@@ -158,7 +172,7 @@
 | **ID** | TC-11 |
 | **對應** | UC-02 / US-2.2 |
 | **步驟** | 問完全與上傳文件無關嘅問題（例：「月球有多遠？」） |
-| **預期結果** | ✅ 向量搜尋 score < 0.4，觸發提示<br>✅ 或降級至 keyword fallback |
+| **預期結果** | ✅ 正規化分數全部 < 0.40 時觸發「冇相關內容」提示（`chat/route.ts`）<br>✅ `vectorSearch` 已先過濾 raw < 0.60<br>✅ 或降級至 keyword fallback |
 | **優先級** | P1 |
 
 ### TC-12：RAG 聊天 — 空訊息

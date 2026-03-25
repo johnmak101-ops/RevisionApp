@@ -104,7 +104,9 @@ export async function POST(request: NextRequest) {
     const existing = await Document.findOne({ filename: file.name }).lean();
     if (existing) {
       return NextResponse.json(
-        { error: `「${file.name}」已上傳過，如需更新請先刪除舊版本` },
+        {
+          error: `「${file.name}」已上傳過。請先喺下方「已索引文件」刪除該筆後再試。`,
+        },
         { status: 409 }
       );
     }
@@ -123,6 +125,8 @@ export async function POST(request: NextRequest) {
       pdfId: doc._id,
       page: tc.page,
       chunkIndex: tc.chunkIndex,
+      filename: file.name,
+      chapter: tc.chapter,
     }));
 
     await Chunk.insertMany(chunks);

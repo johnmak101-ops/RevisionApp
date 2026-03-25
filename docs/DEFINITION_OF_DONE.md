@@ -4,11 +4,15 @@
 
 所有 Feature / User Story / Bug Fix 必須滿足以下條件先可以標記為「Done」：
 
+### 產品／UAT 門檻（對外宣稱就緒時）
+
+若該次發布代表 **「可畀持份者做 UAT 或上線」**，除以下各節外，尚需滿足 [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) **「UAT／上線最低門檻」** 所列 U1–U7。該表係 BA／PO 簽字用精簡條；細節測試步驟見 `TEST_PLAN.md`。
+
 ### 代碼質量
 
 - [ ] TypeScript 嚴格模式無編譯錯誤
 - [ ] `npm run build` 成功通過
-- [ ] `npm run lint` 無 error（warning 可接受）
+- [ ] `npm run lint` 無 error（`tsc --noEmit` + `eslint .`，`eslint-config-next`）
 - [ ] 無 hardcoded secrets（API key 等必須用 env variable）
 - [ ] 有適當嘅錯誤處理（try/catch + 用戶友好錯誤信息）
 - [ ] 防禦性編碼：假設 data 可能缺失、API 可能失敗
@@ -29,6 +33,7 @@
 ### 文檔
 
 - [ ] 新功能已更新 README（如適用）
+- [ ] 若影響範圍／假設／KPI：已檢視是否需改 `docs/PRODUCT_SCOPE.md`
 - [ ] API 端點已記錄在 `docs/API_REFERENCE.md`
 - [ ] 有意義嘅 Git commit message
 
@@ -56,7 +61,7 @@
 |--------|------|
 | Streaming 逐 token 回傳 | ✅ |
 | 向量搜尋正確檢索相關 chunks | ✅ |
-| Score < 0.4 結果被過濾 | ✅ |
+| Raw cosine < 0.60 喺 `vectorSearch` 被過濾；normalized < 0.40 喺 chat 被過濾 | ✅ |
 | Keyword fallback 正常工作 | ✅ |
 | 無結果時有提示信息 | ✅ |
 | 10 條歷史 context 正確注入 | ✅ |

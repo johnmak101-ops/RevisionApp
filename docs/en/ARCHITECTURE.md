@@ -8,7 +8,8 @@ revision-app/
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── chat/route.ts          # RAG Chat (Streaming)
-│   │   │   ├── documents/route.ts     # Document List Management
+│   │   │   ├── documents/route.ts     # Document list (GET)
+│   │   │   ├── documents/[id]/route.ts # Delete one document (DELETE)
 │   │   │   ├── ingest/route.ts        # PDF/MD Upload → Vectorization
 │   │   │   ├── quiz/
 │   │   │   │   ├── generate/route.ts  # AI Auto Quiz Generation
@@ -22,6 +23,7 @@ revision-app/
 │   ├── components/
 │   │   ├── ChatBox.tsx                # Chat Interface (streaming)
 │   │   ├── FileUpload.tsx             # File Upload
+│   │   ├── DocumentList.tsx           # Indexed document list (delete)
 │   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
 │   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
 │   │   ├── SummaryPanel.tsx           # Summary Outline
@@ -35,7 +37,7 @@ revision-app/
 │   │   ├── embedding.ts              # OpenRouter Embedding API
 │   │   ├── llm.ts                     # LLM Singleton (streamingLLM + toolLLM)
 │   │   ├── md.ts                      # Markdown Parsing
-│   │   ├── pdf.ts                     # PDF Text Extraction (LlamaParse REST API)
+│   │   ├── pdf.ts                     # PDF Text Extraction (LlamaParse REST API + parsing_instruction)
 │   │   ├── promptGuard.ts            # Prompt Injection Protection (Vard)
 │   │   ├── rateLimiter.ts            # In-memory IP Rate Limiter
 │   │   └── search.ts                 # Vector Search + Multi-Query + Keyword Fallback
@@ -73,9 +75,11 @@ revision-app/
 | `pdfId` | ObjectId → Document | Associated document |
 | `page` | Number | Page number |
 | `chunkIndex` | Number | Chunk sequence number |
+| `filename` | String | Source filename (`$vectorSearch` pre-filter) |
+| `chapter` | String | H1 section (optional, pre-filter) |
 | `metadata` | Mixed | Additional metadata |
 
-**Indexes**: `pdfId: 1` (standard index) + `chunk_vector_index` (Atlas vector index, cosine)
+**Indexes**: `pdfId: 1`, `filename: 1`, `chapter: 1` (standard indexes) + `chunk_vector_index` (Atlas vector index, cosine; see `scripts/vector-index.json`)
 
 ### QuizAttempt
 
@@ -101,7 +105,7 @@ revision-app/
 ```
 PDF/MD Upload
     ↓
-PDF → LlamaParse REST API (cloud extraction, multilingual + scanned PDF support)
+PDF → LlamaParse REST API (upload with parsing_instruction for table accuracy + polling → Markdown)
 MD → direct parsing
     ↓
 Per-page text
@@ -128,7 +132,7 @@ Multi-Query Search (multiQuerySearch):
   3. Merge and deduplicate (first 100 chars as key, keep highest score)
   4. Sort by score, take top 8
     ↓
-Score filter (≥ 0.4) → Keyword fallback when no results
+`vectorSearch`: drop raw cosine < 0.60 → normalize rest to 0–1 → `chat/route`: drop normalized < 0.40 → keyword fallback when no results
     ↓
 LangChain ChatPromptTemplate + History (most recent 10)
     ↓
@@ -222,7 +226,7 @@ ChatPromptTemplate Role Separation → LLM
 |-------|------------|-------------|
 | **File Format Validation** | Ingest | Only accepts .pdf / .md / .markdown |
 | **Size Limit (100MB)** | Ingest | Returns 413 if exceeded |
-| **Duplicate Filename Check** | Ingest | Returns 409 on duplicate |
+| **Duplicate Filename Check** | Ingest | Returns 409 on duplicate; delete via `DELETE /api/documents/[id]` or **Indexed documents** UI, then re-upload |
 | **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns (indirect prompt injection protection) |
 | **Vard Guard** | Chat | Detects instruction override, role manipulation, system prompt leak |
 | **Custom Patterns** | Chat | Additional blocking for DAN jailbreak, prompt leak variants |
@@ -246,7 +250,7 @@ ChatPromptTemplate Role Separation → LLM
 
 | Decision | Business Driver | Alternative | Why Not Alternative |
 |----------|-----------------|-------------|---------------------|
-| **LlamaParse** for PDF | Bootcamp materials frequently contain scanned content (handwritten notes, slide screenshots) requiring high-accuracy OCR | `pdf-parse` + `tesseract.js` | Local OCR has poor multilingual support and low accuracy for scans, degrading RAG answer quality |
+| **LlamaParse** for PDF | Bootcamp materials frequently contain scanned content (handwritten notes, slide screenshots) requiring high-accuracy OCR. Custom `parsing_instruction` ensures data-type comparison tables and code snippets are preserved accurately | `pdf-parse` + `tesseract.js` | Local OCR has poor multilingual support and low accuracy for scans, degrading RAG answer quality |
 | **OpenRouter** unified API | Single endpoint for multiple LLMs, reducing vendor lock-in risk | Direct OpenAI / Google API | Fewer free-tier options; switching models requires code changes |
 | **MongoDB Atlas M0** | Free 512MB cluster is sufficient for bootcamp-scale document chunks | PostgreSQL + pgvector | MongoDB native vector search + free cluster = zero-cost startup |
 
@@ -266,6 +270,7 @@ ChatPromptTemplate Role Separation → LLM
 |--------|------|-------------|
 | POST | `/api/ingest` | Upload PDF/MD file |
 | GET | `/api/documents` | Get uploaded document list |
+| DELETE | `/api/documents/[id]` | Delete document, chunks, related QuizAttempts |
 | POST | `/api/chat` | RAG chat (Vercel AI SDK streaming) |
 | POST | `/api/quiz/generate` | AI generate quiz questions |
 | POST | `/api/quiz/submit` | Submit quiz answers |
@@ -279,14 +284,14 @@ ChatPromptTemplate Role Separation → LLM
 
 | Decision | Rationale |
 |----------|-----------|
-| LlamaParse replaces pdf-parse + tesseract.js | Cloud API handles complex layouts, multilingual text, and scanned PDFs without local OCR |
+| LlamaParse replaces pdf-parse + tesseract.js | Cloud API handles complex layouts, multilingual text, and scanned PDFs without local OCR. Custom `parsing_instruction` improves table parsing accuracy |
 | Direct fetch to OpenRouter instead of LangChain Embeddings | Avoids compatibility issues with OpenRouter response format differences |
 | Warmup + dimension detection | Detects vector dimensions at startup, ensures match with Atlas index |
 | Keyword fallback | Uses regex backup when vector search returns no results, improves fault tolerance |
 | Vercel AI SDK streaming (Chat) | Uses `createUIMessageStreamResponse` + `toUIMessageStream` for Chat streaming; frontend uses `useChat` to auto-receive |
 | Streaming NDJSON (Summary) | Summary uses NDJSON for token-by-token response, improving experience |
 | Batch embedding (20/batch) | OpenRouter may limit batch size |
-| Score filter (≥ 0.4) | Filters low-relevance results to prevent hallucination |
+| Two-stage score thresholds | `search.ts` drops raw cosine < 0.60, normalizes scores; `chat/route.ts` then drops normalized < 0.40 before building context |
 | Multi-Query Search | LLM splits question into 3 perspectives for parallel search, improving recall |
 | toolLLM (non-streaming) | Lightweight low-temperature LLM dedicated to tool calls (multi-query generation) |
 | Header-aware chunking | Splits by Markdown headers, prepends header context prefix per chunk (e.g. "Java > Data Types") for improved embedding accuracy |
@@ -299,4 +304,4 @@ ChatPromptTemplate Role Separation → LLM
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

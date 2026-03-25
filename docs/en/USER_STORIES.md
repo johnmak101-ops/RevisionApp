@@ -12,12 +12,12 @@
 - [ ] Supports `.pdf` format
 - [ ] Automatically extracts text, splits, embeds, and stores after upload
 - [ ] Displays success message with chunk count
-- [ ] Duplicate filenames cannot be re-uploaded (409 error)
+- [ ] Duplicate filenames cannot be re-uploaded (409 error); delete from **Indexed documents** first (see US-1.4)
 - [ ] Empty or corrupted files show clear error messages
 - [ ] File size limit: 100MB
 
 **Negative Paths**:
-- [ ] If the PDF contains mostly non-text content (e.g. pure images, scanned pages), the system processes it via LlamaParse OCR but must notify the user "Some content may not have been indexed" when chunk count is significantly low
+- [ ] If the PDF contains mostly non-text content (e.g. pure images, scanned pages), the system processes it via LlamaParse OCR + custom `parsing_instruction` but must notify the user "Some content may not have been indexed" when chunk count is significantly low
 - [ ] If the LlamaParse API daily quota is exhausted, return a specific error message (not a generic 500 error)
 
 ### US-1.2 Upload Markdown Document
@@ -37,8 +37,19 @@
 > **So that** I know which materials are available
 
 **Acceptance Criteria**:
-- [ ] Displays filename, chunk count, upload time
+- [ ] Displays filename, chunk count, upload time (from API; home **Indexed documents** shows filename + chunk count)
 - [ ] Sorted by upload time in descending order
+
+### US-1.4 Delete Indexed Document
+
+> **As a** bootcamp student
+> **I want to** remove an indexed document I no longer need
+> **So that** I can free the index or re-upload a file with the same name
+
+**Acceptance Criteria**:
+- [ ] Home **Indexed documents** supports per-file delete (after confirmation)
+- [ ] Calls `DELETE /api/documents/[id]`, removing chunks and related quiz attempts
+- [ ] Document list and Quiz/Summary selectors stay in sync (shared `documents` cache)
 
 ---
 
@@ -58,7 +69,7 @@
 
 **Negative Paths**:
 - [ ] When AI cannot find an answer within the documents, it must honestly respond "This topic is not covered in the uploaded materials" rather than guessing (Hallucination Control)
-- [ ] Vector search results with score below 0.4 must be filtered out and cannot be used as AI answer source
+- [ ] Two-stage filtering: `search.ts` drops raw cosine < 0.60; after normalization `chat/route.ts` drops normalized < 0.40 — those must not be used as answer context
 
 ### US-2.2 Search Fault Tolerance
 

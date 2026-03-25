@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
+import { DocumentList } from "@/components/DocumentList";
 import { ChatBox } from "@/components/ChatBox";
 import { QuizPanel } from "@/components/QuizPanel";
 import { SummaryPanel } from "@/components/SummaryPanel";
@@ -24,8 +25,9 @@ export default function Home() {
       </header>
 
       {/* Upload bar */}
-      <div className="mb-4">
+      <div className="mb-4 space-y-0">
         <FileUpload />
+        <DocumentList />
       </div>
 
       {/* Tab navigation */}

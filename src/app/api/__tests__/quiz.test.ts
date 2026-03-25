@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+/** 有效 MongoDB ObjectId（24 hex），符合 `guardDocumentId` */
+const VALID_DOC_ID = "507f1f77bcf86cd799439011";
+
 // ─── Mock DB ─────────────────────────────────
 vi.mock("@/lib/db", () => ({ connectDB: vi.fn() }));
 
@@ -23,7 +26,7 @@ vi.mock("@/models/Chunk", () => ({
 // ─── Mock QuizAttempt ────────────────────────
 const fakeQuizData = {
   _id: { toString: () => "quiz-123" },
-  documentId: "doc-1",
+  documentId: VALID_DOC_ID,
   questions: [
     {
       question: "What is React?",
@@ -102,7 +105,7 @@ describe("Quiz API Routes", () => {
       const { POST } = await import("@/app/api/quiz/generate/route");
       const req = new NextRequest("http://localhost/api/quiz/generate", {
         method: "POST",
-        body: JSON.stringify({ documentId: "doc-1", count: 1 }),
+        body: JSON.stringify({ documentId: VALID_DOC_ID, count: 1 }),
         headers: { "Content-Type": "application/json" },
       });
       const res = await POST(req);

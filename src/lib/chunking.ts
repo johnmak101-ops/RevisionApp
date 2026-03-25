@@ -16,6 +16,8 @@ export interface TextChunk {
   page: number;
   /** 該區塊的全域序號 */
   chunkIndex: number;
+  /** 所屬章節（h1 header 文字），供 MongoDB metadata filter 用 */
+  chapter?: string;
 }
 
 /** LangChain splitter — 按語義邊界（段落 → 句號 → 空格）遞迴分割 */
@@ -150,6 +152,7 @@ export async function chunkText(
             content: headerPrefix + trimmed,
             page: page.pageNumber,
             chunkIndex: allChunks.length,
+            chapter: section.headers.h1,
           });
         }
       }

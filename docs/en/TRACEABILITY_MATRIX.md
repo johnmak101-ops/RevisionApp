@@ -8,14 +8,15 @@
 
 | Use Case | User Story | Test Case(s) | API Endpoint | UI Component | Impl. Status | UAT Status | User Feedback |
 |----------|-----------|--------------|--------------|-------------|----------|----------|----------|
-| UC-01 Upload PDF | US-1.1 | TC-01, TC-03~07 | `POST /api/ingest` | `FileUpload` | ✅ Implemented | ⏳ Pending | — |
+| UC-01 Upload PDF | US-1.1 | TC-01, TC-03~07, TC-06b (after delete) | `POST /api/ingest` | `FileUpload` | ✅ Implemented | ⏳ Pending | — |
 | UC-01 Upload MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ Implemented | ⏳ Pending | — |
 | UC-02 RAG Chat | US-2.1, US-2.2 | TC-10~13B | `POST /api/chat` | `ChatBox` | ✅ Implemented | ⏳ Pending | — |
 | UC-03 Quiz Generation | US-3.1 | TC-14~16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ Implemented | ⏳ Pending | — |
 | UC-04 Quiz Submission | US-3.2 | TC-17~19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ Implemented | ⏳ Pending | — |
 | UC-05 Knowledge Gap | US-3.3 | TC-20~22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ Implemented | ⏳ Pending | — |
 | UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ Implemented | ⏳ Pending | — |
-| UC-07 Document List | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ Implemented | ⏳ Pending | — |
+| UC-07 Document List | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `DocumentList`, `QuizPanel`, `SummaryPanel` | ✅ Implemented | ⏳ Pending | — |
+| UC-09 Delete Document | US-1.4 | TC-06b, `documents-id` unit tests | `DELETE /api/documents/[id]` | `DocumentList` | ✅ Implemented | ⏳ Pending | — |
 
 > **UAT Status legend**: ⏳ Pending → 🔄 In Progress → ✅ Passed (fill in date) → ❌ Failed (record issue)
 
@@ -31,12 +32,17 @@
 | | Auto extract, split, embed, store | TC-01 | ✅ |
 | | Shows success message (with chunk count) | TC-01 | ✅ |
 | | Duplicate filename returns 409 | TC-06 | ✅ |
+| | After deleting the old file, same name can be re-ingested | TC-06b | ✅ |
 | | Empty/corrupted file shows clear error | TC-04, TC-07 | ✅ |
 | | File size limit 100MB | TC-05 | ✅ |
 | US-1.2 Upload MD | Supports `.md`, `.markdown` formats | TC-02 | ✅ |
 | | Processing flow same as PDF | TC-02 | ✅ |
 | US-1.3 View Documents | Shows filename, chunk count, upload time | TC-08 | ✅ |
 | | Sorted by upload time descending | TC-08 | ✅ |
+| | **Indexed documents** list shows filename + chunk count (same `GET` source) | TC-08 | ✅ |
+| US-1.4 Delete Document | Can delete one indexed document after confirmation | TC-06b | ✅ |
+| | List and Quiz/Summary selectors stay in sync | TC-06b | ✅ |
+| | API removes chunks and related `QuizAttempt` rows | `documents-id` | ✅ |
 
 ### Epic 2: RAG Chat
 
@@ -86,29 +92,31 @@
 
 | Use Case | Test Cases | Coverage |
 |----------|-----------|----------|
-| UC-01 | 6 | ✅ 100% |
+| UC-01 | 7 | ✅ 100% |
 | UC-02 | 5 | ✅ 100% |
 | UC-03 | 3 | ✅ 100% |
 | UC-04 | 3 | ✅ 100% |
 | UC-05 | 3 | ✅ 100% |
 | UC-06 | 2 | ✅ 100% |
 | UC-07 | 2 | ✅ 100% |
+| UC-09 | 2 | ✅ 100% |
 
 ### By User Story
 
 | Metric | Value |
 |--------|-------|
-| Total Acceptance Criteria | 31 |
-| Automatable test coverage | 28 (90%) |
-| Requires manual verification | 3 (10%) |
+| Total Acceptance Criteria | 35 |
+| Automatable test coverage | 32 (91%) |
+| Requires manual verification | 3 (9%) |
 | Not covered | 0 (0%) |
 
 ### By API Endpoint
 
 | Endpoint | Test Cases | Happy Path | Error Handling |
 |----------|-----------|------------|----------------|
-| `POST /api/ingest` | 6 | TC-01, TC-02 | TC-03, TC-04, TC-05, TC-06, TC-07 |
+| `POST /api/ingest` | 7 | TC-01, TC-02, TC-06b | TC-03, TC-04, TC-05, TC-06, TC-07 |
 | `GET /api/documents` | 2 | TC-08 | TC-09 |
+| `DELETE /api/documents/[id]` | 4 | TC-06b, `documents-id` (3 cases) | `documents-id` (400/404) |
 | `POST /api/chat` | 5 | TC-10, TC-13, TC-13B | TC-11, TC-12 |
 | `POST /api/quiz/generate` | 3 | TC-14, TC-16 | TC-15 |
 | `POST /api/quiz/submit` | 3 | TC-17 | TC-18, TC-19 |
@@ -156,12 +164,14 @@ graph LR
         UC5["UC-05 Knowledge Gap"]
         UC6["UC-06 Summary"]
         UC7["UC-07 Doc List"]
+        UC9["UC-09 Delete Doc"]
     end
     
     subgraph User Stories
         US11["US-1.1"]
         US12["US-1.2"]
         US13["US-1.3"]
+        US14["US-1.4"]
         US21["US-2.1"]
         US22["US-2.2"]
         US31["US-3.1"]
@@ -173,6 +183,7 @@ graph LR
     subgraph Test Cases
         TC01["TC-01~07"]
         TC08["TC-08~09"]
+        TC06B["TC-06b"]
         TC10["TC-10~13B"]
         TC14["TC-14~16"]
         TC17["TC-17~19"]
@@ -183,6 +194,7 @@ graph LR
     UC1 --> US11
     UC1 --> US12
     UC7 --> US13
+    UC9 --> US14
     UC2 --> US21
     UC2 --> US22
     UC3 --> US31
@@ -193,6 +205,7 @@ graph LR
     US11 --> TC01
     US12 --> TC01
     US13 --> TC08
+    US14 --> TC06B
     US21 --> TC10
     US22 --> TC10
     US31 --> TC14
@@ -203,4 +216,4 @@ graph LR
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-25*

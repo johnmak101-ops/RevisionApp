@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import MarkdownRenderer from "@/components/MarkdownRendererDynamic";
 
 /**
@@ -22,8 +23,18 @@ interface Doc {
  *
  * 流程：選擇文件 → 呼叫 `/api/summary/generate` → streaming 顯示 Markdown 大綱。
  */
+async function fetchDocs(): Promise<Doc[]> {
+  const res = await fetch("/api/documents");
+  if (!res.ok) throw new Error("無法載入文件");
+  return res.json();
+}
+
 export function SummaryPanel() {
-  const [docs, setDocs] = useState<Doc[]>([]);
+  const { data: docs = [] } = useQuery({
+    queryKey: ["documents"],
+    queryFn: fetchDocs,
+    staleTime: 60_000,
+  });
   const [selectedDoc, setSelectedDoc] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,13 +42,10 @@ export function SummaryPanel() {
   const [streaming, setStreaming] = useState(false);
 
   useEffect(() => {
-    fetch("/api/documents")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setDocs(data);
-      })
-      .catch(() => setDocs([]));
-  }, []);
+    if (selectedDoc && !docs.some((d) => d._id === selectedDoc)) {
+      setSelectedDoc("");
+    }
+  }, [docs, selectedDoc]);
 
   const handleGenerate = async () => {
     if (!selectedDoc) return;

@@ -38,3 +38,6 @@ yarn-error.log*
 
 # OCR training data (if any future OCR lib uses it)
 *.traineddata
+
+# Confluence sync script
+scripts/sync-confluence.mjs

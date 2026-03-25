@@ -6,17 +6,19 @@ import DOMPurify from "dompurify";
 import hljs from "highlight.js";
 import { full as emoji } from "markdown-it-emoji";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function cjs(m: any) { return m?.default ?? m; }
+function cjs(m: { default?: unknown } | unknown) {
+  if (m && typeof m === "object" && "default" in m) {
+    return (m as { default: unknown }).default;
+  }
+  return m;
+}
 
-/* eslint-disable @typescript-eslint/no-require-imports */
-const taskLists   = cjs(require("markdown-it-task-lists"));
-const anchor      = cjs(require("markdown-it-anchor"));
-const footnote    = cjs(require("markdown-it-footnote"));
-const container   = cjs(require("markdown-it-container"));
-const sup         = cjs(require("markdown-it-sup"));
-const sub         = cjs(require("markdown-it-sub"));
-/* eslint-enable @typescript-eslint/no-require-imports */
+const taskLists   = cjs(require("markdown-it-task-lists")) as import("markdown-it").PluginWithOptions<{ enabled: boolean; label: boolean }>;
+const anchor      = cjs(require("markdown-it-anchor")) as import("markdown-it").PluginWithOptions<{ permalink: boolean }>;
+const footnote    = cjs(require("markdown-it-footnote")) as import("markdown-it").PluginSimple;
+const container   = cjs(require("markdown-it-container")) as import("markdown-it").PluginWithOptions<string>;
+const sup         = cjs(require("markdown-it-sup")) as import("markdown-it").PluginSimple;
+const sub         = cjs(require("markdown-it-sub")) as import("markdown-it").PluginSimple;
 
 const md = new MarkdownIt({
   html: false,
@@ -51,14 +53,12 @@ const md = new MarkdownIt({
   .use(sup)
   .use(sub);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultRender = md.renderer.rules.link_open ||
-  function (tokens: any[], idx: number, options: any, _env: any, self: any) {
+  function (tokens, idx, options, _env, self) {
     return self.renderToken(tokens, idx, options);
   };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-md.renderer.rules.link_open = function (tokens: any[], idx: number, options: any, env: any, self: any) {
+md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrSet("target", "_blank");
   tokens[idx].attrSet("rel", "noopener noreferrer");
   return defaultRender(tokens, idx, options, env, self);

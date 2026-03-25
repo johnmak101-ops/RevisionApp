@@ -1,299 +1,75 @@
 **🌐 Language / 語言：** **English** | [中文](README.md)
 
-# 📚 Bootcamp Revision App
+# Revision App
 
-> An AI-powered Bootcamp study material revision platform — supports PDF/Markdown upload, RAG chat, auto quiz generation, knowledge gap analysis, and summary generation.  
-> Powered by OpenRouter paid models with free MongoDB Atlas and Vercel hosting.
+**Personal portfolio** — **BA / product artefacts** (scope, discovery, use cases, user stories, traceability, test plan, UAT gate) and **full-stack implementation** are my own work; see the documentation table below.
 
----
+> Bootcamp study-revision app: PDF/Markdown upload, RAG chat, auto quiz, knowledge gaps, AI summaries. Next.js 16, MongoDB Atlas, OpenRouter, Vercel.
 
-## 🎯 Business Problem Statement
+**Demo**: No public hosted URL—**deploy it yourself** using the **Quick start** section below. UI preview: **Screenshots** section.
 
-### Pain Points
-
-Bootcamp students face critical challenges in intensive learning environments:
-
-| Pain Point | Description | Impact |
-|------------|-------------|--------|
-| 📚 **Information Overload** | Receiving large volumes of PDF slides, notes, and code examples daily, making it hard to absorb effectively | Students spend more time *searching for content* than *understanding it* |
-| 🔍 **Scattered Materials** | Course resources fragmented across Google Drive, Slack, LMS — no unified search entry point | Students waste time switching between platforms |
-| ❓ **No Self-Assessment Tool** | Students don't know their weak areas until it's too late (exam / interview) | Knowledge gaps discovered too late to address |
-
-### Solution Positioning
-
-This app unifies scattered materials through AI-powered indexing and provides intelligent revision tools (RAG chat, auto quiz, knowledge gap analysis) — enabling students to **ask while learning, practice while doing, and improve while tracking**.
+**Business context, pain points, KPIs, MVP / out of scope / UAT gate** → [`docs/en/PRODUCT_SCOPE.md`](docs/en/PRODUCT_SCOPE.md)  
+**Discovery, prioritization, ~50% time hypothesis (one-pager)** → [`docs/en/DISCOVERY_AND_PRIORITIZATION.md`](docs/en/DISCOVERY_AND_PRIORITIZATION.md)  
+**Use cases, actors, protections** → [`docs/en/USE_CASES.md`](docs/en/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md)  
+**Security architecture (Vard, chunk guard, rate limits)** → [`docs/en/ARCHITECTURE.md`](docs/en/ARCHITECTURE.md)
 
 ---
 
-## 📊 Success Metrics (KPIs)
-
-| KPI | Target | Measurement Method | Baseline |
-|-----|--------|--------------------|----------|
-| Student material retrieval time | Reduce by **30%** | RAG Chat search vs manual lookup time (user survey) | Pre-adoption survey |
-| Core knowledge mastery rate | Improve by **20%** | Quiz module correct rate tracking (`/api/quiz/stats`) | First attempt average score |
-| Course file format coverage | **≥ 95%** | PDF (incl. scanned) + Markdown supported | Industry standard formats |
-| AI answer relevance | **≥ 90%** document-based | RAG vector search score ≥ 0.4 hit rate | System log analysis |
-
----
-
-## ✨ Features
+## Core features
 
 | Feature | Description |
 |---------|-------------|
-| 📄 **File Upload** | Upload PDF and Markdown files with automatic vectorized indexing |
-| 💬 **RAG Chat** | Answer questions based on uploaded document content (streaming responses) |
-| 📝 **Quiz Generator** | AI auto-generates multiple-choice questions from documents with instant grading |
-| 🎯 **Knowledge Gap** | Analyzes quiz error rates to identify weak topics |
-| 📋 **Summary** | AI-generated document outline summaries (streaming) |
+| Upload / indexed list | PDF, Markdown; delete one row to free index or fix duplicate 409 |
+| RAG chat | Streaming answers from indexed content |
+| Quiz / knowledge gap | AI multiple-choice; weak topics by topic |
+| Summary | Document outline |
+| Security | Prompt guard, API rate limits, input validation |
 
 ---
 
-## 🛠️ Tech Stack
+## Documentation
 
-| Layer | Technology | Version / Notes |
-|-------|-----------|-----------------|
-| **Framework** | Next.js | 16.1.6 (Turbopack) |
-| **Language** | TypeScript | 5.7+ |
-| **Frontend** | React | 19.x |
-| **Styling** | Tailwind CSS | 4.2 |
-| **Database** | MongoDB Atlas | M0 Free Cluster (512MB) |
-| **ODM** | Mongoose | 8.8 |
-| **LLM Chat** | OpenRouter → `google/gemini-2.5-flash-lite` | Paid (low-cost) |
-| **Embedding** | OpenRouter → `qwen/qwen3-embedding-8b` | Paid (low-cost) |
-| **RAG Chain** | LangChain (`@langchain/openai`, `@langchain/core`) | Prompt + Streaming |
-| **Text Splitting** | `@langchain/textsplitters` | RecursiveCharacterTextSplitter |
-| **PDF Parsing** | LlamaParse REST API | Multi-language, scanned PDF support |
-| **Markdown Rendering** | `markdown-it` + highlight.js + DOMPurify | Syntax highlighting, XSS protection |
+| Audience | Links |
+|----------|-------|
+| **Product / BA** | [PRODUCT_SCOPE](docs/en/PRODUCT_SCOPE.md) · [DISCOVERY / prioritization](docs/en/DISCOVERY_AND_PRIORITIZATION.md) · [USE_CASES](docs/en/USE_CASES.md) · [USER_STORIES](docs/en/USER_STORIES.md) · [TRACEABILITY_MATRIX](docs/en/TRACEABILITY_MATRIX.md) · [TEST_PLAN](docs/en/TEST_PLAN.md) · [STAKEHOLDER_MAP](docs/en/STAKEHOLDER_MAP.md) · [NFR](docs/en/NON_FUNCTIONAL_REQUIREMENTS.md) |
+| **Engineering** | [DEVELOPER_GUIDE](docs/en/DEVELOPER_GUIDE.md) · [SETUP_GUIDE](docs/en/SETUP_GUIDE.md) · [ARCHITECTURE](docs/en/ARCHITECTURE.md) · [API_REFERENCE](docs/en/API_REFERENCE.md) · [SEQUENCE_DIAGRAMS](docs/SEQUENCE_DIAGRAMS.md) · [UI_FLOW_DIAGRAM](docs/en/UI_FLOW_DIAGRAM.md) · [MONGODB_VECTOR_SETUP](docs/en/MONGODB_VECTOR_SETUP.md) · [GLOSSARY](docs/en/GLOSSARY.md) |
+| **Quality** | [DEFINITION_OF_DONE](docs/en/DEFINITION_OF_DONE.md) |
+| **中文** | [README.md](README.md) · Chinese files under `docs/` (same filenames as `docs/en/`) |
 
 ---
 
-## 💰 Service Plans
+## Screenshots
 
-| Service | Plan | Notes |
-|---------|------|-------|
-| MongoDB Atlas | M0 Free Cluster | 512MB storage, vector search supported |
-| OpenRouter | Paid models | `gemini-2.5-flash-lite` (Chat), `qwen3-embedding-8b` (Embedding) |
-| LlamaCloud | Free tier | Daily page parsing quota |
-| Vercel | Free tier | Deployment hosting |
+Captured from a local / self-hosted run (Chat, Quiz, Summary tabs).
+
+| Chat | Quiz | Summary |
+|:----:|:----:|:-------:|
+| ![Chat](docs/screenshots/screenshot-chat.png) | ![Quiz](docs/screenshots/screenshot-quiz.png) | ![Summary](docs/screenshots/screenshot-summary.png) |
 
 ---
 
-## 🚀 Quick Start
+## Tech stack (summary)
 
-### 1. Install Dependencies
+Next.js **16** (Turbopack) · MongoDB Atlas Vector Search · OpenRouter (`gemini-2.5-flash-lite` chat + `qwen/qwen3-embedding-4b` embeddings) · LlamaParse · `@andersmyrmel/vard`
+
+---
+
+## Quick start
 
 ```bash
 npm install
-```
-
-### 2. Environment Variables
-
-```bash
 cp .env.example .env.local
 ```
 
-Fill in the following variables (see [`.env.example`](.env.example)):
+Set `MONGODB_URI`, `OPENROUTER_API_KEY`, `LLAMA_CLOUD_API_KEY`, etc. ([SETUP_GUIDE](docs/en/SETUP_GUIDE.md)).
 
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB Atlas connection string |
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) API Key |
-| `OPENROUTER_MODEL` | Chat LLM model (default: `google/gemini-2.5-flash-lite`) |
-| `OPENROUTER_EMBED_MODEL` | Embedding model (default: `qwen/qwen3-embedding-8b`) |
-| `LLAMA_CLOUD_API_KEY` | [LlamaCloud](https://cloud.llamaindex.ai/api-key) API Key (PDF parsing) |
-
-### 3. MongoDB Atlas Vector Index
-
-Create a vector search index for the `chunks` collection in Atlas:
-
-1. Atlas → Your Cluster → **Search** → **Create Index**
-2. Select **JSON Editor**, paste the content from [`scripts/vector-index.json`](scripts/vector-index.json):
-
-```json
-{
-  "fields": [
-    {
-      "type": "vector",
-      "path": "embedding",
-      "numDimensions": 4096,
-      "similarity": "cosine"
-    }
-  ]
-}
-```
-
-> 📖 See detailed steps in [`docs/en/MONGODB_VECTOR_SETUP.md`](docs/en/MONGODB_VECTOR_SETUP.md)
-
-### 4. Start Dev Server
+Create the Atlas vector index from [`scripts/vector-index.json`](scripts/vector-index.json) — [MONGODB_VECTOR_SETUP](docs/en/MONGODB_VECTOR_SETUP.md).
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
-
 ---
 
-## 📖 How to Use
-
-1. **Upload Documents** — Upload Bootcamp PDF or Markdown materials from the left panel
-2. **Chat Review** — In the Chat tab, ask questions and AI responds based on document content in real time
-3. **Quiz** — In the Quiz tab, select a document and AI auto-generates questions with instant grading
-4. **Knowledge Gap** — After completing quizzes, review weak area analysis
-5. **Summary** — In the Summary tab, generate a document outline with one click
-
----
-
-## 🛡️ Security
-
-### Business Risk & Protection Goals
-
-Security protections are not purely technical — they directly impact product trust and learning quality:
-
-| Protection Layer | Goal | Business Risk (if absent) |
-|-----------------|------|---------------------------|
-| **Vard Guard** | Detect and block Prompt Injection attacks (instruction override, role manipulation, system prompt leak) | Attackers could inject malicious instructions, causing AI to produce misleading content that harms student learning quality |
-| **Chunk Content Guard** | Scan each chunk from uploaded documents to ensure input data integrity | Malicious documents carrying indirect injection patterns could contaminate the RAG context, affecting all users' query results |
-| **Rate Limiting** | Control API request frequency to prevent abuse | Excessive requests consume OpenRouter API quota, causing service interruption or unexpected costs |
-| **Input Sanitization** | Strip delimiter injection and encoding attacks | Bypasses other protection layers to directly manipulate LLM behaviour |
-
-### Protection Layers by Endpoint
-
-| Protection Layer | Endpoint | Description |
-|-----------------|----------|-------------|
-| **Vard Guard** | Chat | Detects instruction override, role manipulation, system prompt leak |
-| **Custom Patterns** | Chat | Blocks DAN jailbreak, prompt leak variants |
-| **Input Sanitization** | Chat | Strips delimiter injection, encoding attacks |
-| **Chunk Content Guard** | Ingest | Vard scans each chunk, strips content with injection patterns (indirect prompt injection defence) |
-| **ChatPromptTemplate** | Quiz, Summary | system/user role separation to prevent context injection |
-| **DocumentId Validation** | Quiz, Summary | Only accepts valid 24-char hex MongoDB ObjectId |
-
-### Rate Limiting
-
-| Endpoint | Limit |
-|----------|-------|
-| `/api/chat` | 20 req/min per IP |
-| `/api/quiz/generate` | 10 req/min per IP |
-| `/api/summary/generate` | 10 req/min per IP |
-
----
-
-## 🏗️ Project Structure
-
-```
-revision-app/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── chat/route.ts          # RAG Chat (Streaming)
-│   │   │   ├── documents/route.ts     # Document List API
-│   │   │   ├── ingest/route.ts        # PDF/MD Upload → Vectorization
-│   │   │   ├── quiz/
-│   │   │   │   ├── generate/route.ts  # AI Quiz Generation
-│   │   │   │   ├── submit/route.ts    # Submit Answers & Grading
-│   │   │   │   └── stats/route.ts     # Quiz Statistics
-│   │   │   └── summary/
-│   │   │       └── generate/route.ts  # AI Summary (Streaming)
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx                   # Main Page (Tab Navigation)
-│   ├── components/
-│   │   ├── ChatBox.tsx                # Chat Interface (Streaming)
-│   │   ├── FileUpload.tsx             # File Upload
-│   │   ├── KnowledgeGap.tsx           # Knowledge Gap Analysis
-│   │   ├── MarkdownRenderer.tsx       # Markdown Rendering (Syntax Highlighting)
-│   │   ├── MarkdownRendererDynamic.tsx # Dynamic Markdown Renderer Loader
-│   │   ├── QuizPanel.tsx              # Quiz Generation & Answering
-│   │   ├── SummaryPanel.tsx           # Summary Panel
-│   │   ├── TabNav.tsx                 # Tab Navigation
-│   │   └── UploadToast.tsx            # Upload Notification Toast
-│   ├── context/
-│   │   └── UploadContext.tsx          # Upload State Global Context
-│   ├── hooks/
-│   │   ├── useQuiz.ts                 # Quiz Logic Hook
-│   │   ├── useStats.ts                # Statistics Data Hook
-│   │   └── useToast.ts                # Toast Notification Hook
-│   ├── lib/
-│   │   ├── __tests__/                 # Unit Tests
-│   │   ├── chunking.ts               # LangChain Text Splitting
-│   │   ├── db.ts                      # MongoDB Connection (Cached, global cache in dev to prevent HMR duplicates)
-│   │   ├── embedding.ts              # OpenRouter Embedding API
-│   │   ├── llm.ts                     # LLM Client Configuration
-│   │   ├── md.ts                      # Markdown Parsing
-│   │   ├── pdf.ts                     # PDF Text Extraction
-│   │   ├── promptGuard.ts            # Prompt Injection Guard (Vard)
-│   │   ├── rateLimiter.ts            # In-memory Rate Limiter
-│   │   └── search.ts                 # Vector Search + Keyword Fallback
-│   └── models/
-│       ├── Chunk.ts                   # Text Chunk (with embedding)
-│       ├── Document.ts              # Uploaded Document Record
-│       └── QuizAttempt.ts           # Quiz Attempt Record
-├── scripts/
-│   └── vector-index.json             # Atlas Vector Index Definition
-└── docs/                             # 📖 Project Documentation
-```
-
----
-
-## 📚 Project Documentation
-
-All documentation is available in both **Chinese** ([`docs/`](docs/)) and **English** ([`docs/en/`](docs/en/)), and also on [📘 Confluence Wiki](https://johnmak101.atlassian.net/wiki/spaces/REV):
-
-### 📋 Project Planning
-
-| Document | Description |
-|----------|-------------|
-| [📄 PROJECT_OVERVIEW.md](docs/en/PROJECT_OVERVIEW.md) | Project Overview — Core features, tech stack, free tier plan |
-| [📄 ARCHITECTURE.md](docs/en/ARCHITECTURE.md) | System Architecture — Directory structure, data models, core flows, design decisions |
-| [📄 GLOSSARY.md](docs/en/GLOSSARY.md) | Glossary — Technical term definitions |
-
-### 📐 Requirements & Design
-
-| Document | Description |
-|----------|-------------|
-| [📄 USE_CASES.md](docs/en/USE_CASES.md) | Use Cases — System use case descriptions (with pre/post conditions) |
-| [📄 USER_STORIES.md](docs/en/USER_STORIES.md) | User Stories — Agile user story listing |
-| [📄 DEFINITION_OF_DONE.md](docs/en/DEFINITION_OF_DONE.md) | Definition of Done — DoD criteria for each feature |
-| [📄 NON_FUNCTIONAL_REQUIREMENTS.md](docs/en/NON_FUNCTIONAL_REQUIREMENTS.md) | Non-Functional Requirements — Performance, security, usability requirements |
-
-### 🎨 UI/UX
-
-| Document | Description |
-|----------|-------------|
-| [📄 UI_FLOW_DIAGRAM.md](docs/en/UI_FLOW_DIAGRAM.md) | UI Flow Diagram — Tab navigation, user flow diagrams (Mermaid) |
-
-### 🔌 API
-
-| Document | Description |
-|----------|-------------|
-| [📄 API_REFERENCE.md](docs/en/API_REFERENCE.md) | API Reference — Request/response format for all endpoints |
-
-### 🧪 Testing & Traceability
-
-| Document | Description |
-|----------|-------------|
-| [📄 TEST_PLAN.md](docs/en/TEST_PLAN.md) | Test Plan — Testing strategy and specific test cases |
-| [📄 TRACEABILITY_MATRIX.md](docs/en/TRACEABILITY_MATRIX.md) | Traceability Matrix — Use Case ↔ User Story ↔ Test Case mapping (incl. UAT tracking + AI quality rubric) |
-| [📄 STAKEHOLDER_MAP.md](docs/en/STAKEHOLDER_MAP.md) | Stakeholder Map — Stakeholder needs, conflict analysis, Power/Interest Matrix |
-
-### ⚙️ Deployment & Setup
-
-| Document | Description |
-|----------|-------------|
-| [📄 SETUP_GUIDE.md](docs/en/SETUP_GUIDE.md) | Setup Guide — Detailed development environment setup steps |
-| [📄 MONGODB_VECTOR_SETUP.md](docs/en/MONGODB_VECTOR_SETUP.md) | MongoDB Vector Search Setup — Atlas index creation tutorial |
-
----
-
-## 🌐 Deploy to Vercel
-
-1. Push to GitHub
-2. Import the project on [Vercel](https://vercel.com)
-3. Set environment variables: `MONGODB_URI`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_EMBED_MODEL`, `LLAMA_CLOUD_API_KEY`
-4. Deploy
-
----
-
-Created by **John Mak** 🚀
-
-*Last updated: 2026-03-24*
+Created by **John Mak**  
+*Last updated: 2026-03-25*

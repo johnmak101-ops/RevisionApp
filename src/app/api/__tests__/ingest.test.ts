@@ -21,6 +21,9 @@ vi.mock("@/lib/chunking", () => ({
 vi.mock("@/lib/embedding", () => ({
   embedTexts: vi.fn().mockResolvedValue([[0.1, 0.2, 0.3]]),
 }));
+vi.mock("@/lib/promptGuard", () => ({
+  guardChunkContent: vi.fn().mockReturnValue({ flagged: new Set<number>(), flaggedCount: 0 }),
+}));
 
 const mockFindOne = vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(null) });
 const mockCreate = vi.fn().mockResolvedValue({

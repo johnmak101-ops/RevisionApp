@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["mongoose", "pdf-parse", "pdf-to-img", "tesseract.js"],
+  serverExternalPackages: ["mongoose"],
   experimental: {
     serverActions: { bodySizeLimit: "100mb" },
   },

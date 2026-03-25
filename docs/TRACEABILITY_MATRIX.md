@@ -8,14 +8,15 @@
 
 | Use Case | User Story | Test Case(s) | API Endpoint | UI 組件 | 實現狀態 | UAT 狀態 | 用戶反饋 |
 |----------|-----------|--------------|--------------|---------|----------|----------|----------|
-| UC-01 上傳 PDF | US-1.1 | TC-01, TC-03~07 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-01 上傳 PDF | US-1.1 | TC-01, TC-03~07, TC-06b（刪除後再傳） | `POST /api/ingest` | `FileUpload` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-01 上傳 MD | US-1.2 | TC-02 | `POST /api/ingest` | `FileUpload` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-02 RAG 聊天 | US-2.1, US-2.2 | TC-10~13B | `POST /api/chat` | `ChatBox` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-03 Quiz 生成 | US-3.1 | TC-14~16 | `POST /api/quiz/generate` | `QuizPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-04 Quiz 提交 | US-3.2 | TC-17~19 | `POST /api/quiz/submit` | `QuizPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-05 知識缺口 | US-3.3 | TC-20~22A | `GET /api/quiz/stats`<br>`DELETE /api/quiz/stats` | `KnowledgeGap` | ✅ 已實現 | ⏳ 待 UAT | — |
 | UC-06 Summary | US-4.1 | TC-22, TC-23 | `POST /api/summary/generate` | `SummaryPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
-| UC-07 文件列表 | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `FileUpload`(dropdown) | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-07 文件列表 | US-1.3 | TC-08, TC-09 | `GET /api/documents` | `DocumentList`、`QuizPanel`、`SummaryPanel` | ✅ 已實現 | ⏳ 待 UAT | — |
+| UC-09 刪除文件 | US-1.4 | TC-06b、`documents-id` 單元測試 | `DELETE /api/documents/[id]` | `DocumentList` | ✅ 已實現 | ⏳ 待 UAT | — |
 
 > **UAT 狀態說明**：⏳ 待 UAT → 🔄 UAT 進行中 → ✅ UAT 通過（填寫通過日期）→ ❌ UAT 失敗（記錄問題）
 
@@ -31,12 +32,17 @@
 | | 自動擷取文字、分割、embedding、存儲 | TC-01 | ✅ |
 | | 顯示成功信息（含 chunk 數量） | TC-01 | ✅ |
 | | 同名文件 409 錯誤 | TC-06 | ✅ |
+| | 刪除舊文件後可重新上傳同名檔 | TC-06b | ✅ |
 | | 空/損壞文件清晰錯誤提示 | TC-04, TC-07 | ✅ |
 | | 文件大小上限 100MB | TC-05 | ✅ |
 | US-1.2 上傳 MD | 支援 `.md`、`.markdown` 格式 | TC-02 | ✅ |
 | | 處理流程同 PDF 一致 | TC-02 | ✅ |
 | US-1.3 查看文件 | 顯示文件名、chunk 數量、上傳時間 | TC-08 | ✅ |
 | | 按上傳時間倒序排列 | TC-08 | ✅ |
+| | 「已索引文件」清單可見檔名與 chunk 數（資料來自同一 `GET`） | TC-08 | ✅ |
+| US-1.4 刪除文件 | 可刪除單筆已索引文件（確認後執行） | TC-06b | ✅ |
+| | 刪除後清單與 Quiz／Summary 選項同步更新 | TC-06b | ✅ |
+| | API 一併清除 chunks 與關聯 `QuizAttempt` | `documents-id` | ✅ |
 
 ### Epic 2：RAG 聊天
 
@@ -86,29 +92,31 @@
 
 | Use Case | Test Cases | Coverage |
 |----------|-----------|----------|
-| UC-01 | 6 | ✅ 100% |
+| UC-01 | 7 | ✅ 100% |
 | UC-02 | 5 | ✅ 100% |
 | UC-03 | 3 | ✅ 100% |
 | UC-04 | 3 | ✅ 100% |
 | UC-05 | 3 | ✅ 100% |
 | UC-06 | 2 | ✅ 100% |
 | UC-07 | 2 | ✅ 100% |
+| UC-09 | 2 | ✅ 100% |
 
 ### 按 User Story
 
 | Metric | 數值 |
 |--------|------|
-| 總 Acceptance Criteria | 31 |
-| 自動測試可覆蓋 | 28 (90%) |
-| 需人工驗證 | 3 (10%) |
+| 總 Acceptance Criteria | 35 |
+| 自動測試可覆蓋 | 32 (91%) |
+| 需人工驗證 | 3 (9%) |
 | 未覆蓋 | 0 (0%) |
 
 ### 按 API Endpoint
 
 | Endpoint | Test Cases | 正常流程 | 錯誤處理 |
 |----------|-----------|---------|---------|
-| `POST /api/ingest` | 6 | TC-01, TC-02 | TC-03, TC-04, TC-05, TC-06, TC-07 |
+| `POST /api/ingest` | 7 | TC-01, TC-02, TC-06b | TC-03, TC-04, TC-05, TC-06, TC-07 |
 | `GET /api/documents` | 2 | TC-08 | TC-09 |
+| `DELETE /api/documents/[id]` | 4 | TC-06b、`documents-id`（3 案例） | `documents-id`（400/404） |
 | `POST /api/chat` | 5 | TC-10, TC-13, TC-13B | TC-11, TC-12 |
 | `POST /api/quiz/generate` | 3 | TC-14, TC-16 | TC-15 |
 | `POST /api/quiz/submit` | 3 | TC-17 | TC-18, TC-19 |
@@ -156,12 +164,14 @@ graph LR
         UC5["UC-05 Knowledge Gap"]
         UC6["UC-06 Summary"]
         UC7["UC-07 Doc List"]
+        UC9["UC-09 Delete Doc"]
     end
     
     subgraph User Stories
         US11["US-1.1"]
         US12["US-1.2"]
         US13["US-1.3"]
+        US14["US-1.4"]
         US21["US-2.1"]
         US22["US-2.2"]
         US31["US-3.1"]
@@ -173,6 +183,7 @@ graph LR
     subgraph Test Cases
         TC01["TC-01~07"]
         TC08["TC-08~09"]
+        TC06B["TC-06b"]
         TC10["​TC-10~13B"]
         TC14["TC-14~16"]
         TC17["TC-17~19"]
@@ -183,6 +194,7 @@ graph LR
     UC1 --> US11
     UC1 --> US12
     UC7 --> US13
+    UC9 --> US14
     UC2 --> US21
     UC2 --> US22
     UC3 --> US31
@@ -193,6 +205,7 @@ graph LR
     US11 --> TC01
     US12 --> TC01
     US13 --> TC08
+    US14 --> TC06B
     US21 --> TC10
     US22 --> TC10
     US31 --> TC14
@@ -203,4 +216,4 @@ graph LR
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-25*

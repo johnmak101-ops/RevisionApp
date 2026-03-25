@@ -2,6 +2,8 @@
 
 ## 1. Test Objectives
 
+> **Minimum UAT / go-live checklist** (stakeholder sign-off) is in [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) under the same heading. **This document** is the full case catalog and steps.
+
 Ensure all Revision App features function correctly, covering:
 - File upload and indexing pipeline
 - RAG chat Q&A quality and stability
@@ -18,6 +20,7 @@ Ensure all Revision App features function correctly, covering:
 |--------|-------------|----------|
 | File Upload (Ingest) | `POST /api/ingest` | P0 |
 | Document List | `GET /api/documents` | P1 |
+| Delete indexed document | `DELETE /api/documents/[id]` | P0 |
 | RAG Chat | `POST /api/chat` | P0 |
 | Quiz Generation | `POST /api/quiz/generate` | P0 |
 | Quiz Submission | `POST /api/quiz/submit` | P0 |
@@ -30,11 +33,11 @@ Ensure all Revision App features function correctly, covering:
 
 | Item | Specification |
 |------|---------------|
-| Runtime | Node.js 18+ |
+| Runtime | Node.js 20.x LTS (recommended) |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (with Vector Search Index) |
 | LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
-| Embedding | OpenRouter → `qwen/qwen3-embedding-8b` |
+| Embedding | OpenRouter → `qwen/qwen3-embedding-4b` |
 | Browser | Chrome 120+ / Firefox 120+ |
 
 ---
@@ -101,7 +104,18 @@ Ensure all Revision App features function correctly, covering:
 | **ID** | TC-06 |
 | **Maps to** | UC-01 / US-1.1 |
 | **Steps** | Upload the same-named file twice |
-| **Expected** | ❌ Second upload returns 409 error, file already exists |
+| **Expected** | ❌ Second upload returns 409; message asks to delete the file from **Indexed documents** first |
+| **Priority** | P0 |
+
+### TC-06b: Delete Document Then Re-upload Same Name
+
+| Item | Content |
+|------|---------|
+| **ID** | TC-06b |
+| **Maps to** | UC-09 |
+| **Precondition** | `notes.md` already ingested |
+| **Steps** | 1. `DELETE /api/documents/{id}` or delete in UI<br>2. Upload `notes.md` again |
+| **Expected** | ✅ Delete returns 200 with `deletedChunks`<br>✅ Second ingest returns 200 |
 | **Priority** | P0 |
 
 ### TC-07: File Upload — Corrupted PDF
@@ -158,7 +172,7 @@ Ensure all Revision App features function correctly, covering:
 | **ID** | TC-11 |
 | **Maps to** | UC-02 / US-2.2 |
 | **Steps** | Ask a completely unrelated question (e.g., "How far is the moon?") |
-| **Expected** | ✅ Vector search score < 0.4, triggers prompt<br>✅ Or degrades to keyword fallback |
+| **Expected** | ✅ When all normalized scores are < 0.40, shows no-relevant-content prompt (`chat/route.ts`)<br>✅ `vectorSearch` already drops raw < 0.60<br>✅ Or degrades to keyword fallback |
 | **Priority** | P1 |
 
 ### TC-12: RAG Chat — Empty Message

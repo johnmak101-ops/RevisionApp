@@ -33,7 +33,7 @@ flowchart TD
     C -->|"> 100MB"| ERR2["顯示錯誤：文件過大"]
     
     D --> E{"伺服器驗證"}
-    E -->|"同名存在"| ERR3["409: 文件已存在"]
+    E -->|"同名存在"| ERR3["409: 已上傳過 → 請先刪除已索引文件"]
     E -->|"空文件/損壞"| ERR4["400: 文件無效"]
     E -->|"✅ 通過"| F["擷取文字"]
     
@@ -41,12 +41,29 @@ flowchart TD
     G --> H["批次 Embedding (每批 20)"]
     H --> I["儲存至 MongoDB"]
     I --> J["✅ 顯示成功 + chunk 數量"]
+    J --> K["invalidate 文件清單快取"]
     
     style J fill:#2d8a4e,color:#fff
+    style K fill:#2d8a4e,color:#fff
     style ERR1 fill:#cc3333,color:#fff
     style ERR2 fill:#cc3333,color:#fff
     style ERR3 fill:#cc3333,color:#fff
     style ERR4 fill:#cc3333,color:#fff
+```
+
+---
+
+## 2a. 已索引文件刪除（簡要）
+
+```mermaid
+flowchart TD
+    A["用戶按「刪除」"] --> B{"確認？"}
+    B -->|"取消"| Z["無操作"]
+    B -->|"確定"| C["DELETE /api/documents/id"]
+    C --> D{"結果"}
+    D -->|"200"| E["invalidate documents 快取"]
+    D -->|"4xx/5xx"| F["顯示錯誤"]
+    E --> G["清單與 Quiz/Summary 下拉更新"]
 ```
 
 ---
@@ -62,9 +79,9 @@ flowchart TD
     C --> D["MongoDB $vectorSearch"]
     D --> E{"搜尋結果？"}
     
-    E -->|"有 (score ≥ 0.4)"| F["組合 Context + 對話歷史"]
+    E -->|"有 (normalized ≥ 0.40)"| F["組合 Context + 對話歷史"]
     E -->|"失敗"| G["Keyword Fallback 搜尋"]
-    E -->|"score 全部 < 0.4"| H["提示：冇搵到相關內容"]
+    E -->|"normalized 全部 < 0.40"| H["提示：冇搵到相關內容"]
     
     G --> F
     F --> I["呼叫 LLM (Streaming)"]
@@ -75,6 +92,8 @@ flowchart TD
     style ERR1 fill:#cc3333,color:#fff
     style H fill:#e6a817,color:#000
 ```
+
+> **實作細節**：`$vectorSearch` 結果喺 `search.ts` 會先丟棄 **raw** cosine < **0.60**，再將餘下分數正規化至 0–1；圖中「normalized」即該正規化分數。`chat/route.ts` 只用 normalized ≥ 0.40 嘅 chunk 組 context。
 
 ---
 
@@ -190,7 +209,7 @@ flowchart LR
     subgraph "External Services"
         OR["OpenRouter API"]
         MDB["MongoDB Atlas"]
-        LP["LlamaCloud (LlamaParse)"]
+        LP["LlamaCloud (LlamaParse + parsing_instruction)"]
     end
     
     FU --> AI

@@ -26,13 +26,29 @@
 }
 ```
 
-**Error** (400/409/413/500):
+若有片段被 Chunk Content Guard 移除，可額外出現：
+
+```json
+{
+  "success": true,
+  "documentId": "665f...",
+  "chunkCount": 40,
+  "warning": "2 個內容片段被安全系統標記並移除",
+  "flaggedChunks": 2
+}
+```
+
+**Error** (400/409/413/422/500):
 
 ```json
 {
   "error": "描述信息"
 }
 ```
+
+| 狀態碼 | 情況 |
+|--------|------|
+| 422 | 所有內容被標記為可疑，無可索引片段 |
 
 ---
 
@@ -53,6 +69,45 @@
   }
 ]
 ```
+
+> 目前 `POST /api/ingest` 會將 `filename` 同 `originalName` 設為相同（上傳檔名）；若日後支援重新命名顯示，兩欄可能不同。
+
+---
+
+## DELETE `/api/documents/[id]`
+
+刪除指定文件：一併刪除其 **所有 Chunks**（`pdfId` 相符）及 **`QuizAttempt`** 中 `documentId` 指向該文件嘅記錄，最後刪除 **`Document`**。⚠️ 不可還原。
+
+**Path 參數**：
+
+| 參數 | 描述 |
+|------|------|
+| `id` | 文件 MongoDB ObjectId（24 字元 hex，與 `GET /api/documents` 回傳嘅 `_id` 相同） |
+
+**Response** (200):
+
+```json
+{
+  "success": true,
+  "deletedDocumentId": "665f...",
+  "deletedChunks": 42
+}
+```
+
+**Error** (400/404/500)：
+
+```json
+{
+  "error": "描述信息"
+}
+```
+
+| 狀態碼 | 情況 |
+|--------|------|
+| 400 | `id` 唔係有效 ObjectId |
+| 404 | 搵唔到該文件 |
+
+> 同名檔案上傳遇到 **409** 時，可先刪除對應文件再重新 ingest。
 
 ---
 
@@ -113,13 +168,15 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
   2. 並行對每個子查詢執行 `$vectorSearch`（cosine，每個 top 4）
   3. 合併去重（content 前 100 字作 key，保留最高分）
   4. 按分數排序取最佳 8 條結果
-- 保留最近 10 條 history（`messages.slice(-10)`）
-- Score < 0.4 嘅結果會被過濾
+- 對話歷史：除本輪最後一則 user 訊息外，最多保留最近 10 則（見 `chat/route.ts`）
+- **兩段式分數門檻**（見 `search.ts` → `chat/route.ts`）：
+  1. `$vectorSearch` 回傳嘅 **raw cosine** 低於 **0.60** 嘅結果會喺 `vectorSearch()` 丟棄，其餘會 **正規化到 0–1**
+  2. 組合 context 前，`chat/route.ts` 再丟棄 **正規化分數 < 0.40** 嘅結果
 - 無相關結果時回傳提示信息（streaming text）
 - LLM 子查詢生成失敗時，自動 fallback 到原問題單次搜尋
 
 **安全防護**：
-- Vard prompt injection 偵測（instruction override / role manipulation / system prompt leak）
+- Vard（`@andersmyrmel/vard`）prompt injection 偵測（instruction override / role manipulation / system prompt leak）
 - Rate limit：20 req/min per IP
 
 ---
@@ -311,6 +368,7 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 | 狀態碼 | 描述 |
 |--------|------|
 | 400 | 參數缺失或無效 |
+| 422 | 無法處理（例如 ingest 時全部 chunk 被安全標記） |
 | 404 | 資源不存在 |
 | 409 | 衝突（如重複上傳文件或重複提交 Quiz） |
 | 413 | 檔案過大（超過 100MB 上限） |
@@ -320,4 +378,4 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 
 ---
 
-*更新日期：2026-03-23*
+*更新日期：2026-03-25*
