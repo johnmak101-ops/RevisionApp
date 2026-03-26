@@ -57,6 +57,7 @@ The following deliverables define the system requirements and business analysis 
 | 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 100% requirement coverage mapping 9 Use Cases to 26 Test Cases. |
 | 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | Standard Given-When-Then criteria, ensuring unambiguous technical implementation. |
 | 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 granular Acceptance Criteria ensuring 100% alignment with User Stories. |
+| ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | Architecture-level constraints including performance, security, and scalability metrics. |
 
 *(For architectural decisions, see [`ARCHITECTURE`](docs/ARCHITECTURE.md) and [`USE_CASES`](docs/USE_CASES.md))*
 
