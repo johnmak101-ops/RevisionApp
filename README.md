@@ -58,6 +58,7 @@
 | 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | 標準 Given-When-Then 寫法，展示 Developer-friendly 的驗收標準。 |
 | 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 項嚴密的驗收準則 (Acceptance Criteria)，確保開發團隊交付 100% 吻合 User Stories。 |
 | ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | 效能、安全性、擴展性等架構級約束與指標。 |
+| 🔄 [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) | 詳細時序圖，釐清 Frontend、Backend、LLM 與 DB 的資料流互動。 |
 
 *(其他技術細節請見 [`ARCHITECTURE`](docs/ARCHITECTURE.md) 及 [`USE_CASES`](docs/USE_CASES.md))*
 
