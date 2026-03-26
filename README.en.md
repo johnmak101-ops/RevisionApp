@@ -2,118 +2,75 @@
 
 # Revision App
 
-**Bootcamp study-revision app** — PDF/Markdown, RAG chat, quiz, knowledge gaps, AI summaries
-
 **English** · [中文](README.md)
 
 </div>
 
 ---
 
-## About
-
-**Personal portfolio** — BA/product artefacts (scope, discovery, use cases, user stories, traceability, test plan, UAT gate) and **full-stack implementation** are my own work.
-
-| Item | Notes |
-|------|-------|
-| **Demo** | No public hosted URL—use **Quick start** below; UI in **Screenshots**. |
-| **Stack** | Next.js 16, MongoDB Atlas, OpenRouter, Vercel |
-
-### Deep-dive docs
-
-| Topic | Link |
-|------|------|
-| Business context, KPIs, MVP / out of scope / UAT | [`docs/en/PRODUCT_SCOPE.md`](docs/en/PRODUCT_SCOPE.md) |
-| Discovery, prioritization, ~50% time hypothesis | [`docs/en/DISCOVERY_AND_PRIORITIZATION.md`](docs/en/DISCOVERY_AND_PRIORITIZATION.md) |
-| Use cases, actors, protections | [`docs/en/USE_CASES.md`](docs/en/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md) |
-| Security (Vard, chunk guard, rate limits) | [`docs/en/ARCHITECTURE.md`](docs/en/ARCHITECTURE.md) |
-
----
-
-## Core features
-
-| Feature | Description |
-|---------|-------------|
-| Upload / indexed list | PDF, Markdown; delete one row to free index or fix duplicate 409 |
-| RAG chat | Streaming answers from indexed content |
-| Quiz / knowledge gap | AI multiple-choice; weak topics by topic |
-| Summary | Document outline |
-| Security | Prompt guard, API rate limits, input validation |
-
----
-
-## Documentation
-
-### Product / BA
-
-[`PRODUCT_SCOPE`](docs/en/PRODUCT_SCOPE.md) · [`DISCOVERY / prioritization`](docs/en/DISCOVERY_AND_PRIORITIZATION.md) · [`USE_CASES`](docs/en/USE_CASES.md) · [`USER_STORIES`](docs/en/USER_STORIES.md) · [`TRACEABILITY_MATRIX`](docs/en/TRACEABILITY_MATRIX.md) · [`TEST_PLAN`](docs/en/TEST_PLAN.md) · [`NFR`](docs/en/NON_FUNCTIONAL_REQUIREMENTS.md)
-
-### Engineering
-
-[`DEVELOPER_GUIDE`](docs/en/DEVELOPER_GUIDE.md) · [`SETUP_GUIDE`](docs/en/SETUP_GUIDE.md) · [`ARCHITECTURE`](docs/en/ARCHITECTURE.md) · [`API_REFERENCE`](docs/en/API_REFERENCE.md) · [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) · [`UI_FLOW_DIAGRAM`](docs/en/UI_FLOW_DIAGRAM.md) · [`MONGODB_VECTOR_SETUP`](docs/en/MONGODB_VECTOR_SETUP.md) · [`GLOSSARY`](docs/en/GLOSSARY.md)
-
-### Quality & other languages
-
-[`DEFINITION_OF_DONE`](docs/en/DEFINITION_OF_DONE.md) · Chinese: [`README.md`](README.md) · `docs/` (same filenames as `docs/en/`)
-
----
-
-## Screenshots
-
-From a local / self-hosted run (Chat, Quiz, Summary).
+## 🎥 Product Demo
 
 <table align="center">
   <tr>
-    <th align="center">Chat</th>
-    <th align="center">Quiz</th>
-    <th align="center">Summary</th>
+    <th align="center">1. RAG Smart Chat</th>
+    <th align="center">2. Auto Quiz & Gap Analysis</th>
+    <th align="center">3. AI Summary Generation</th>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/screenshot-chat.png" alt="Chat" width="260"/></td>
-    <td align="center"><img src="docs/screenshots/screenshot-quiz.png" alt="Quiz" width="260"/></td>
-    <td align="center"><img src="docs/screenshots/screenshot-summary.png" alt="Summary" width="260"/></td>
+    <td align="center">
+      <video src="docs/video/ai_chat.mp4" width="260" controls></video>
+    </td>
+    <td align="center">
+      <video src="docs/video/quiz.mp4" width="260" controls></video>
+    </td>
+    <td align="center">
+      <video src="docs/video/summary.mp4" width="260" controls></video>
+    </td>
   </tr>
 </table>
 
 ---
 
-## Tech stack
+## ⏱️ 30-Second Elevator Pitch
 
-| Area | Choice |
-|------|--------|
-| Framework | Next.js **16** (Turbopack) |
-| Runtime | **Node.js 24** (`engines.node`: `>=24.0.0`; `@types/node` ^24) |
-| Database | MongoDB Atlas **vector search** |
-| LLM / embeddings | OpenRouter: `gemini-2.5-flash-lite` chat, `qwen/qwen3-embedding-4b` embeddings |
-| Networking | Default chat uses Gemini: **a VPN may be required** on some networks |
-| PDF | LlamaParse |
-| Security | `@andersmyrmel/vard` |
+A full-stack AI learning tool MVP built with **Next.js 16**:
+
+*   🎯 **The Problem:** Learners spend an excessive amount of time manually searching for key concepts across massive volumes of revision slides.
+*   💡 **The Solution:** Applying a Problem-driven approach with RAG and Vector Search to pinpoint relevant slide content and generate targeted quizzes, reducing the time spent on searching materials and self-testing by an estimated 50%.
+*   📐 **Requirement Engineering:** Rigorously defined 9 Use Cases and 10 User Stories, utilizing a **Traceability Matrix** to ensure 100% coverage from business pain points to acceptance testing.
 
 ---
 
-## Quick start
+## 📊 Requirements & System Design
 
-1. **Prerequisites**: Node.js **24.x LTS** (matches `package.json` `engines`; optional root **`.nvmrc`** for `nvm` / `fnm`).
+The following deliverables define the system requirements and business analysis of this project:
 
-   ```bash
-   npm install
-   cp .env.example .env.local
-   ```
+| Deliverable | Highlight |
+|------|----------|
+| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | Problem analysis, target personas. |
+| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 100% requirement coverage mapping 9 Use Cases to 26 Test Cases. |
+| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | Standard Given-When-Then criteria, ensuring unambiguous technical implementation. |
+| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 granular Acceptance Criteria ensuring 100% alignment with User Stories. |
 
-2. **Environment**: Set `MONGODB_URI`, `OPENROUTER_API_KEY`, `LLAMA_CLOUD_API_KEY`, etc. See [`SETUP_GUIDE`](docs/en/SETUP_GUIDE.md).
-
-   > **Tip**: Default chat goes through Gemini (via OpenRouter). If requests fail, try a **VPN**.
-
-3. **Vector index**: Create the Atlas index from [`scripts/vector-index.json`](scripts/vector-index.json) — [`MONGODB_VECTOR_SETUP`](docs/en/MONGODB_VECTOR_SETUP.md).
-
-   ```bash
-   npm run dev
-   ```
+*(For architectural decisions, see [`ARCHITECTURE`](docs/ARCHITECTURE.md) and [`USE_CASES`](docs/USE_CASES.md))*
 
 ---
+
+## 🚀 Quick Start
+
+For Technical Assessors verifying the local environment:
+
+```bash
+# Requires: Node.js 24.x LTS
+npm install
+cp .env.example .env.local  # Fill in MONGODB_URI and OPENROUTER_API_KEY
+npm run dev
+
+# Run Playwright E2E Automated Tests
+npm run e2e
+```
 
 <div align="center">
-
-**John Mak** · *Last updated: 2026-03-26*
-
+<br/>
+<b>John Mak</b> | Focused on Requirement Analysis & Agile Product Delivery
 </div>

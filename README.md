@@ -1,8 +1,6 @@
 <div align="center">
 
-# Revision App
-
-**Bootcamp 教材複習平台** — PDF／Markdown、RAG 聊天、Quiz、知識缺口、AI 摘要
+# Revision App 
 
 [English](README.en.md) · **中文**
 
@@ -10,110 +8,69 @@
 
 ---
 
-## 關於
-
-**個人作品集** — 產品範圍、需求發現、用例／用戶故事、追蹤矩陣、測試與 UAT 門檻等 **BA／產品向文檔**，以及 **全端實作**，皆由本人整理與開發。
-
-| 項目 | 說明 |
-|------|------|
-| **Demo** | 無公開託管連結；請依下方 **快速開始** 自行部署，介面預覽見 **截圖**。 |
-| **技術** | Next.js 16、MongoDB Atlas、OpenRouter、Vercel |
-
-### 深度文檔（精選）
-
-| 主題 | 連結 |
-|------|------|
-| 商業背景、痛點、KPI、MVP／Out of scope／UAT | [`docs/PRODUCT_SCOPE.md`](docs/PRODUCT_SCOPE.md) |
-| 需求發現、優先級、~50% 時間假設 | [`docs/DISCOVERY_AND_PRIORITIZATION.md`](docs/DISCOVERY_AND_PRIORITIZATION.md) |
-| 用例、Actor、防護 | [`docs/USE_CASES.md`](docs/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md) |
-| 安全架構（Vard、Chunk guard、rate limit） | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
-
----
-
-## 核心功能
-
-| 功能 | 說明 |
-|------|------|
-| 文件上傳／已索引列表 | PDF、Markdown；可刪單筆釋放索引或處理同名 409 |
-| RAG 聊天 | 依已索引內容串流回答 |
-| Quiz／知識缺口 | AI 選擇題、依 topic 弱項分析 |
-| Summary | 文件大綱摘要 |
-| 安全 | Prompt 防護、API 限流、輸入驗證 |
-
----
-
-## 文檔導覽
-
-### 產品／BA
-
-[`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) · [`DISCOVERY / 優先級`](docs/DISCOVERY_AND_PRIORITIZATION.md) · [`USE_CASES`](docs/USE_CASES.md) · [`USER_STORIES`](docs/USER_STORIES.md) · [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) · [`TEST_PLAN`](docs/TEST_PLAN.md) · [`NFR`](docs/NON_FUNCTIONAL_REQUIREMENTS.md)
-
-### 工程
-
-[`DEVELOPER_GUIDE`](docs/DEVELOPER_GUIDE.md) · [`SETUP_GUIDE`](docs/SETUP_GUIDE.md) · [`ARCHITECTURE`](docs/ARCHITECTURE.md) · [`API_REFERENCE`](docs/API_REFERENCE.md) · [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) · [`UI_FLOW_DIAGRAM`](docs/UI_FLOW_DIAGRAM.md) · [`MONGODB_VECTOR_SETUP`](docs/MONGODB_VECTOR_SETUP.md) · [`GLOSSARY`](docs/GLOSSARY.md)
-
-### 品質與其他語言
-
-[`DEFINITION_OF_DONE`](docs/DEFINITION_OF_DONE.md) · 英文：[README.en.md](README.en.md) · `docs/en/` 同名檔
-
----
-
-## 截圖
-
-本地／自部署環境（Chat、Quiz、Summary）。
+## 🎥 產品實機展示 (Product Demo)
 
 <table align="center">
   <tr>
-    <th align="center">Chat</th>
-    <th align="center">Quiz</th>
-    <th align="center">Summary</th>
+    <th align="center">1. RAG 智能問答</th>
+    <th align="center">2. Quiz 生成與缺口分析</th>
+    <th align="center">3. AI 學習大綱</th>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/screenshot-chat.png" alt="Chat" width="260"/></td>
-    <td align="center"><img src="docs/screenshots/screenshot-quiz.png" alt="Quiz" width="260"/></td>
-    <td align="center"><img src="docs/screenshots/screenshot-summary.png" alt="Summary" width="260"/></td>
+    <td align="center">
+      <video src="docs/video/ai_chat.mp4" width="260" controls></video>
+    </td>
+    <td align="center">
+      <video src="docs/video/quiz.mp4" width="260" controls></video>
+    </td>
+    <td align="center">
+      <video src="docs/video/summary.mp4" width="260" controls></video>
+    </td>
   </tr>
 </table>
 
 ---
 
-## 技術棧
+## ⏱️ 30秒專案速覽 (Elevator Pitch)
 
-| 類別 | 選型 |
-|------|------|
-| 框架 | Next.js **16**（Turbopack） |
-| Runtime | **Node.js 24**（`engines.node`：`>=24.0.0`；`@types/node` ^24） |
-| 資料庫 | MongoDB Atlas **向量搜尋** |
-| LLM／Embedding | OpenRouter：`gemini-2.5-flash-lite` 對話、`qwen/qwen3-embedding-4b` 向量 |
-| 網路 | 預設對話經 Gemini：**部分網路需 VPN** 方能穩定呼叫 |
-| PDF | LlamaParse |
-| 安全 | `@andersmyrmel/vard` |
+這是一個基於 **Next.js 16** 的 AI 學習工具：
+
+*   🎯 **要解決的問題：** 學員在海量 Revision Slides 中搜尋特定概念及重點的時間成本極高。
+*   💡 **解決方案：** 利用 RAG 與 Vector Search 技術精準定位課件內容，並自動生成針對性測驗，將「搜尋課件」與「自我測試」的時間大幅縮減約 50%。
+*   📐 **Requirement Engineering：** 嚴謹定義 9 個 Use Cases 與 10 條 User Stories，並透過 **Traceability Matrix** 實現從商業痛點到驗收測試的 100% 覆蓋。
 
 ---
 
-## 快速開始
+## 📊 需求分析與設計文檔 (Requirements & Design)
 
-1. **環境**：Node.js **24.x LTS**（與 `package.json` `engines` 一致；可選根目錄 **`.nvmrc`** 配合 `nvm`／`fnm`）。
+以下為本專案的系統需求與業務分析交付物：
 
-   ```bash
-   npm install
-   cp .env.example .env.local
-   ```
+| 交付物 | 亮點說明 |
+|------|----------|
+| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | 產品定位、痛點分析。 |
+| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 涵蓋 9 個 Use Case 到 26 個 Test Case，確保 100% 需求覆蓋。 |
+| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | 標準 Given-When-Then 寫法，展示 Developer-friendly 的驗收標準。 |
+| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 項嚴密的驗收準則 (Acceptance Criteria)，確保開發團隊交付 100% 吻合 User Stories。 |
 
-2. **環境變數**：填入 `MONGODB_URI`、`OPENROUTER_API_KEY`、`LLAMA_CLOUD_API_KEY` 等，詳見 [`SETUP_GUIDE`](docs/SETUP_GUIDE.md)。
-
-   > **提示**：預設對話走 Gemini（經 OpenRouter）；若連線失敗，可嘗試開啟 **VPN**。
-
-3. **向量索引**：依 [`scripts/vector-index.json`](scripts/vector-index.json) 在 Atlas 建立索引，步驟見 [`MONGODB_VECTOR_SETUP`](docs/MONGODB_VECTOR_SETUP.md)。
-
-   ```bash
-   npm run dev
-   ```
+*(其他技術細節請見 [`ARCHITECTURE`](docs/ARCHITECTURE.md) 及 [`USE_CASES`](docs/USE_CASES.md))*
 
 ---
+
+## 🚀 快速開始 (Quick Start)
+
+供 Technical Assessor 本地運行驗證：
+
+```bash
+# 環境要求: Node.js 24.x LTS
+npm install
+cp .env.example .env.local  # 填寫 MONGODB_URI 與 OPENROUTER_API_KEY
+npm run dev
+
+# 運行 Playwright E2E 自動化測試
+npm run e2e
+```
 
 <div align="center">
-
-**John Mak** · *最後更新：2026-03-26*
-
+<br/>
+<b>John Mak</b>
 </div>

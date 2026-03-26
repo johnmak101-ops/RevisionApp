@@ -15,6 +15,8 @@
     "test:e2e": "vitest run src/app/api/",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
     "sync:confluence": "node scripts/sync-confluence.mjs",
     "sync:confluence:dry": "node scripts/sync-confluence.mjs --dry-run"
   },
@@ -55,6 +57,7 @@
     "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.1",
+    "@playwright/test": "^1.40.1",
     "typescript": "^5.7.0",
     "vitest": "^4.1.0"
   }

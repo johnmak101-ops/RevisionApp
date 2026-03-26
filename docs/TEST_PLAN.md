@@ -380,4 +380,22 @@
 
 ---
 
+## 7. 自動化 E2E 測試 (Playwright)
+
+本專案已引入 Playwright 進行端到端 (E2E) 自動化測試，將上述核心手動測試案例腳本化。所有自動化測試會在啟動時 Mock 後端 API (如 `/api/chat`, `/api/ingest`) 以確保測試前端組件互動時唔受網絡、模型限制影響。
+
+目前已建立的 E2E 測試套件：
+- **`documents.spec.ts`**: 文件上傳及列表渲染 (覆蓋 TC-01, TC-03, TC-08)
+- **`chat.spec.ts`**: RAG 聊天對話及輸入驗證 (覆蓋 TC-10, TC-12)
+- **`quiz.spec.ts`**: 練習題生成及提交反饋 (覆蓋 TC-14, TC-17)
+- **`error-handling.spec.ts`**: 基礎網絡 500 錯誤處理 (覆蓋 TC-04, TC-13 場景)
+
+### 執行測試指令
+```bash
+npm run e2e      # Headless 模式於背景運行測試
+npm run e2e:ui   # 開啟 Playwright UI 介面，方便除錯及檢視流程
+```
+
+---
+
 *更新日期：2026-03-26*
