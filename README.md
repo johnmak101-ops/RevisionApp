@@ -9,33 +9,31 @@
 ---
 
 ## 🎥 產品實機展示 (Product Demo)
+  
+    1. RAG 智能問答
 
-<table align="center">
-  <tr>
-    <th align="center">1. RAG 智能問答</th>
-    <th align="center">2. Quiz 生成與缺口分析</th>
-    <th align="center">3. AI 學習大綱</th>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://streamable.com/lzys27" target="_blank">
-        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="RAG Chat Demo" />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://streamable.com/j2s9z4" target="_blank">
-        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="Quiz Demo" />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://streamable.com/g8pfys" target="_blank">
-        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="Summary Demo" />
-      </a>
-    </td>
-  </tr>
-</table>
+
+https://github.com/user-attachments/assets/a61884e0-98dd-47d0-8513-09adf2a1e315
+
+
+    
+    2. Quiz 生成與缺口分析
+    
+
+https://github.com/user-attachments/assets/dbe3222d-abbf-4103-89fa-0e8dd9a9be81
+
+
+    
+    3. AI 學習大綱
+  
+
+https://github.com/user-attachments/assets/4b4e7912-a312-4052-b037-384327e7547b
+
+
 
 ---
+
+
 
 ## ⏱️ 專案速覽 (Elevator Pitch)
 
