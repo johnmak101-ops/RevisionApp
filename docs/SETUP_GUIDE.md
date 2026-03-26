@@ -2,10 +2,13 @@
 
 ## 前置條件
 
-- **Node.js** **20.x LTS**（建議；Next.js 16 與本 repo `package.json` 的 `engines` 一致）。18.x 或會建置成功，但未列為正式支援。
+- **Node.js** **24.x LTS**（建議；Next.js 16 與本 repo `package.json` 的 `engines` 一致，**`>=24.0.0`**）。低於 24 未列為正式支援。
+- 可選：根目錄 **`.nvmrc`** 為 **`24`**，方便 `nvm`、`fnm` 等切換版本。
+- 開發型別：**`@types/node` ^24**（與 Node 24 對齊）。
 - **npm** ≥ 9.x
 - **MongoDB Atlas** 帳號（M0 免費叢集）
-- **OpenRouter** 帳號（免費 API key）
+- **OpenRouter** 帳號與 API key（[openrouter.ai/keys](https://openrouter.ai/keys)；可選 **付費方案** 以提高限額與穩定性）
+- **Gemini（經 OpenRouter）**：預設對話模型走 Google Gemini 後端；**部分地區或網路環境需使用 VPN** 才能正常呼叫（否則可能逾時或失敗）。
 - **LlamaCloud** 帳號（[cloud.llamaindex.ai](https://cloud.llamaindex.ai) 免費額度）
 
 ---
@@ -44,7 +47,7 @@ LLAMA_CLOUD_API_KEY=llx-xxxxxxxxxxxxxxxxxxxxxxxx
 
 | 用途 | 模型/服務 | 備註 |
 |------|-----------|------|
-| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite；部分網路需 VPN |
 | **Embedding** | `qwen/qwen3-embedding-4b` | Qwen3 4B embedding，2560 維 |
 | **PDF 解析** | LlamaParse REST API | 支援多語言、掃描 PDF、自訂 `parsing_instruction` |
 
@@ -157,4 +160,4 @@ TypeError: Cannot read properties of undefined (reading '0')
 
 ---
 
-*更新日期：2026-03-25*
+*更新日期：2026-03-26*

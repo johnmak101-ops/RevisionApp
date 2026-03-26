@@ -18,13 +18,10 @@ sequenceDiagram
     participant MongoDB as MongoDB Atlas
 
     User->>Frontend: 上傳文件 (PDF/MD)
-    Frontend->>Frontend: 前端驗證 (格式/大小)
-    alt 文件無效
-        Frontend-->>User: 顯示錯誤 Toast
-    else 文件有效
-        Frontend->>API: POST /api/ingest (FormData)
-        API->>API: isAcceptedFile() 驗證 MIME/副檔名
-        API->>API: 檢查檔案大小 (上限 100MB)
+    Note over Frontend: `accept` 限制副檔名；無客戶端大小檢查
+    Frontend->>API: POST /api/ingest (FormData)
+    API->>API: isAcceptedFile() 驗證 MIME/副檔名
+    API->>API: 檢查檔案大小 (上限 100MB，超限 413)
 
         alt PDF 文件
             API->>LlamaCloud: uploadPdf(parsing_instruction) → waitForJob() → fetchMarkdown()
@@ -52,7 +49,6 @@ sequenceDiagram
             API-->>Frontend: 200: { success, documentId, chunkCount }
             Frontend-->>User: 顯示上傳成功 Toast
         end
-    end
 ```
 
 ---
@@ -258,7 +254,7 @@ sequenceDiagram
 
 ## 6. 文件列表載入時序圖 (Document List Flow)
 
-> 對應程式碼：`src/app/api/documents/route.ts`、`src/components/DocumentList.tsx`、`src/hooks/useQuiz.ts`、`src/components/SummaryPanel.tsx`、`src/context/UploadContext.tsx`（ingest 成功後 `invalidateQueries(["documents"])`）
+> 對應程式碼：`src/app/api/documents/route.ts`、`src/components/DocumentList.tsx`（`useQuery` / `useMutation`，`queryKey: ["documents"]`）、`src/context/UploadContext.tsx`（ingest 成功後 `invalidateQueries({ queryKey: ["documents"] })`）
 
 ```mermaid
 sequenceDiagram
@@ -300,4 +296,4 @@ sequenceDiagram
 ```
 
 ---
-*更新日期：2026-03-25 — 全部時序圖已對照 `src/` 目錄實際程式碼驗證*
+*更新日期：2026-03-26 — 對照 `src/` 實際程式碼*

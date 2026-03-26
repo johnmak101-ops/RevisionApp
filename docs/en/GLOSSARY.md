@@ -11,7 +11,7 @@
 | **NDJSON** | Newline-Delimited JSON | A format with one JSON object per line, used for Summary streaming (Chat uses Vercel AI SDK) |
 | **LLM** | Large Language Model | Large Language Model (e.g., Google Gemini) |
 | **OpenRouter** | OpenRouter | A unified AI API gateway that allows accessing multiple LLM models with a single API key |
-| **Gemini** | Google Gemini | Google's LLM model series. This project uses `gemini-2.5-flash-lite` |
+| **Gemini** | Google Gemini | Google's LLM model series. This project uses `gemini-2.5-flash-lite`. When called via OpenRouter, **a VPN may be required** on some networks |
 | **MCQ** | Multiple Choice Question | Multiple choice question |
 | **Knowledge Gap** | Knowledge Gap Analysis | Analysis based on quiz error statistics to identify weak topics for learners |
 | **Atlas** | MongoDB Atlas | MongoDB's cloud Database-as-a-Service with vector search capabilities |
@@ -34,4 +34,4 @@
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*

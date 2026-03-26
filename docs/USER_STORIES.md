@@ -17,8 +17,8 @@
 - [ ] 文件大小上限 100MB
 
 **負面路徑 (Negative Paths)**:
-- [ ] 如果 PDF 包含大量非文字內容（如純圖片、掃描件），系統透過 LlamaParse OCR + `parsing_instruction` 處理，但需在 chunk 數量较低時提示用戶「部分內容可能未被索引」
-- [ ] 如果 LlamaParse API 配額已用盡，回傳具體錯誤提示（而非通用 500 錯誤）
+- [ ] **（待實作／P2）** 如果 PDF 以圖像／掃描為主導致 chunk 偏少，產品層可補提示「部分內容可能未被索引」——現行程式僅經 LlamaParse + `parsing_instruction` 擷取，**無**此專用 UI 文案
+- [ ] **（待強化）** LlamaParse 配額或供應商錯誤時，ingest 回 `400` 與 `parseErr` 訊息；**未必**與「額度用盡」一一對應，可再依 HTTP 狀態／body 細分提示
 
 ### US-1.2 上傳 Markdown 文件
 
@@ -37,8 +37,8 @@
 > **So that** 我知道邊啲資料已經可以用
 
 **Acceptance Criteria**:
-- [ ] 顯示文件名、chunk 數量、上傳時間（API 回傳；主頁「已索引文件」顯示檔名與 chunk 數）
-- [ ] 按上傳時間倒序排列
+- [ ] `GET /api/documents` 回傳 `filename`、`chunkCount`、`uploadedAt` 等；主頁「已索引文件」**目前**僅顯示檔名與 chunk 數（唔顯示時間）
+- [ ] 列表順序與 API 一致：`uploadedAt` 倒序（`Document.find().sort({ uploadedAt: -1 })`）
 
 ### US-1.4 刪除已索引文件
 
@@ -68,7 +68,7 @@
 - [ ] 保留最近 10 條對話歷史作為 context
 
 **負面路徑 (Negative Paths)**:
-- [ ] 當 AI 無法喺文件中搵到答案時，必須誠實回答「教材未涵蓋此內容」，而非胡亂猜測 (Hallucination Control)
+- [ ] 合併檢索後無可用 chunk（`normalized score < 0.40`）時，以 **HTTP 200** streaming 回固定提示（與 `chat/route.ts` 一致）：`⚠️ 冇搵到相關文件內容。請先上傳相關嘅 PDF 或 Markdown 檔案，再問呢個問題。`——唔用 JSON 4xx，以便 `useChat` 顯示為助理訊息
 - [ ] 檢索結果須經兩段過濾：`search.ts` 丟棄 raw cosine < 0.60；正規化後 `chat/route.ts` 丟棄 normalized < 0.40，不可將後者用作回答 context
 
 ### US-2.2 搜尋容錯
@@ -142,4 +142,4 @@
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-26*

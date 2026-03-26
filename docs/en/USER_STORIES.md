@@ -17,8 +17,8 @@
 - [ ] File size limit: 100MB
 
 **Negative Paths**:
-- [ ] If the PDF contains mostly non-text content (e.g. pure images, scanned pages), the system processes it via LlamaParse OCR + custom `parsing_instruction` but must notify the user "Some content may not have been indexed" when chunk count is significantly low
-- [ ] If the LlamaParse API daily quota is exhausted, return a specific error message (not a generic 500 error)
+- [ ] **(Backlog / P2)** If image-heavy PDFs yield very few chunks, we *could* add UX copy such as "Some content may not have been indexed" — current code only runs LlamaParse + `parsing_instruction` and **does not** show that dedicated message
+- [ ] **(Hardening)** On LlamaParse quota/vendor errors, ingest returns `400` with the parse error text — **not** always a distinct "quota exhausted" string; can be improved by mapping provider status/body
 
 ### US-1.2 Upload Markdown Document
 
@@ -37,8 +37,8 @@
 > **So that** I know which materials are available
 
 **Acceptance Criteria**:
-- [ ] Displays filename, chunk count, upload time (from API; home **Indexed documents** shows filename + chunk count)
-- [ ] Sorted by upload time in descending order
+- [ ] `GET /api/documents` returns `filename`, `chunkCount`, `uploadedAt`, etc.; home **Indexed documents** **currently** shows filename and chunk count only (not the timestamp)
+- [ ] Order matches the API: descending `uploadedAt` (`Document.find().sort({ uploadedAt: -1 })`)
 
 ### US-1.4 Delete Indexed Document
 
@@ -68,7 +68,7 @@
 - [ ] Retains last 10 conversation messages as context
 
 **Negative Paths**:
-- [ ] When AI cannot find an answer within the documents, it must honestly respond "This topic is not covered in the uploaded materials" rather than guessing (Hallucination Control)
+- [ ] When no chunks pass the chat gate (`normalized score < 0.40`), respond with the **HTTP 200** streaming line from `chat/route.ts` (Traditional Chinese fixed text asking the user to upload relevant PDF/MD) — not a JSON 4xx, so `useChat` can render it as an assistant message
 - [ ] Two-stage filtering: `search.ts` drops raw cosine < 0.60; after normalization `chat/route.ts` drops normalized < 0.40 — those must not be used as answer context
 
 ### US-2.2 Search Fault Tolerance
@@ -142,4 +142,4 @@
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-26*

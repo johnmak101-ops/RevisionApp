@@ -1,6 +1,6 @@
 # Discovery & prioritization (one-pager)
 
-> **Why this project**: Course materials and notes are abundant and scattered; learners **struggle to find the right snippet quickly**. **AI-backed unified search, Q&A, and self-test** is intended to cut **search + first-pass revision time by about half (~50%)**—a **hypothesis to validate** (see `PRODUCT_SCOPE` KPIs / UAT), not a published research claim.
+> **Why this project**: Course materials and notes are abundant and scattered; learners **struggle to find the right snippet quickly**. **AI-backed unified search, Q&A, and self-test** is intended to improve **solo revision efficiency** and cut **search + first-pass revision time by about half (~50%)**—a **hypothesis to validate** (see `PRODUCT_SCOPE` KPIs / UAT), not a published research claim.
 
 ---
 
@@ -52,4 +52,4 @@
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*

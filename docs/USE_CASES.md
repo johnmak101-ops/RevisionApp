@@ -49,7 +49,7 @@
 7. 系統執行 **PromptGuard 安全掃描** — 有問題嘅 chunks 會被移除；全部被 flag 就回傳 422
 8. 系統批次呼叫 OpenRouter Embedding API（每批 20）
 9. 系統儲存 `Document` 及 `Chunk` 記錄至 MongoDB
-10. 系統回傳成功信息（含 `id`、`chunkCount`）；若部分 chunks 被 PromptGuard 標記，回傳 `warning` + `flaggedChunks` 數量
+10. 系統回傳成功信息（含 `documentId`、`chunkCount`）；若部分 chunks 被 PromptGuard 標記，回傳 `warning` + `flaggedChunks` 數量
 
 **替代流程**：
 
@@ -301,9 +301,10 @@
 **主要流程**：
 
 1. 學員確認要清除所有答題記錄
-2. 系統刪除 `QuizAttempt` collection 內所有文件
-3. 系統回傳已刪除數量 `{ deleted: number }`
-4. 前端清空 Knowledge Gap 統計
+2. 前端呼叫 `DELETE /api/quiz/stats`
+3. 系統刪除 `QuizAttempt` collection 內所有文件
+4. 系統回傳已刪除數量 `{ deleted: number }`
+5. 前端清空 Knowledge Gap 統計
 
 **替代流程**：
 
@@ -316,4 +317,4 @@
 
 ---
 
-*更新日期：2026-03-25*
+*更新日期：2026-03-26*

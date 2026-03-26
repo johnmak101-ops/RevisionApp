@@ -26,7 +26,7 @@
 }
 ```
 
-若有片段被 Chunk Content Guard 移除，可額外出現：
+若有片段被 Chunk Content Guard（`guardChunkContent`）移除，可額外出現 `warning` 與 `flaggedChunks`。兩者皆等於 **實際被標記嘅 chunk 數**（`src/lib/promptGuard.ts` 內 `flaggedCount`）；下面數字 **2** 僅為示例。
 
 ```json
 {
@@ -38,17 +38,17 @@
 }
 ```
 
-**Error** (400/409/413/422/500):
+對應實作：`src/app/api/ingest/route.ts` 使用 `` `${flaggedCount} 個內容片段被安全系統標記並移除` ``；`chunkCount` 為移除後剩低嘅數量。
 
-```json
-{
-  "error": "描述信息"
-}
-```
+**Error**（皆為 JSON `{"error":"..."}`，除非另有說明）：
 
-| 狀態碼 | 情況 |
-|--------|------|
-| 422 | 所有內容被標記為可疑，無可索引片段 |
+| 狀態碼 | 情況（與程式對應） |
+|--------|-------------------|
+| 400 | 非 PDF/MD、檔案為空、解析失敗、無法提取文字／chunk 為空等（見 `ingest/route.ts` 各分支） |
+| 413 | 檔案超過 100MB |
+| 409 | 同名文件已存在（提示先刪「已索引文件」） |
+| 422 | 所有 chunk 被 Chunk Guard 標記：`所有內容被安全系統標記為可疑，無法處理此檔案` |
+| 500 | `Ingest failed` 或 `err.message` |
 
 ---
 
@@ -71,6 +71,8 @@
 ```
 
 > 目前 `POST /api/ingest` 會將 `filename` 同 `originalName` 設為相同（上傳檔名）；若日後支援重新命名顯示，兩欄可能不同。
+
+**Error** (500)：`{"error":"無法取得文件列表"}`
 
 ---
 
@@ -102,10 +104,11 @@
 }
 ```
 
-| 狀態碼 | 情況 |
-|--------|------|
-| 400 | `id` 唔係有效 ObjectId |
-| 404 | 搵唔到該文件 |
+| 狀態碼 | `error`（繁中，與程式一致） |
+|--------|------------------------------|
+| 400 | `無效嘅文件 ID` |
+| 404 | `搵唔到呢份文件` |
+| 500 | `無法刪除文件` |
 
 > 同名檔案上傳遇到 **409** 時，可先刪除對應文件再重新 ingest。
 
@@ -154,26 +157,23 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 | 情況 | HTTP 狀態碼 | 回傳格式 |
 |------|------------|---------|
 | 缺少 messages | 400 | `{"error": "Messages required"}` |
-| 冇找到 user message | 400 | `{"error": "Last user message required"}` |
-| 超出 Rate Limit | 429 | `{"error": "Too many requests..."}` |
-| Prompt injection 偵測 | 200 | Streaming text：`⚠️ Your message was flagged...` |
-| 搜尋系統出錯 | 200 | Streaming text：`⚠️ 搜尋系統暫時出錯...` |
-| 無相關結果 | 200 | Streaming text：`⚠️ 冇搵到相關文件內容...` |
+| 最後一則 user 訊息無文字 | 400 | `{"error": "Last user message required"}` |
+| 超出 Rate Limit | 429 | `{"error": "Too many requests. Please try again later."}`（含 `Retry-After` 標頭） |
+| 訊息過長（>2000 字）／Vard 擋 injection | 200 | Streaming text：`⚠️ ` + `guardUserMessage` 嘅 `reason`（英文，見 `promptGuard.ts`） |
+| 搜尋系統出錯 | 200 | Streaming text：`⚠️ 搜尋系統暫時出錯，請稍後再試。` |
+| 合併檢索後無可用人片段（見下文「`chat/route` 0.40 門檻」） | 200 | Streaming text：`⚠️ 冇搵到相關文件內容。請先上傳相關嘅 PDF 或 Markdown 檔案，再問呢個問題。` |
 
-> ⚠️ Prompt guard / search 錯誤以 `textMessageResponse()` 回傳 200 streaming text（令前端 `useChat` 顯示為 AI 訊息），而非 JSON error。
+> ⚠️ Guard／搜尋／無結果以 `textMessageResponse()` 回傳 **200** streaming（前端 `useChat` 當作 assistant 訊息），**唔係** JSON error。Injection 時完整 `reason` 預設為：`Your message was flagged by our safety system. Please rephrase your question about the course material.`
 
-**行為**：
-- 取最後一條 user message，用 **Multi-Query Search** 策略搜尋：
-  1. LLM 將問題拆成 3 個唔同角度嘅子查詢
-  2. 並行對每個子查詢執行 `$vectorSearch`（cosine，每個 top 4）
-  3. 合併去重（content 前 100 字作 key，保留最高分）
-  4. 按分數排序取最佳 8 條結果
-- 對話歷史：除本輪最後一則 user 訊息外，最多保留最近 10 則（見 `chat/route.ts`）
-- **兩段式分數門檻**（見 `search.ts` → `chat/route.ts`）：
-  1. `$vectorSearch` 回傳嘅 **raw cosine** 低於 **0.60** 嘅結果會喺 `vectorSearch()` 丟棄，其餘會 **正規化到 0–1**
-  2. 組合 context 前，`chat/route.ts` 再丟棄 **正規化分數 < 0.40** 嘅結果
-- 無相關結果時回傳提示信息（streaming text）
-- LLM 子查詢生成失敗時，自動 fallback 到原問題單次搜尋
+**行為**（`search.ts` 嘅 `multiQuerySearch` + `chat/route.ts`）：
+
+1. **Multi-query**：`toolLLM` 嘗試產生最多 3 條子查詢；失敗則 `subQueries` 只有 **原問題**（仍逐條走 `vectorSearch`）。
+2. **每個子查詢嘅 `vectorSearch()`**（同一函數亦畀單次搜尋用）：
+   - `$vectorSearch` 拉候選後，丟棄 **raw cosine < 0.60** 嘅列；其餘分數 **正規化到 0–1**（`normalizeScore`）。
+   - 若經 **0.60 過濾後** 已無任何 chunk，先喺 **`vectorSearch` 內** 做 **keyword fallback**（`$regex`，結果 `score` 固定 0.5）。**唔會**留待後面先做。
+3. **合併**：各子查詢結果以 content **前 100 字**去重、保留較高分，再排序取最多 **8** 條。
+4. **`chat/route.ts`（第二道門檻）**：對上一步合併結果再丟棄 **正規化分數 < 0.40**（`MIN_VECTOR_SCORE`）。若 **清空**，回傳上表「冇搵到相關…」streaming；**此階段唔會**再跑 keyword fallback。
+5. **對話歷史**：除本輪最後一則 user 訊息外，最多保留最近 **10** 則。
 
 **安全防護**：
 - Vard（`@andersmyrmel/vard`）prompt injection 偵測（instruction override / role manipulation / system prompt leak）
@@ -217,7 +217,18 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 }
 ```
 
-> 注意：`correctIndex`、`topic`、`explanation` 唔會喺 client response 中出現 — 佢哋儲存喺 server 端用嚟評分。
+> 注意：`correctIndex`、`topic`、`explanation` 唔會喺 generate 嘅 client response 出現 — 儲存喺 server 用嚟評分。  
+> `totalQuestions` 為 **通過驗證** 嘅題數（恰好 4 選項且 `correctIndex` 在 0–3）；可以 **少於** 請求嘅 `count`（若 LLM 輸出部分唔合格會被丟棄）。
+
+**Error**：
+
+| 狀態碼 | 情況 |
+|--------|------|
+| 400 | `請提供有效嘅文件 documentId` |
+| 404 | `搵唔到呢份文件嘅內容`（無 chunks） |
+| 429 | `Too many requests. Please try again later.` |
+| 502 | `AI 生成嘅題目格式有誤，請重試`／`AI 冇生成到題目，請重試`／`AI 生成嘅題目全部唔合格，請重試` |
+| 500 | `生成練習題失敗` 或 `err.message` |
 
 ---
 
@@ -257,6 +268,15 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 }
 ```
 
+**Error**：
+
+| 狀態碼 | 情況 |
+|--------|------|
+| 400 | `需要 quizId 同 answers`；或答案數量 ≠ `totalQuestions`（繁中提示內含預期／實際數量） |
+| 404 | `搵唔到呢份 quiz` |
+| 409 | `呢份 quiz 已經交咗` |
+| 500 | `提交失敗` 或 `err.message` |
+
 ---
 
 ## GET `/api/quiz/stats`
@@ -291,6 +311,8 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 ```
 
 > Topics 以正確率升序排列 — 最弱嘅 Topic 排喺最前面。
+
+**Error** (500)：`{"error":"無法取得統計資料"}`
 
 ---
 
@@ -340,11 +362,22 @@ RAG 聊天端點。以 **Vercel AI SDK streaming** 回傳（`createUIMessageStre
 {"done":true}
 ```
 
-錯誤時：
+串流中途錯誤時（仍為 200、`Content-Type: text/plain`，一行一個 JSON）：
 
 ```
-{"error":"Summary failed"}
+{"error":"<Error.message>"}
 ```
+
+`<Error.message>` 為實際例外訊息（例如 LLM 失敗），**唔一定**係字面 `Summary failed`。
+
+**非串流錯誤**（請求階段，JSON）：
+
+| 狀態碼 | 情況 |
+|--------|------|
+| 400 | `請提供有效嘅文件 documentId` |
+| 404 | `搵唔到呢份文件嘅內容` |
+| 429 | `Too many requests. Please try again later.` |
+| 500 | `生成大綱失敗` 或 `err.message` |
 
 **安全防護**：
 - `documentId` 必須為有效 24 字元 hex ObjectId

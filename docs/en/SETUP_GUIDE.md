@@ -2,10 +2,13 @@
 
 ## Prerequisites
 
-- **Node.js** **20.x LTS** (recommended; aligns with Next.js 16 and `package.json` `engines`). Node 18 may still build but is not formally supported.
+- **Node.js** **24.x LTS** (recommended; aligns with Next.js 16 and `package.json` `engines`, **`>=24.0.0`**). Versions below 24 are not formally supported.
+- Optional: root **`.nvmrc`** is **`24`** for `nvm`, `fnm`, etc.
+- Dev types: **`@types/node` ^24** (aligned with Node 24).
 - **npm** ≥ 9.x
 - **MongoDB Atlas** account (M0 free cluster)
-- **OpenRouter** account (free API key)
+- **OpenRouter** account and API key ([openrouter.ai/keys](https://openrouter.ai/keys); **paid** plans optional for higher limits and stability)
+- **Gemini (via OpenRouter)**: The default chat model uses Google’s Gemini backend. **Some regions or networks require a VPN** for reliable API access (otherwise you may see timeouts or failures).
 
 ---
 
@@ -40,7 +43,7 @@ OPENROUTER_EMBED_MODEL=qwen/qwen3-embedding-4b
 
 | Purpose | Model | Notes |
 |---------|-------|-------|
-| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite |
+| **Chat LLM** | `google/gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite; VPN may be required on some networks |
 | **Embedding** | `qwen/qwen3-embedding-4b` | Qwen3 4B embedding, 2560 dims |
 | **PDF Parsing** | LlamaParse REST API | Multilingual, scanned PDF support, custom `parsing_instruction` |
 
@@ -135,4 +138,4 @@ TypeError: Cannot read properties of undefined (reading '0')
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*

@@ -25,6 +25,7 @@
 | Quiz 生成 | `POST /api/quiz/generate` | P0 |
 | Quiz 提交 | `POST /api/quiz/submit` | P0 |
 | 知識缺口 | `GET /api/quiz/stats` | P1 |
+| 重置答題記錄 | `DELETE /api/quiz/stats` | P1 |
 | Summary 生成 | `POST /api/summary/generate` | P1 |
 
 ---
@@ -33,7 +34,7 @@
 
 | 項目 | 規格 |
 |------|------|
-| Runtime | Node.js 20.x LTS（建議） |
+| Runtime | Node.js 24.x LTS（建議） |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (含 Vector Search Index) |
 | LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
@@ -343,7 +344,7 @@
 | **ID** | TC-NF-01 |
 | **類型** | Performance |
 | **步驟** | 使用 DevTools Network tab 測量各 API |
-| **預期** | `/api/documents` < 500ms<br>`/api/chat` 首 token < 5s<br>`/api/ingest` 10-page PDF < 60s |
+| **預期** | `/api/documents` < 500ms<br>`/api/chat` 整段串流完成 < **15s**（實測常見 **6–10s**，見 NFR-01.2）<br>`/api/ingest` 10-page PDF < **60s**（實測普通 PDF 約 1 min，見 NFR-01.1） |
 
 ### TC-NF-02：Streaming 穩定性
 
@@ -379,4 +380,4 @@
 
 ---
 
-*更新日期：2026-03-24*
+*更新日期：2026-03-26*

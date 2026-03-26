@@ -25,30 +25,31 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["用戶選擇文件"] --> B{"格式檢查"}
-    B -->|"✅ PDF/MD"| C{"大小檢查"}
-    B -->|"❌ 不支援"| ERR1["顯示錯誤：只接受 PDF/Markdown"]
-    
-    C -->|"≤ 100MB"| D["POST /api/ingest"]
-    C -->|"> 100MB"| ERR2["顯示錯誤：文件過大"]
-    
-    D --> E{"伺服器驗證"}
-    E -->|"同名存在"| ERR3["409: 已上傳過 → 請先刪除已索引文件"]
-    E -->|"空文件/損壞"| ERR4["400: 文件無效"]
-    E -->|"✅ 通過"| F["擷取文字"]
-    
-    F --> G["分割 Chunks (512 chars)"]
-    G --> H["批次 Embedding (每批 20)"]
+    A["用戶選擇文件"] --> B{"格式（瀏覽器 accept）"}
+    B -->|"❌ 副檔名唔係 PDF/MD"| ERR1["無法選擇／需換檔"]
+    B -->|"✅ PDF/MD"| D["POST /api/ingest（無前端大小檢查；超限 → API 413）"]
+
+    D --> E{"伺服器驗證與處理"}
+    E -->|"413 超過 100MB"| ERR413["Toast：檔案過大"]
+    E -->|"409 同名已存在"| ERR3["已上傳過 → 請先刪除已索引文件"]
+    E -->|"400 空檔／解析失敗／無文字"| ERR4["文件無效或無法擷取文字"]
+    E -->|"✅ 進入處理管道"| F["擷取文字"]
+
+    F --> G["分割 Chunks（512／overlap 100）"]
+    G --> PG{"Chunk Guard（可疑段移除）"}
+    PG -->|"移除後無剩餘 chunk"| ERR5["422：安全系統拒絕整份內容"]
+    PG -->|"尚有內容"| H["批次 Embedding（每批 20）"]
     H --> I["儲存至 MongoDB"]
-    I --> J["✅ 顯示成功 + chunk 數量"]
+    I --> J["✅ 成功 + chunk 數量（可有 warning）"]
     J --> K["invalidate 文件清單快取"]
-    
+
     style J fill:#2d8a4e,color:#fff
     style K fill:#2d8a4e,color:#fff
     style ERR1 fill:#cc3333,color:#fff
-    style ERR2 fill:#cc3333,color:#fff
+    style ERR413 fill:#cc3333,color:#fff
     style ERR3 fill:#cc3333,color:#fff
     style ERR4 fill:#cc3333,color:#fff
+    style ERR5 fill:#cc3333,color:#fff
 ```
 
 ---

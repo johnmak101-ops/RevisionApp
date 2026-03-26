@@ -25,30 +25,28 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["User selects file"] --> B{"Format check"}
-    B -->|"✅ PDF/MD"| C{"Size check"}
-    B -->|"❌ Unsupported"| ERR1["Show error: Only PDF/Markdown accepted"]
-    
-    C -->|"≤ 100MB"| D["POST /api/ingest"]
-    C -->|"> 100MB"| ERR2["Show error: File too large"]
-    
-    D --> E{"Server validation"}
-    E -->|"Duplicate name"| ERR3["409: Already uploaded — delete from Indexed documents first"]
-    E -->|"Empty/corrupted"| ERR4["400: Invalid file"]
-    E -->|"✅ Passed"| F["Extract text"]
-    
-    F --> G["Split into Chunks (512 chars)"]
-    G --> PG{"PromptGuard scan"}
-    PG -->|"All flagged"| ERR5["422: Content rejected by security"]
-    PG -->|"✅ Safe (flagged chunks removed)"| H["Batch Embedding (20 per batch)"]
+    A["User selects file"] --> B{"Format (browser accept)"}
+    B -->|"❌ Not PDF/MD"| ERR1["Pick another file"]
+    B -->|"✅ PDF/MD"| D["POST /api/ingest (no client-side size check; API returns 413 if too large)"]
+
+    D --> E{"Server validation & pipeline"}
+    E -->|"413 over 100MB"| ERR413["Toast: file too large"]
+    E -->|"409 duplicate filename"| ERR3["409: Already uploaded — delete from Indexed documents first"]
+    E -->|"400 empty / parse failure / no text"| ERR4["400: Invalid file"]
+    E -->|"✅ Continue"| F["Extract text"]
+
+    F --> G["Split chunks (512 / overlap 100)"]
+    G --> PG{"Chunk Guard (strip flagged segments)"}
+    PG -->|"No chunks left"| ERR5["422: Content rejected by security"]
+    PG -->|"Some content remains"| H["Batch embedding (20 per batch)"]
     H --> I["Store in MongoDB"]
-    I --> J["✅ Show success + chunk count"]
+    I --> J["✅ Success + chunk count (optional warning)"]
     J --> K["Invalidate documents query cache"]
-    
+
     style J fill:#2d8a4e,color:#fff
     style K fill:#2d8a4e,color:#fff
     style ERR1 fill:#cc3333,color:#fff
-    style ERR2 fill:#cc3333,color:#fff
+    style ERR413 fill:#cc3333,color:#fff
     style ERR3 fill:#cc3333,color:#fff
     style ERR4 fill:#cc3333,color:#fff
     style ERR5 fill:#cc3333,color:#fff

@@ -10,6 +10,7 @@ If the release is **stakeholder UAT or production-ready**, in addition to the se
 
 ### Code Quality
 
+- [ ] Local / CI **Node.js** matches `package.json` `engines` (**≥24**; see root `.nvmrc`)
 - [ ] TypeScript strict mode with no compilation errors
 - [ ] `npm run build` passes successfully
 - [ ] `npm run lint` has no errors (`tsc --noEmit` + `eslint .` with `eslint-config-next`)

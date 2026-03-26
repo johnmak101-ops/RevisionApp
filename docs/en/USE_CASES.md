@@ -48,7 +48,7 @@ The core of this project revolves around the **"Revision"** workflow, covering t
 7. System runs **PromptGuard security scan** on all chunks — flagged chunks are removed; if all chunks flagged, returns 422
 8. System batch-calls OpenRouter Embedding API (20 per batch)
 9. System saves `Document` and `Chunk` records to MongoDB
-10. System returns success response (with `id`, `chunkCount`); if some chunks were flagged by PromptGuard, also returns `warning` + `flaggedChunks` count
+10. System returns success response (with `documentId`, `chunkCount`); if some chunks were flagged by PromptGuard, also returns `warning` + `flaggedChunks` count
 
 **Alternative Flows**:
 
@@ -300,9 +300,10 @@ The core of this project revolves around the **"Revision"** workflow, covering t
 **Main Flow**:
 
 1. Student confirms clearing all quiz records
-2. System deletes all documents in `QuizAttempt` collection
-3. System returns deleted count `{ deleted: number }`
-4. Frontend clears Knowledge Gap stats
+2. Frontend calls `DELETE /api/quiz/stats`
+3. System deletes all documents in `QuizAttempt` collection
+4. System returns deleted count `{ deleted: number }`
+5. Frontend clears Knowledge Gap stats
 
 **Alternative Flows**:
 
@@ -315,4 +316,4 @@ The core of this project revolves around the **"Revision"** workflow, covering t
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*

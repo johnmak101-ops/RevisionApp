@@ -4,7 +4,7 @@
 
 **個人作品集** — 產品範圍、需求發現、用例／用戶故事、追蹤矩陣、測試與 UAT 門檻等 **BA／產品向文檔**，以及 **全端實作**，皆由本人整理與開發；細節見下文文檔導覽。
 
-> Bootcamp 教材複習平台：PDF／Markdown 上傳、RAG 聊天、自動 Quiz、知識缺口、AI 摘要。Next.js 16、MongoDB Atlas、OpenRouter、Vercel。
+> Bootcamp 教材複習平台：提升 **單人溫書效率**——PDF／Markdown 上傳、RAG 聊天、自動 Quiz、知識缺口、AI 摘要。Next.js 16、MongoDB Atlas、OpenRouter、Vercel。
 
 **Demo**：無公開託管連結，請跟下文 **「快速開始」** 自行部署；介面預覽見下文 **「截圖」** 一節。
 
@@ -31,7 +31,7 @@
 
 | 讀者 | 連結 |
 |------|------|
-| **產品／BA** | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) · [DISCOVERY / 優先級](docs/DISCOVERY_AND_PRIORITIZATION.md) · [USE_CASES](docs/USE_CASES.md) · [USER_STORIES](docs/USER_STORIES.md) · [TRACEABILITY_MATRIX](docs/TRACEABILITY_MATRIX.md) · [TEST_PLAN](docs/TEST_PLAN.md) · [STAKEHOLDER_MAP](docs/STAKEHOLDER_MAP.md) · [NFR](docs/NON_FUNCTIONAL_REQUIREMENTS.md) |
+| **產品／BA** | [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) · [DISCOVERY / 優先級](docs/DISCOVERY_AND_PRIORITIZATION.md) · [USE_CASES](docs/USE_CASES.md) · [USER_STORIES](docs/USER_STORIES.md) · [TRACEABILITY_MATRIX](docs/TRACEABILITY_MATRIX.md) · [TEST_PLAN](docs/TEST_PLAN.md) · [NFR](docs/NON_FUNCTIONAL_REQUIREMENTS.md) |
 | **工程** | [DEVELOPER_GUIDE](docs/DEVELOPER_GUIDE.md) · [SETUP_GUIDE](docs/SETUP_GUIDE.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [API_REFERENCE](docs/API_REFERENCE.md) · [SEQUENCE_DIAGRAMS](docs/SEQUENCE_DIAGRAMS.md) · [UI_FLOW_DIAGRAM](docs/UI_FLOW_DIAGRAM.md) · [MONGODB_VECTOR_SETUP](docs/MONGODB_VECTOR_SETUP.md) · [GLOSSARY](docs/GLOSSARY.md) |
 | **品質** | [DEFINITION_OF_DONE](docs/DEFINITION_OF_DONE.md) |
 | **英文** | [README.en.md](README.en.md) · `docs/en/` 下同名檔 |
@@ -50,18 +50,20 @@
 
 ## 技術棧（摘要）
 
-Next.js **16**（Turbopack）· MongoDB Atlas 向量搜尋 · OpenRouter（`gemini-2.5-flash-lite` 對話 + `qwen/qwen3-embedding-4b` 向量）· LlamaParse · `@andersmyrmel/vard`
+Next.js **16**（Turbopack）· **Node.js 24**（`package.json` `engines.node`：`>=24.0.0`；開發型別 `@types/node` ^24）· MongoDB Atlas 向量搜尋 · OpenRouter（`gemini-2.5-flash-lite` 對話 + `qwen/qwen3-embedding-4b` 向量；**Gemini 在部分網路需 VPN**）· LlamaParse · `@andersmyrmel/vard`
 
 ---
 
 ## 快速開始
+
+**前置**：Node.js **24.x LTS**（與 `package.json` `engines` 一致；可選根目錄 **`.nvmrc`** 配合 `nvm` / `fnm`）。
 
 ```bash
 npm install
 cp .env.example .env.local
 ```
 
-填入 `MONGODB_URI`、`OPENROUTER_API_KEY`、`LLAMA_CLOUD_API_KEY` 等（見 [SETUP_GUIDE](docs/SETUP_GUIDE.md)）。
+填入 `MONGODB_URI`、`OPENROUTER_API_KEY`、`LLAMA_CLOUD_API_KEY` 等（見 [SETUP_GUIDE](docs/SETUP_GUIDE.md)）。預設對話用 Gemini 經 OpenRouter，**部分網路需開 VPN** 才能正常呼叫。
 
 Atlas 建立向量索引：使用 [`scripts/vector-index.json`](scripts/vector-index.json)，步驟見 [MONGODB_VECTOR_SETUP](docs/MONGODB_VECTOR_SETUP.md)。
 
@@ -72,4 +74,4 @@ npm run dev
 ---
 
 Created by **John Mak**  
-*最後更新：2026-03-25*
+*最後更新：2026-03-26*

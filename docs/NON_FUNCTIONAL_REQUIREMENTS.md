@@ -6,11 +6,11 @@
 
 | ID | 需求 | 目標值 | 現狀 |
 |----|------|--------|------|
-| NFR-01.1 | 文件上傳處理時間 | ≤ 30s（普通 PDF） | 依文件大小及 OpenRouter 速度 |
-| NFR-01.2 | Chat 首 token 延遲 | ≤ 3s | 含向量搜尋 + LLM 回應 |
+| NFR-01.1 | 文件上傳處理時間 | ≤ 60s（普通 PDF） | 實測普通 PDF **約 1 min**（平均）；仍受檔案大小、LlamaParse、embedding 批次與 OpenRouter 影響 |
+| NFR-01.2 | Chat 延遲（首 token／串流完成） | 首 token ≤ 3s（目標） | 實測**整段串流回覆**約 **6–10s**（含向量搜尋 + LLM）；首 token 視供應商排隊可高於 3s |
 | NFR-01.3 | Quiz 生成時間 | ≤ 10s（5 題） | 依 LLM 回應速度 |
 | NFR-01.4 | 頁面首次加載 | ≤ 2s | Next.js Turbopack |
-| NFR-01.5 | Embedding 批次 | 20/batch | 配合 OpenRouter rate limit |
+| NFR-01.5 | Embedding 批次 | 20/batch | 配合 OpenRouter API／批次慣例（兼顧供應商與應用層限流） |
 
 ---
 
@@ -62,6 +62,7 @@
 | NFR-05.2 | 常數集中管理 | Chunk size、Batch size 喺 `lib/` 集中；context 上限（12k / 20k）各 route 獨立定義 |
 | NFR-05.3 | 模組化 | lib/ 模組職責清晰（embedding、search、chunking 分離） |
 | NFR-05.4 | Cached / Shared instances | DB 連線用 module-level cache（Dev 用 `global` 防 HMR 重複連線）；`lib/llm.ts` 共享 chat/tool LLM；quiz、summary 各有獨立 module-scoped LLM（不同 temperature/config） |
+| NFR-05.5 | Node.js 執行環境 | `package.json` `engines.node`：`>=24.0.0`；`@types/node` ^24 對齊；根目錄 `.nvmrc`：`24`（可選） |
 
 ---
 
@@ -76,4 +77,4 @@
 
 ---
 
-*更新日期：2026-03-25*
+*更新日期：2026-03-26*

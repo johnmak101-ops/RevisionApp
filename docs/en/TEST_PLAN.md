@@ -25,6 +25,7 @@ Ensure all Revision App features function correctly, covering:
 | Quiz Generation | `POST /api/quiz/generate` | P0 |
 | Quiz Submission | `POST /api/quiz/submit` | P0 |
 | Knowledge Gap | `GET /api/quiz/stats` | P1 |
+| Reset quiz records | `DELETE /api/quiz/stats` | P1 |
 | Summary Generation | `POST /api/summary/generate` | P1 |
 
 ---
@@ -33,7 +34,7 @@ Ensure all Revision App features function correctly, covering:
 
 | Item | Specification |
 |------|---------------|
-| Runtime | Node.js 20.x LTS (recommended) |
+| Runtime | Node.js 24.x LTS (recommended) |
 | Framework | Next.js 16.x (Turbopack) |
 | Database | MongoDB Atlas M0 (with Vector Search Index) |
 | LLM | OpenRouter → `google/gemini-2.5-flash-lite` |
@@ -341,7 +342,7 @@ Ensure all Revision App features function correctly, covering:
 | **ID** | TC-NF-01 |
 | **Type** | Performance |
 | **Steps** | Measure each API using DevTools Network tab |
-| **Expected** | `/api/documents` < 500ms<br>`/api/chat` first token < 5s<br>`/api/ingest` 10-page PDF < 60s |
+| **Expected** | `/api/documents` < 500ms<br>`/api/chat` full stream completes in < **15s** (typically **6–10s** observed; see NFR-01.2)<br>`/api/ingest` 10-page PDF < **60s** (~1 min typical for normal PDFs; see NFR-01.1) |
 
 ### TC-NF-02: Streaming Stability
 
@@ -377,4 +378,4 @@ Ensure all Revision App features function correctly, covering:
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-26*

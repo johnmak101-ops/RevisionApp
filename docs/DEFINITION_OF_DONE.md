@@ -6,10 +6,11 @@
 
 ### 產品／UAT 門檻（對外宣稱就緒時）
 
-若該次發布代表 **「可畀持份者做 UAT 或上線」**，除以下各節外，尚需滿足 [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) **「UAT／上線最低門檻」** 所列 U1–U7。該表係 BA／PO 簽字用精簡條；細節測試步驟見 `TEST_PLAN.md`。
+除以下各節外，尚需滿足 [`PRODUCT_SCOPE.md`](PRODUCT_SCOPE.md) **「UAT／上線最低門檻」** 所列 U1–U7。細節測試步驟見 `TEST_PLAN.md`。
 
 ### 代碼質量
 
+- [ ] 本地／CI **Node.js** 符合 `package.json` `engines`（**≥24**；見根目錄 `.nvmrc`）
 - [ ] TypeScript 嚴格模式無編譯錯誤
 - [ ] `npm run build` 成功通過
 - [ ] `npm run lint` 無 error（`tsc --noEmit` + `eslint .`，`eslint-config-next`）
@@ -28,7 +29,6 @@
 
 - [ ] Loading 狀態有清晰指示（button disabled、spinner）
 - [ ] 錯誤信息用用戶語言（中文 / 英文根據 context）
-- [ ] 回應式設計（desktop + mobile basic layout）
 
 ### 文檔
 

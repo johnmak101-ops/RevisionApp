@@ -1,5 +1,7 @@
 # 系統架構文件
 
+**執行環境**：Node.js **24+**（`package.json` `engines.node`：`>=24.0.0`）；開發型別 `@types/node` ^24；可選 `.nvmrc`：`24`。
+
 ## 目錄結構
 
 ```
@@ -19,7 +21,14 @@ revision-app/
 │   │   │       └── generate/route.ts  # AI 大綱摘要
 │   │   ├── globals.css
 │   │   ├── layout.tsx
+│   │   ├── providers.tsx              # TanStack Query 等 Provider
 │   │   └── page.tsx                   # 主頁（Tab 切換）
+│   ├── context/
+│   │   └── UploadContext.tsx          # 上傳／文件清單快取（invalidate）
+│   ├── hooks/
+│   │   ├── useQuiz.ts                 # Quiz 狀態與 API
+│   │   ├── useStats.ts                # 知識缺口統計
+│   │   └── useToast.ts                # Toast 通知
 │   ├── components/
 │   │   ├── ChatBox.tsx                # 聊天介面（streaming）
 │   │   ├── FileUpload.tsx             # 檔案上傳
@@ -35,7 +44,7 @@ revision-app/
 │   │   ├── chunking.ts               # Header-aware 文本分割（含 header context prefix）
 │   │   ├── db.ts                      # MongoDB 連線（Cached，Dev 用 global 防 HMR 重複連線）
 │   │   ├── embedding.ts              # OpenRouter Embedding API
-│   │   ├── llm.ts                     # LLM Singleton（streamingLLM + toolLLM）
+│   │   ├── llm.ts                     # Chat 用 streamingLLM + multi-query 用 toolLLM（模組級單例）
 │   │   ├── md.ts                      # Markdown 解析
 │   │   ├── pdf.ts                     # PDF 文字擷取（LlamaParse REST API + parsing_instruction）
 │   │   ├── promptGuard.ts            # Prompt Injection 防護（Vard）
@@ -65,6 +74,8 @@ revision-app/
 | `uploadedAt` | Date | 上傳時間 |
 | `chunkCount` | Number | Chunk 數量 |
 
+> `Document` schema 啟用 `timestamps: true`，MongoDB 內另有 `createdAt`／`updatedAt`；`GET /api/documents` 目前只 `select` 上表欄位。
+
 ### Chunk
 
 | 欄位 | 類型 | 描述 |
@@ -88,13 +99,29 @@ revision-app/
 | `_id` | ObjectId | 主鍵 |
 | `documentId` | ObjectId → Document | 關聯文件 |
 | `questions` | Question[] | 題目列表 |
-| `score` | Number | 得分 |
+| `score` | Number | 得分（提交前可缺省） |
 | `totalQuestions` | Number | 題目數量 |
 | `submittedAt` | Date | 提交時間 |
 
 **Question subdocument**：`{ question, options[], correctIndex, userAnswer?, topic, explanation }`
 
 **Indexes**：`documentId: 1`, `submittedAt: -1`
+
+---
+
+## Singleton 與行程內快取（對照程式）
+
+Next.js 每個 route 可單獨 bundle，以下係 **模組載入後** 喺同一個 runtime instance 內嘅共用情況（**唔係**跨全球單一實例）。
+
+| 名稱 | 檔案 | 實際行為 |
+|------|------|----------|
+| **`streamingLLM`** | `src/lib/llm.ts` | 頂層 `export const new ChatOpenAI(...)` → 與 **`toolLLM`** 一樣，**全專案共用**（`chat/route`、 `search.ts` 嘅 multi-query） |
+| **`toolLLM`** | `src/lib/llm.ts` | 同上；`streaming: false`、`temperature: 0.2`、`maxTokens: 200` |
+| **Quiz LLM** | `src/app/api/quiz/generate/route.ts` | 檔案頂層 `const llm = new ChatOpenAI(...)` → **只畀該 route 模組**用，**唔**與 `llm.ts` 共用 |
+| **Summary LLM** | `src/app/api/summary/generate/route.ts` | 同上（`streaming: true`，配置與 chat 唔同） |
+| **`connectDB()`** | `src/lib/db.ts` | 模組級 `cached`；開發時掛 **`global.mongoose`** 避免 HMR 重複連線；production 每個 serverless instance 各自一份 cache |
+| **Embedding** | `src/lib/embedding.ts` | **無** LangChain 式 client 單例；僅 **`callEmbeddingAPI` + `embedText`／`embedTexts`**。模組變數 `detectedDimensions` + 載入時 IIFE **warmup**；**`getDetectedDimensions()` 目前未被 ingest／search 用嚟阻擋寫入** |
+| **Rate limit** | `src/lib/rateLimiter.ts` | 模組級 `Map`，每 deployment instance 獨立（重啟歸零） |
 
 ---
 
@@ -132,7 +159,9 @@ Multi-Query Search (multiQuerySearch)：
   3. 合併去重（content 前 100 字作 key，保留最高分）
   4. 按分數排序取最佳 8 條
     ↓
-`vectorSearch`: raw cosine < 0.60 丟棄 → 其餘正規化到 0–1 → `chat/route`: normalized < 0.40 丟棄 → 無結果時 keyword fallback
+每個子查詢嘅 **`vectorSearch()`**（`search.ts`）：raw cosine **< 0.60** 丟棄 → 其餘 **正規化到 0–1**；若過濾後仍無結果則在該函數內做 **keyword fallback**（**唔**係在 `chat/route` 之後）。
+    ↓
+**`chat/route.ts`**：對 `multiQuerySearch` 合併結果再丟棄 **normalized score < 0.40**；若清空則回傳 streaming 提示（**唔**再做 keyword fallback）
     ↓
 LangChain ChatPromptTemplate + History (最近 10 條)
     ↓
@@ -146,9 +175,9 @@ Vercel AI SDK：toUIMessageStream → createUIMessageStreamResponse
 ### 3. Quiz 生成流程
 
 ```
-選擇文件 → 檢索相關 Chunks
+選擇文件 → 按 `page`／`chunkIndex` 順序載入該文件所有 chunks，拼成 context（**最多 ~12000 字元**，見 `quiz/generate/route.ts` 之 `MAX_CONTEXT_CHARS`；**唔係**向量檢索挑「相關」段）
     ↓
-AI 生成 MCQ 題目 (含 topic, explanation)
+AI 生成 MCQ 題目 (含 topic, explanation)；驗證須 **恰好 4 個選項** 且 `correctIndex` 在 0–3
     ↓
 用戶作答 → submit → 評分
     ↓
@@ -205,9 +234,9 @@ Embedding → 存儲
     ↓
 Rate Limit 檢查 → 超限回傳 429
     ↓
-Vard Guard 偵測 → 注入攻擊回傳警告
+Vard `guardUserMessage` → 唔安全則 **`textMessageResponse`（HTTP 200 streaming）** 回傳 `⚠️` + `reason`，**唔係** JSON 4xx
     ↓
-已清洗文字 → LLM
+安全則用已清洗文字 → retrieval → LLM
 ```
 
 **Quiz / Summary（只有 documentId 輸入）：**
@@ -227,9 +256,9 @@ ChatPromptTemplate role 分離 → LLM
 | **檔案格式驗證** | Ingest | 只接受 .pdf / .md / .markdown |
 | **大小上限 (100MB)** | Ingest | 超限回傳 413 |
 | **同名去重** | Ingest | 重複檔名回傳 409；可用 `DELETE /api/documents/[id]` 或頁面「已索引文件」刪除後再上傳 |
-| **Chunk Content Guard** | Ingest | Vard 掃描每個 chunk，strip 含 injection pattern 嘅內容（indirect prompt injection 防護） |
-| **Vard Guard** | Chat | 偵測 instruction override、role manipulation、system prompt leak |
-| **Custom Patterns** | Chat | 額外攔截 DAN jailbreak、prompt leak 變體 |
+| **Chunk Content Guard** | Ingest | Vard `moderate` + **`chunkGuard` 自訂 regex**（`ignore`／`disregard … instructions`、`you are now`／`from now on`、override system prompt、`[system]`／`[INST]`／ChatML 類標記等）— 見 `promptGuard.ts` |
+| **Vard Guard** | Chat | Vard `moderate` + `.block`／`.sanitize`（instruction override、system prompt leak、role manipulation 等 preset 威脅類型） |
+| **自訂 regex（Chat）** | Chat | **`chatGuard`** 額外 4 條：`you are now \w+`、`act as … unrestricted/unfiltered/evil`、兩類「重複／揭露 system prompt」句式；涵蓋部分角色劫持同 prompt 套取類用語 — `promptGuard.ts` |
 | **Input Sanitization** | Chat | 清理 delimiter injection、encoding 攻擊 |
 | **ChatPromptTemplate** | Quiz, Summary | system/user role 分離，防止 context injection |
 | **DocumentId 驗證** | Quiz, Summary | 只接受有效 24 字元 hex MongoDB ObjectId |
@@ -248,18 +277,18 @@ ChatPromptTemplate role 分離 → LLM
 
 ### 技術選型商業理由
 
-| 技術決策 | 商業驅動 | 技術替代方案 | 點解唔用替代方案 |
-|----------|----------|-------------|------------------|
+| 技術決策 | 商業驅動 | 技術替代方案 | 點解唔用替代方案                          |
+|----------|----------|-------------|-----------------------------------|
 | **LlamaParse** 處理 PDF | Bootcamp 教材經常包含掃描件（手寫筆記、投影片截圖），需要高準確度 OCR。透過 `parsing_instruction` 提供表格格式指引，確保教材中資料型態對照表、代碼片段正確保留 | `pdf-parse` + `tesseract.js` | 本地 OCR 多語言支援差，掃描件準確度低，影響 RAG 回答品質 |
-| **OpenRouter** 統一 API | 一個端點存取多個 LLM 模型，降低供應商鎖定風險 | 直接用 OpenAI / Google API | 免費 tier 選擇少，切換模型需要改代碼 |
-| **MongoDB Atlas M0** | 免費叢集 512MB 足夠存儲 Bootcamp 課程教材量級嘅 chunks | PostgreSQL + pgvector | MongoDB 原生向量搜尋 + 免費叢集，零成本啟動 |
+| **OpenRouter** 統一 API | 一個端點存取多個 LLM 模型，降低供應商鎖定風險 | 直接用 OpenAI / Google API | Model 選擇少，切換模型需要改代碼               |
+| **MongoDB Atlas M0** | 免費叢集 512MB 足夠存儲 Bootcamp 課程教材量級嘅 chunks | PostgreSQL + pgvector | MongoDB 原生向量搜尋 + 免費叢集，零成本啟動       |
 
 ### 已知限制
 
 | 限制 | 影響 | 目前處理方式 |
 |------|------|-------------|
 | LlamaParse 免費 tier 每日頁數配額 | 大量 PDF 上傳時可能超額 | 前端錯誤提示 + API 回傳具體錯誤訊息 |
-| OpenRouter 免費模型 rate limit | 高峰期可能遇到限流 | in-memory rate limiter 控制請求頻率 |
+| OpenRouter 供應商限流／配額 | 即使 **付費方案** 仍可能有速率、併發或月度上限；極端負載或回傳 429 | 應用層 **in-memory rate limiter** 限制本 app 對外請求頻率，減少濫用同費用尖峰 |
 | In-memory rate limiter 無持久化 | Vercel serverless 重啟後計數器歸零 | 可接受風險：Bootcamp 使用場景低流量 |
 
 ---
@@ -286,13 +315,14 @@ ChatPromptTemplate role 分離 → LLM
 |------|------|
 | LlamaParse 取代 pdf-parse + tesseract.js | 原生支援多語言、掃描 PDF，毋需本地 OCR 依賴。配合 `parsing_instruction` 提升表格處理準確度 |
 | 直接 fetch OpenRouter 而非 LangChain Embeddings | OpenRouter response 格式差異，避免兼容問題 |
-| Warmup + dimension detection | 啟動時檢測向量維度，確保與 Atlas 索引匹配 |
+| Warmup + dimension detection | 模組載入時非同步 warmup，`getDetectedDimensions()` 記錄維度（日誌／觀測）；**唔會**在寫入 MongoDB 前自動與 Atlas 索引維度比對攔截 |
 | Keyword fallback | 向量搜尋無結果時用 regex 備援，提高容錯 |
 | Vercel AI SDK streaming (Chat) | 用 `createUIMessageStreamResponse` + `toUIMessageStream` 做 Chat streaming，前端用 `useChat` 自動接收 |
 | Streaming NDJSON (Summary) | Summary 用 NDJSON 逐 token 回傳，改善體驗 |
 | Batch embedding (20/batch) | OpenRouter 可能限制 batch size |
 | 兩段式 score 門檻 | `search.ts` 先丟棄 raw cosine < 0.60，正規化後 `chat/route.ts` 再丟棄 normalized < 0.40，避免低相關 context |
 | Multi-Query Search | 用 LLM 拆問題成 3 個角度並行搜尋，提高召回率 |
+| Quiz／Summary context 組裝 | 均為按序掃描該文件 chunks 拼字串（Quiz ~12k、Summary ~20k 字元上限），**唔經**向量檢索挑段 |
 | toolLLM (非 streaming) | 輕量低溫度 LLM 專用於工具呼叫（multi-query 生成） |
 | Header-aware chunking | 按 Markdown headers 分段，每 chunk 帶 header context prefix（例："Java > Data Types"），提升 embedding 語義準確度 |
 | MongoDB cached connection | Dev 模式用 `global` 快取避免 HMR 重複連線；Production（Vercel serverless）每個 instance 各自持有連線 |
@@ -304,4 +334,4 @@ ChatPromptTemplate role 分離 → LLM
 
 ---
 
-*更新日期：2026-03-25*
+*更新日期：2026-03-26*

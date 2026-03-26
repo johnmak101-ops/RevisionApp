@@ -18,9 +18,9 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-8">
       <header className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-slate-800">Bootcamp 複習 App</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Revision App｜單人溫書</h1>
         <p className="mt-1 text-slate-600">
-          上傳 PDF 或 Markdown，用 AI 聊天複習、自動出題、生成大綱
+          上傳 PDF 或 Markdown：RAG 問答、Quiz、知識缺口、大綱摘要
         </p>
       </header>
 

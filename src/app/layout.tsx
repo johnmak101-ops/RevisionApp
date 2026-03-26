@@ -3,8 +3,9 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Bootcamp Revision App",
-  description: "AI-powered revision app for Bootcamp PDFs",
+  title: "Revision App｜單人溫書",
+  description:
+    "提升單人溫書效率：上傳 PDF／Markdown，RAG 問答、自動 Quiz、知識缺口與 AI 摘要。",
 };
 
 /**

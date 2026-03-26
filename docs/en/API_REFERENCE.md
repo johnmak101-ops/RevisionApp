@@ -26,29 +26,29 @@ Upload a PDF or Markdown file with automatic text extraction, chunking, embeddin
 }
 ```
 
-If the Chunk Content Guard strips fragments, the response may also include:
+If **Chunk Content Guard** (`guardChunkContent` in `src/lib/promptGuard.ts`) removes chunks, the response may also include `warning` and `flaggedChunks`. Both reflect the **actual number of flagged chunks** (`flaggedCount`). The **2** below is an example only.
+
+The server builds `warning` as Traditional Chinese (see `src/app/api/ingest/route.ts`): `` `${flaggedCount} 個內容片段被安全系統標記並移除` ``. `chunkCount` is the count **after** removal.
 
 ```json
 {
   "success": true,
   "documentId": "665f...",
   "chunkCount": 40,
-  "warning": "2 content fragments were flagged and removed by the security system",
+  "warning": "2 個內容片段被安全系統標記並移除",
   "flaggedChunks": 2
 }
 ```
 
-**Error** (400/409/413/422/500):
+**Errors** (JSON `{"error":"..."}` unless noted):
 
-```json
-{
-  "error": "Error description"
-}
-```
-
-| Status | Scenario |
-|--------|----------|
-| 422 | All content flagged as suspicious — nothing to index |
+| Status | Scenario (matches `ingest/route.ts`) |
+|--------|--------------------------------------|
+| 400 | Wrong type, empty file, parse failure, no extractable text / chunks, etc. |
+| 413 | File larger than 100MB |
+| 409 | Duplicate filename (delete indexed doc first) |
+| 422 | Every chunk flagged by Chunk Guard: `所有內容被安全系統標記為可疑，無法處理此檔案` |
+| 500 | `Ingest failed` or `err.message` |
 
 ---
 
@@ -71,6 +71,8 @@ List all uploaded documents.
 ```
 
 > Today `POST /api/ingest` sets both `filename` and `originalName` to the uploaded file name; they may diverge if display renaming is added later.
+
+**Error** (500): `{"error":"無法取得文件列表"}`
 
 ---
 
@@ -102,10 +104,11 @@ Deletes one indexed document: removes **all Chunks** with matching `pdfId`, all 
 }
 ```
 
-| Status | Scenario |
-|--------|----------|
-| 400 | `id` is not a valid ObjectId |
-| 404 | Document not found |
+| Status | `error` (as returned; Traditional Chinese) |
+|--------|-----------------------------------------------|
+| 400 | `無效嘅文件 ID` |
+| 404 | `搵唔到呢份文件` |
+| 500 | `無法刪除文件` |
 
 > If **409** on re-upload (duplicate filename), delete the existing document first, then ingest again.
 
@@ -154,26 +157,23 @@ Uses Vercel AI SDK's UI Message Stream protocol (not NDJSON). The frontend `useC
 | Scenario | HTTP Status | Response Format |
 |----------|------------|-----------------|
 | Missing messages | 400 | `{"error": "Messages required"}` |
-| No user message found | 400 | `{"error": "Last user message required"}` |
-| Rate limit exceeded | 429 | `{"error": "Too many requests..."}` |
-| Prompt injection detected | 200 | Streaming text: `⚠️ Your message was flagged...` |
-| Search system error | 200 | Streaming text: `⚠️ 搜尋系統暫時出錯...` |
-| No relevant results | 200 | Streaming text: `⚠️ 冇搵到相關文件內容...` |
+| Last user message has no text | 400 | `{"error": "Last user message required"}` |
+| Rate limit exceeded | 429 | `{"error": "Too many requests. Please try again later."}` (includes `Retry-After`) |
+| Message too long (>2000 chars) / Vard blocks injection | 200 | Streaming text: `⚠️ ` + `reason` from `guardUserMessage` (English; see `promptGuard.ts`) |
+| Search system error | 200 | Streaming text: `⚠️ 搜尋系統暫時出錯，請稍後再試。` |
+| No usable chunks after merged retrieval (see `chat/route` 0.40 gate below) | 200 | Streaming text: `⚠️ 冇搵到相關文件內容。請先上傳相關嘅 PDF 或 Markdown 檔案，再問呢個問題。` |
 
-> ⚠️ Prompt guard / search errors return 200 streaming text via `textMessageResponse()` (displayed as an AI message by `useChat`), not JSON errors.
+> ⚠️ Guard / search / empty-context paths use **200** streaming via `textMessageResponse()` so `useChat` shows an assistant message, not a JSON error. Default injection `reason`: `Your message was flagged by our safety system. Please rephrase your question about the course material.`
 
-**Behavior**:
-- Uses the last user message with **Multi-Query Search** strategy:
-  1. LLM generates 3 sub-queries from different perspectives
-  2. Runs parallel `$vectorSearch` (cosine, top 4 each)
-  3. Merges and deduplicates (first 100 chars as key, keeps highest score)
-  4. Returns top 8 results sorted by score
-- Chat history: up to 10 prior messages, excluding the current last user message (`chat/route.ts`)
-- **Two-stage score thresholds** (`search.ts` → `chat/route.ts`):
-  1. In `vectorSearch()`, chunks whose **raw** Atlas cosine score is below **0.60** are dropped; remaining scores are **normalized to 0–1**
-  2. Before building context, `chat/route.ts` drops chunks with **normalized score < 0.40**
-- Returns a streaming text prompt when no relevant results remain
-- Falls back to single-query search if LLM sub-query generation fails
+**Behavior** (`multiQuerySearch` in `search.ts` + `chat/route.ts`):
+
+1. **Multi-query**: `toolLLM` tries to emit up to 3 sub-queries; on failure `subQueries` is **only the original question** (each still goes through `vectorSearch`).
+2. **Per sub-query `vectorSearch()`**:
+   - After `$vectorSearch`, drop rows with **raw cosine < 0.60**; **normalize** surviving scores to 0–1 (`normalizeScore`).
+   - If **no chunks remain after that filter**, run **keyword fallback** **inside** `vectorSearch` (`$regex`, fixed `score` 0.5). This is **not** deferred to `chat/route`.
+3. **Merge**: dedupe by first **100** chars of `content`, keep higher score, sort, take up to **8** chunks.
+4. **`chat/route.ts` (second gate)**: drop merged chunks with **normalized score < 0.40** (`MIN_VECTOR_SCORE`). If **none** left, return the “no relevant content…” stream above; **no** keyword fallback at this stage.
+5. **History**: up to **10** messages before the final user turn (see `chat/route.ts`).
 
 **Security**:
 - Vard (`@andersmyrmel/vard`) prompt injection detection (instruction override / role manipulation / system prompt leak)
@@ -217,7 +217,18 @@ Generate MCQ questions based on a specified document.
 }
 ```
 
-> Note: `correctIndex`, `topic`, and `explanation` are hidden from the client response — they are stored server-side for grading.
+> Note: `correctIndex`, `topic`, and `explanation` are omitted from the **generate** response — stored server-side for grading.  
+> `totalQuestions` is the count of **validated** questions (exactly 4 options and `correctIndex` in 0–3); it may be **less than** requested `count` if some LLM rows fail validation.
+
+**Errors**:
+
+| Status | Scenario |
+|--------|----------|
+| 400 | `請提供有效嘅文件 documentId` |
+| 404 | `搵唔到呢份文件嘅內容` (no chunks) |
+| 429 | `Too many requests. Please try again later.` |
+| 502 | Invalid JSON / no questions / all questions failed validation (Traditional Chinese messages in code) |
+| 500 | `生成練習題失敗` or `err.message` |
 
 ---
 
@@ -257,6 +268,15 @@ Submit quiz answers.
 }
 ```
 
+**Errors**:
+
+| Status | Scenario |
+|--------|----------|
+| 400 | `需要 quizId 同 answers`; or answer count ≠ `totalQuestions` (message includes expected vs received) |
+| 404 | `搵唔到呢份 quiz` |
+| 409 | `呢份 quiz 已經交咗` |
+| 500 | `提交失敗` or `err.message` |
+
 ---
 
 ## GET `/api/quiz/stats`
@@ -291,6 +311,8 @@ Get quiz statistics (Knowledge Gap Analysis).
 ```
 
 > Topics are sorted by accuracy (ascending) — weakest topics appear first.
+
+**Error** (500): `{"error":"無法取得統計資料"}`
 
 ---
 
@@ -341,11 +363,22 @@ One JSON object per line:
 {"done":true}
 ```
 
-On error:
+Mid-stream failure (still HTTP 200, `Content-Type: text/plain`, one JSON object per line):
 
 ```
-{"error":"Summary failed"}
+{"error":"<Error.message>"}
 ```
+
+`<Error.message>` is the thrown exception text — not necessarily the literal string `Summary failed`.
+
+**Non-stream errors** (JSON, before the stream starts):
+
+| Status | Scenario |
+|--------|----------|
+| 400 | `請提供有效嘅文件 documentId` |
+| 404 | `搵唔到呢份文件嘅內容` |
+| 429 | `Too many requests. Please try again later.` |
+| 500 | `生成大綱失敗` or `err.message` |
 
 **Security**:
 - `documentId` must be a valid 24-character hex ObjectId

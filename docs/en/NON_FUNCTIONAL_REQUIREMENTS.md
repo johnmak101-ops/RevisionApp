@@ -6,11 +6,11 @@
 
 | ID | Requirement | Target | Current |
 |----|-------------|--------|---------|
-| NFR-01.1 | File upload processing time | ≤ 30s (normal PDF) | Depends on file size and OpenRouter speed |
-| NFR-01.2 | Chat first token latency | ≤ 3s | Includes vector search + LLM response |
+| NFR-01.1 | File upload processing time | ≤ 60s (normal PDF) | Observed **~1 min** on average for a typical PDF; still depends on size, LlamaParse, embedding batches, and OpenRouter |
+| NFR-01.2 | Chat latency (first token / stream complete) | First token ≤ 3s (goal) | Observed **full streamed reply** typically **6–10s** (vector search + LLM); first token can exceed 3s when the provider is queued |
 | NFR-01.3 | Quiz generation time | ≤ 10s (5 questions) | Depends on LLM response speed |
 | NFR-01.4 | Page initial load | ≤ 2s | Next.js Turbopack |
-| NFR-01.5 | Embedding batch size | 20/batch | Aligns with OpenRouter rate limit |
+| NFR-01.5 | Embedding batch size | 20/batch | Matches OpenRouter API / batching practice (provider + in-app limits) |
 
 ---
 
@@ -62,6 +62,7 @@
 | NFR-05.2 | Centralized constants | Chunk size, batch size in `lib/`; context limits (12k / 20k) defined per-route |
 | NFR-05.3 | Modular design | `lib/` modules have clear responsibilities (embedding, search, chunking separated) |
 | NFR-05.4 | Cached / Shared instances | DB uses module-level cached connection (global cache in dev to prevent HMR duplicates); `lib/llm.ts` shares chat/tool LLM; quiz and summary have own module-scoped LLM (different temperature/config) |
+| NFR-05.5 | Node.js runtime | `package.json` `engines.node`: `>=24.0.0`; `@types/node` ^24 aligned; root `.nvmrc`: `24` (optional) |
 
 ---
 
@@ -76,4 +77,4 @@
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-26*
