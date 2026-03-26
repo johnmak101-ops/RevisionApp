@@ -53,14 +53,19 @@ The following deliverables define the system requirements and business analysis 
 
 | Deliverable | Highlight |
 |------|----------|
-| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | Problem analysis, target personas. |
-| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 100% requirement coverage mapping 9 Use Cases to 26 Test Cases. |
-| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | Standard Given-When-Then criteria, ensuring unambiguous technical implementation. |
-| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 granular Acceptance Criteria ensuring 100% alignment with User Stories. |
-| ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | Architecture-level constraints including performance, security, and scalability metrics. |
+| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | Problem analysis, target personas, and system boundaries. |
+| 💡 [`DISCOVERY_AND_PRIORITIZATION`](docs/DISCOVERY_AND_PRIORITIZATION.md) | MVP scoping and MoSCoW prioritization analysis. |
+| 📖 [`GLOSSARY`](docs/GLOSSARY.md) | Ubiquitous Language to eliminate domain terminology ambiguity. |
+| 🗺️ [`USE_CASES`](docs/USE_CASES.md) | High-level system functionalities and user interaction scenarios. |
+| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | Standard Given-When-Then BDD criteria for developer-friendly implementations. |
+| 🎨 [`UI_FLOW_DIAGRAM`](docs/UI_FLOW_DIAGRAM.md) | Frontend page transitions and UI state machine designs. |
 | 🔄 [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) | Detailed sequence diagrams clarifying data flows among Frontend, Backend, LLM, and DB. |
+| ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | Architecture-level constraints including SLAs, performance, and security metrics. |
+| ☑️ [`DEFINITION_OF_DONE`](docs/DEFINITION_OF_DONE.md) | Standardized quality gateways for development completeness (DoD). |
+| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 granular Test Cases ensuring rigorous quality assurance. |
+| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 100% bidirectional requirement coverage mapping Use Cases to Test Cases. |
 
-*(For architectural decisions, see [`ARCHITECTURE`](docs/ARCHITECTURE.md) and [`USE_CASES`](docs/USE_CASES.md))*
+*(Technical Documentation: [`ARCHITECTURE`](docs/ARCHITECTURE.md), [`API_REFERENCE`](docs/API_REFERENCE.md), [`SETUP_GUIDE`](docs/SETUP_GUIDE.md), [`DEVELOPER_GUIDE`](docs/DEVELOPER_GUIDE.md), [`MONGODB_VECTOR_SETUP`](docs/MONGODB_VECTOR_SETUP.md))*
 
 ---
 

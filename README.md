@@ -53,14 +53,19 @@
 
 | 交付物 | 亮點說明 |
 |------|----------|
-| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | 產品定位、痛點分析。 |
-| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 涵蓋 9 個 Use Case 到 26 個 Test Case，確保 100% 需求覆蓋。 |
-| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | 標準 Given-When-Then 寫法，展示 Developer-friendly 的驗收標準。 |
-| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 項嚴密的驗收準則 (Acceptance Criteria)，確保開發團隊交付 100% 吻合 User Stories。 |
-| ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | 效能、安全性、擴展性等架構級約束與指標。 |
+| 🎯 [`PRODUCT_SCOPE`](docs/PRODUCT_SCOPE.md) | 產品定位、痛點分析與目標用戶。 |
+| 💡 [`DISCOVERY_AND_PRIORITIZATION`](docs/DISCOVERY_AND_PRIORITIZATION.md) | MVP 範圍劃分、MoSCoW 優先級分析。 |
+| 📖 [`GLOSSARY`](docs/GLOSSARY.md) | 統一業務術語 (Ubiquitous Language)，減少溝通誤差。 |
+| 🗺️ [`USE_CASES`](docs/USE_CASES.md) | 系統宏觀功能與使用者互動場景定義。 |
+| 🧑‍💻 [`USER_STORIES`](docs/USER_STORIES.md) | 標準 Given-When-Then 寫法，清晰展示 Developer-friendly 的驗收標準。 |
+| 🎨 [`UI_FLOW_DIAGRAM`](docs/UI_FLOW_DIAGRAM.md) | 前端頁面流轉與 UI 狀態切換設計。 |
 | 🔄 [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) | 詳細時序圖，釐清 Frontend、Backend、LLM 與 DB 的資料流互動。 |
+| ⚙️ [`NON_FUNCTIONAL_REQUIREMENTS`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | 效能、安全性、擴展性等 SLA 及架構級約束。 |
+| ☑️ [`DEFINITION_OF_DONE`](docs/DEFINITION_OF_DONE.md) | 團隊開發完成的品質標準 (DoD)。 |
+| 🛡️ [`TEST_PLAN`](docs/TEST_PLAN.md) | 26 項嚴密的驗收測試案例 (Test Cases)，確保交付品質。 |
+| 📐 [`TRACEABILITY_MATRIX`](docs/TRACEABILITY_MATRIX.md) | 從 Use Case 到 Test Case 的 100% 需求雙向追蹤矩陣。 |
 
-*(其他技術細節請見 [`ARCHITECTURE`](docs/ARCHITECTURE.md) 及 [`USE_CASES`](docs/USE_CASES.md))*
+*(Technical Documentation: [`ARCHITECTURE`](docs/ARCHITECTURE.md), [`API_REFERENCE`](docs/API_REFERENCE.md), [`SETUP_GUIDE`](docs/SETUP_GUIDE.md), [`DEVELOPER_GUIDE`](docs/DEVELOPER_GUIDE.md), [`MONGODB_VECTOR_SETUP`](docs/MONGODB_VECTOR_SETUP.md))*
 
 ---
 
