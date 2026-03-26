@@ -20,7 +20,7 @@
     2. Quiz 生成與缺口分析
     
 
-[quiz.webm](https://github.com/user-attachments/assets/55532c69-2b79-4204-b7ee-b41a0cd86953)
+[quiz.webm](https://github.com/user-attachments/assets/3340efc2-5892-484d-ad22-9a9f845bc12b)
 
 
 
