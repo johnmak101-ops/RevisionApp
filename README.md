@@ -18,13 +18,19 @@
   </tr>
   <tr>
     <td align="center">
-      <video src="https://github.com/user-attachments/assets/2090001b-7a3e-4306-a971-61dd080be148" width="260" controls></video>
+      <a href="https://streamable.com/lzys27" target="_blank">
+        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="RAG Chat Demo" />
+      </a>
     </td>
     <td align="center">
-      <video src="https://github.com/user-attachments/assets/3da6c114-3e1d-4af5-8e1c-5e0495891ee8" width="260" controls></video>
+      <a href="https://streamable.com/j2s9z4" target="_blank">
+        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="Quiz Demo" />
+      </a>
     </td>
     <td align="center">
-      <video src="https://github.com/user-attachments/assets/0e8a8694-a479-4d4c-84b7-dfb4dedd30c8" width="260" controls></video>
+      <a href="https://streamable.com/g8pfys" target="_blank">
+        <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch_Demo-2C3E50?style=for-the-badge" alt="Summary Demo" />
+      </a>
     </td>
   </tr>
 </table>
