@@ -1,17 +1,32 @@
-**🌐 Language / 語言：** **English** | [中文](README.md)
+<div align="center">
 
 # Revision App
 
-**Personal portfolio** — **BA / product artefacts** (scope, discovery, use cases, user stories, traceability, test plan, UAT gate) and **full-stack implementation** are my own work; see the documentation table below.
+**Bootcamp study-revision app** — PDF/Markdown, RAG chat, quiz, knowledge gaps, AI summaries
 
-> Bootcamp study-revision app for **solo revision efficiency**: PDF/Markdown upload, RAG chat, auto quiz, knowledge gaps, AI summaries. Next.js 16, MongoDB Atlas, OpenRouter, Vercel.
+**English** · [中文](README.md)
 
-**Demo**: No public hosted URL—**deploy it yourself** using the **Quick start** section below. UI preview: **Screenshots** section.
+</div>
 
-**Business context, pain points, KPIs, MVP / out of scope / UAT gate** → [`docs/en/PRODUCT_SCOPE.md`](docs/en/PRODUCT_SCOPE.md)  
-**Discovery, prioritization, ~50% time hypothesis (one-pager)** → [`docs/en/DISCOVERY_AND_PRIORITIZATION.md`](docs/en/DISCOVERY_AND_PRIORITIZATION.md)  
-**Use cases, actors, protections** → [`docs/en/USE_CASES.md`](docs/en/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md)  
-**Security architecture (Vard, chunk guard, rate limits)** → [`docs/en/ARCHITECTURE.md`](docs/en/ARCHITECTURE.md)
+---
+
+## About
+
+**Personal portfolio** — BA/product artefacts (scope, discovery, use cases, user stories, traceability, test plan, UAT gate) and **full-stack implementation** are my own work.
+
+| Item | Notes |
+|------|-------|
+| **Demo** | No public hosted URL—use **Quick start** below; UI in **Screenshots**. |
+| **Stack** | Next.js 16, MongoDB Atlas, OpenRouter, Vercel |
+
+### Deep-dive docs
+
+| Topic | Link |
+|------|------|
+| Business context, KPIs, MVP / out of scope / UAT | [`docs/en/PRODUCT_SCOPE.md`](docs/en/PRODUCT_SCOPE.md) |
+| Discovery, prioritization, ~50% time hypothesis | [`docs/en/DISCOVERY_AND_PRIORITIZATION.md`](docs/en/DISCOVERY_AND_PRIORITIZATION.md) |
+| Use cases, actors, protections | [`docs/en/USE_CASES.md`](docs/en/USE_CASES.md) · [`docs/SEQUENCE_DIAGRAMS.md`](docs/SEQUENCE_DIAGRAMS.md) |
+| Security (Vard, chunk guard, rate limits) | [`docs/en/ARCHITECTURE.md`](docs/en/ARCHITECTURE.md) |
 
 ---
 
@@ -29,49 +44,76 @@
 
 ## Documentation
 
-| Audience | Links |
-|----------|-------|
-| **Product / BA** | [PRODUCT_SCOPE](docs/en/PRODUCT_SCOPE.md) · [DISCOVERY / prioritization](docs/en/DISCOVERY_AND_PRIORITIZATION.md) · [USE_CASES](docs/en/USE_CASES.md) · [USER_STORIES](docs/en/USER_STORIES.md) · [TRACEABILITY_MATRIX](docs/en/TRACEABILITY_MATRIX.md) · [TEST_PLAN](docs/en/TEST_PLAN.md) · [NFR](docs/en/NON_FUNCTIONAL_REQUIREMENTS.md) |
-| **Engineering** | [DEVELOPER_GUIDE](docs/en/DEVELOPER_GUIDE.md) · [SETUP_GUIDE](docs/en/SETUP_GUIDE.md) · [ARCHITECTURE](docs/en/ARCHITECTURE.md) · [API_REFERENCE](docs/en/API_REFERENCE.md) · [SEQUENCE_DIAGRAMS](docs/SEQUENCE_DIAGRAMS.md) · [UI_FLOW_DIAGRAM](docs/en/UI_FLOW_DIAGRAM.md) · [MONGODB_VECTOR_SETUP](docs/en/MONGODB_VECTOR_SETUP.md) · [GLOSSARY](docs/en/GLOSSARY.md) |
-| **Quality** | [DEFINITION_OF_DONE](docs/en/DEFINITION_OF_DONE.md) |
-| **中文** | [README.md](README.md) · Chinese files under `docs/` (same filenames as `docs/en/`) |
+### Product / BA
+
+[`PRODUCT_SCOPE`](docs/en/PRODUCT_SCOPE.md) · [`DISCOVERY / prioritization`](docs/en/DISCOVERY_AND_PRIORITIZATION.md) · [`USE_CASES`](docs/en/USE_CASES.md) · [`USER_STORIES`](docs/en/USER_STORIES.md) · [`TRACEABILITY_MATRIX`](docs/en/TRACEABILITY_MATRIX.md) · [`TEST_PLAN`](docs/en/TEST_PLAN.md) · [`NFR`](docs/en/NON_FUNCTIONAL_REQUIREMENTS.md)
+
+### Engineering
+
+[`DEVELOPER_GUIDE`](docs/en/DEVELOPER_GUIDE.md) · [`SETUP_GUIDE`](docs/en/SETUP_GUIDE.md) · [`ARCHITECTURE`](docs/en/ARCHITECTURE.md) · [`API_REFERENCE`](docs/en/API_REFERENCE.md) · [`SEQUENCE_DIAGRAMS`](docs/SEQUENCE_DIAGRAMS.md) · [`UI_FLOW_DIAGRAM`](docs/en/UI_FLOW_DIAGRAM.md) · [`MONGODB_VECTOR_SETUP`](docs/en/MONGODB_VECTOR_SETUP.md) · [`GLOSSARY`](docs/en/GLOSSARY.md)
+
+### Quality & other languages
+
+[`DEFINITION_OF_DONE`](docs/en/DEFINITION_OF_DONE.md) · Chinese: [`README.md`](README.md) · `docs/` (same filenames as `docs/en/`)
 
 ---
 
 ## Screenshots
 
-Captured from a local / self-hosted run (Chat, Quiz, Summary tabs).
+From a local / self-hosted run (Chat, Quiz, Summary).
 
-| Chat | Quiz | Summary |
-|:----:|:----:|:-------:|
-| ![Chat](docs/screenshots/screenshot-chat.png) | ![Quiz](docs/screenshots/screenshot-quiz.png) | ![Summary](docs/screenshots/screenshot-summary.png) |
+<table align="center">
+  <tr>
+    <th align="center">Chat</th>
+    <th align="center">Quiz</th>
+    <th align="center">Summary</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/screenshot-chat.png" alt="Chat" width="260"/></td>
+    <td align="center"><img src="docs/screenshots/screenshot-quiz.png" alt="Quiz" width="260"/></td>
+    <td align="center"><img src="docs/screenshots/screenshot-summary.png" alt="Summary" width="260"/></td>
+  </tr>
+</table>
 
 ---
 
-## Tech stack (summary)
+## Tech stack
 
-Next.js **16** (Turbopack) · **Node.js 24** (`package.json` `engines.node`: `>=24.0.0`; dev types `@types/node` ^24) · MongoDB Atlas Vector Search · OpenRouter (`gemini-2.5-flash-lite` chat + `qwen/qwen3-embedding-4b` embeddings; **Gemini may need a VPN** on some networks) · LlamaParse · `@andersmyrmel/vard`
+| Area | Choice |
+|------|--------|
+| Framework | Next.js **16** (Turbopack) |
+| Runtime | **Node.js 24** (`engines.node`: `>=24.0.0`; `@types/node` ^24) |
+| Database | MongoDB Atlas **vector search** |
+| LLM / embeddings | OpenRouter: `gemini-2.5-flash-lite` chat, `qwen/qwen3-embedding-4b` embeddings |
+| Networking | Default chat uses Gemini: **a VPN may be required** on some networks |
+| PDF | LlamaParse |
+| Security | `@andersmyrmel/vard` |
 
 ---
 
 ## Quick start
 
-**Prerequisite**: Node.js **24.x LTS** (matches `package.json` `engines`; optional root **`.nvmrc`** for `nvm` / `fnm`).
+1. **Prerequisites**: Node.js **24.x LTS** (matches `package.json` `engines`; optional root **`.nvmrc`** for `nvm` / `fnm`).
 
-```bash
-npm install
-cp .env.example .env.local
-```
+   ```bash
+   npm install
+   cp .env.example .env.local
+   ```
 
-Set `MONGODB_URI`, `OPENROUTER_API_KEY`, `LLAMA_CLOUD_API_KEY`, etc. ([SETUP_GUIDE](docs/en/SETUP_GUIDE.md)). Default chat uses Gemini via OpenRouter—**you may need a VPN** on some networks.
+2. **Environment**: Set `MONGODB_URI`, `OPENROUTER_API_KEY`, `LLAMA_CLOUD_API_KEY`, etc. See [`SETUP_GUIDE`](docs/en/SETUP_GUIDE.md).
 
-Create the Atlas vector index from [`scripts/vector-index.json`](scripts/vector-index.json) — [MONGODB_VECTOR_SETUP](docs/en/MONGODB_VECTOR_SETUP.md).
+   > **Tip**: Default chat goes through Gemini (via OpenRouter). If requests fail, try a **VPN**.
 
-```bash
-npm run dev
-```
+3. **Vector index**: Create the Atlas index from [`scripts/vector-index.json`](scripts/vector-index.json) — [`MONGODB_VECTOR_SETUP`](docs/en/MONGODB_VECTOR_SETUP.md).
+
+   ```bash
+   npm run dev
+   ```
 
 ---
 
-Created by **John Mak**  
-*Last updated: 2026-03-26*
+<div align="center">
+
+**John Mak** · *Last updated: 2026-03-26*
+
+</div>
