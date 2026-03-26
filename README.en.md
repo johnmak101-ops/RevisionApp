@@ -18,13 +18,13 @@
   </tr>
   <tr>
     <td align="center">
-      <video src="https://github.com/johnmak101-ops/RevisionApp/raw/main/docs/video/ai_chat.mp4" width="260" controls></video>
+      <video src="https://github.com/user-attachments/assets/2090001b-7a3e-4306-a971-61dd080be148" width="260" controls></video>
     </td>
     <td align="center">
-      <video src="https://github.com/johnmak101-ops/RevisionApp/raw/main/docs/video/quiz.mp4" width="260" controls></video>
+      <video src="https://github.com/user-attachments/assets/3da6c114-3e1d-4af5-8e1c-5e0495891ee8" width="260" controls></video>
     </td>
     <td align="center">
-      <video src="https://github.com/johnmak101-ops/RevisionApp/raw/main/docs/video/summary.mp4" width="260" controls></video>
+      <video src="https://github.com/user-attachments/assets/0e8a8694-a479-4d4c-84b7-dfb4dedd30c8" width="260" controls></video>
     </td>
   </tr>
 </table>
