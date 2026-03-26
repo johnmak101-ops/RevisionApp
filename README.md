@@ -13,21 +13,23 @@
     1. RAG 智能問答
 
 
-https://github.com/user-attachments/assets/a61884e0-98dd-47d0-8513-09adf2a1e315
+[ai_chat.webm](https://github.com/user-attachments/assets/9a37b1c1-f132-4b24-a6fb-d789ffb3051e)
 
 
     
     2. Quiz 生成與缺口分析
     
 
-https://github.com/user-attachments/assets/dbe3222d-abbf-4103-89fa-0e8dd9a9be81
+[quiz.webm](https://github.com/user-attachments/assets/55532c69-2b79-4204-b7ee-b41a0cd86953)
+
 
 
     
     3. AI 學習大綱
   
 
-https://github.com/user-attachments/assets/4b4e7912-a312-4052-b037-384327e7547b
+[summary.webm](https://github.com/user-attachments/assets/10a621b1-7920-41c7-939d-c87ddf518a89)
+
 
 
 
